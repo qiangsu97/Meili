@@ -206,7 +206,6 @@ input_dpdk_port_init_ports(rb_conf *run_conf)
 	
 
 	/* Assign an mbuf pool per queue and per port - reference by [port_idx][qid]. */
-	/* A bug was found by shaofeng :) */
 	//mbuf_pools = rte_zmalloc(NULL, sizeof(***mbuf_pools) * num_ports, 0); 
 
 	mbuf_pools = rte_zmalloc(NULL, sizeof(*mbuf_pools) * num_ports, 0);

@@ -553,7 +553,6 @@ regex_dev_dpdk_bf_prep_op(int qid, struct rte_regex_ops *op)
 	/* Store the buffer id in the mbuf metadata. */
 	//util_store_64_bit_as_2_32(&op->mbuf->dynfield1[DF_USER_ID_HIGH], ++(core_vars[qid].buf_id));
 
-	//shaofeng
 	++(core_vars[qid].buf_id);
 
 	if (input_subset_ids) {
