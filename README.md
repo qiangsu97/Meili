@@ -38,3 +38,5 @@ bash ./run.sh -live 2 10
 * ``rulesets/`` contains rulesets we use for regex accelerator on Bluefield-2 SmartNICs.
 * ``src/`` contains source code of Meili.  
 * ``traffic_generator/`` contains sample traffic generation script and pcaps.
+
+## More code will be available soon.
