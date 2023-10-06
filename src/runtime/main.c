@@ -23,7 +23,7 @@
 #include <rte_timer.h>
 
 #include "run_mode.h"
-#include "runtime/meili_runtime.h"
+#include "meili_runtime.h"
 
 #include "../utils/stats.h"
 #include "../utils/conf.h"
