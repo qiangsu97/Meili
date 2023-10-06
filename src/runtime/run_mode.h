@@ -18,7 +18,7 @@
 
 #include <rte_malloc.h>
 
-#include "runtime/meili_runtime.h"
+#include "pipeline.h"
 
 #include "../utils/conf.h"
 #include "../utils/log/log.h"

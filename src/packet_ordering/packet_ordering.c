@@ -180,12 +180,12 @@ int reorder_verify(struct pipeline_stage *self, struct rte_mbuf **mbuf, int nb_m
     }
 
     if((*rte_reorder_seqn(mbuf[0])) != mystate->last_seq_nb+1){
-        PL_log/log/log/log_ERR("Error seq order, seq_num=%d, %d", mystate->last_seq_nb,*rte_reorder_seqn(mbuf[0]));
+        MEILI_LOG_ERR("Error seq order, seq_num=%d, %d", mystate->last_seq_nb,*rte_reorder_seqn(mbuf[0]));
     }
 
     for(int i=1; i<nb_mbuf; i++){
         if((*rte_reorder_seqn(mbuf[i-1])+1) != *rte_reorder_seqn(mbuf[i])){
-            PL_log/log/log/log_ERR("Error seq order, seq_num=%d, %d", *rte_reorder_seqn(mbuf[i-1]),*rte_reorder_seqn(mbuf[i]));
+            MEILI_LOG_ERR("Error seq order, seq_num=%d, %d", *rte_reorder_seqn(mbuf[i-1]),*rte_reorder_seqn(mbuf[i]));
         }  
     }		
     

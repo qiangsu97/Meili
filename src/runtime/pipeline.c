@@ -5,7 +5,7 @@
 #include <string.h>
 #include <rte_errno.h>
 
-#include "runtime/meili_runtime.h"
+#include "pipeline.h"
 #include "run_mode.h"
 #include "../apps/app_shared.h"
 

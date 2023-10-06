@@ -29,7 +29,7 @@
 #include "../utils/port_utils.h"
 #include "../utils/stats.h"
 #include "run_mode.h"
-#include "runtime/meili_runtime.h"
+#include "pipeline.h"
 #include "../packet_ordering/packet_ordering.h"
 #include "../packet_timestamping/packet_timestamping.h"
 
