@@ -5,12 +5,7 @@
 APP = meili
 
 # all source are stored in SRCS-y
-SRCS-ALL := src/*.c src/*/*.c src/*/*/*.c
-SRCS-main := src/*.c
-SRCS-stages := src/stages/*/*.c
-SRCS-apps := src/stages/*/*.c
-SRCS-special-stages := src/packet_ordering/*.c src/packet_timestamping/*.c
-SRCS-utils := src/utils/*.c src/utils/*/*.c
+SRCS-ALL := $(shell find . -type f -name '*.c')
 
 SRCS-y := $(SRCS-ALL)
 
