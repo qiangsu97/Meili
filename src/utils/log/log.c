@@ -61,7 +61,7 @@ __meili_log(rb_conf *run_conf, enum meili_log_level level, const char *format, v
 		va_copy(params_copy, params);
 		size = vsnprintf(warn_str, MAX_WARNING_LEN, format, params_copy);
 		if (size < 0)
-			meili_log_WARN("Failed to record warning message.");
+			MEILI_LOG_WARN("Failed to record warning message.");
 		meili_log_record(run_conf, warn_str);
 		va_end(params_copy);
 	}
