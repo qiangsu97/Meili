@@ -12,7 +12,7 @@
 #include "../../pipeline.h"
 #include "mon_cms.h"
 #include "../../utils/cms/count-min-sketch.h"
-#include "../../utils/rxpb_log.h"
+#include "../../utils/log/log.h"
 #include "../../utils/flow_utils.h"
 #include "../../utils/pkt_utils.h"
 

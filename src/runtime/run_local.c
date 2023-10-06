@@ -25,14 +25,14 @@
 
 //#include "./regex/regex_dev.h"
 
-#include "./utils/stats.h"
-
-#include "./utils/pkt_utils.h"
+#include "../utils/stats.h"
+#include "../utils/pkt_utils.h"
+#include "../packet_ordering/packet_ordering.h"
+#include "../packet_timestamping/packet_timestamping.h"
 
 #include "run_mode.h"
 #include "pipeline.h"
-#include "packet_ordering/packet_ordering.h"
-#include "packet_timestamping/packet_timestamping.h"
+
 
 
 
@@ -171,7 +171,7 @@ int prepare_file_mbufs(struct file_state *fs){
 
 		fs->preloaded_mbuf[fs->nb_preloaded_buf] = rte_pktmbuf_alloc(fs->mbuf_pool);
 		if (!fs->preloaded_mbuf[fs->nb_preloaded_buf]) {
-			PL_LOG_ERR("Failed to get mbuf from pool.");
+			MEILI_LOG_ERR("Failed to get mbuf from pool.");
 			return -ENOMEM;
 		}
 		//rte_pktmbuf_attach_extbuf(fs->preloaded_mbuf[fs->nb_preloaded_buf], &fs->data[fs->data_off], 0, buf_len, fs->shinfo);
@@ -181,7 +181,7 @@ int prepare_file_mbufs(struct file_state *fs){
 			rte_memcpy(mbuf_data, &fs->data[fs->data_off], buf_len);
 		}
 		else{
-			PL_LOG_ERR("Append payload failed");
+			MEILI_LOG_ERR("Append payload failed");
 		}
 		
 		if(fs->nb_preloaded_buf == 1){
@@ -369,7 +369,7 @@ run_local(struct pipeline *pl)
 
 	start = rte_rdtsc();
 
-	PL_LOG_INFO("batch_size_in = %d, batch_size_out = %d",batch_size_in, batch_size_out);
+	MEILI_LOG_INFO("batch_size_in = %d, batch_size_out = %d",batch_size_in, batch_size_out);
 
 	/* start reading packets */
 	while (!force_quit 

@@ -12,7 +12,7 @@
 #include <rte_compressdev.h>
 #include "compress_bf.h"
 #include "../../pipeline.h"
-#include "../../utils/rxpb_log.h"
+#include "../../utils/log/log.h"
 #include "../../utils/rte_reorder/rte_reorder.h"
 
 
@@ -27,7 +27,7 @@ compress_check_capabilities(struct compress_bf_state *mystate, uint8_t cdev_id)
 	cap = rte_compressdev_capability_get(cdev_id, mystate->algo);
 
 	if (cap == NULL) {
-		PL_LOG_ERR("Compress device does not support DEFLATE");
+		MEILI_LOG_ERR("Compress device does not support DEFLATE");
 		return -1;
 	}
 
@@ -36,13 +36,13 @@ compress_check_capabilities(struct compress_bf_state *mystate, uint8_t cdev_id)
 	/* Huffman encoding */
 	if (mystate->algo_config.huffman_enc == RTE_COMP_HUFFMAN_FIXED &&
 			(comp_flags & RTE_COMP_FF_HUFFMAN_FIXED) == 0) {
-		PL_LOG_ERR("Compress device does not supported Fixed Huffman");
+		MEILI_LOG_ERR("Compress device does not supported Fixed Huffman");
 		return -1;
 	}
 
 	if (mystate->algo_config.huffman_enc == RTE_COMP_HUFFMAN_DYNAMIC &&
 			(comp_flags & RTE_COMP_FF_HUFFMAN_DYNAMIC) == 0) {
-		PL_LOG_ERR("Compress device does not supported Dynamic Huffman");
+		MEILI_LOG_ERR("Compress device does not supported Dynamic Huffman");
 		return -1;
 	}
 
@@ -50,7 +50,7 @@ compress_check_capabilities(struct compress_bf_state *mystate, uint8_t cdev_id)
 	// if (mystate->window_sz != -1) {
 	// 	if (param_range_check(mystate->window_sz, &cap->window_size)
 	// 			< 0) {
-	// 		PL_LOG_ERR(
+	// 		MEILI_LOG_ERR(
 	// 			"Compress device does not support "
 	// 			"this window size\n");
 	// 		return -1;
@@ -63,7 +63,7 @@ compress_check_capabilities(struct compress_bf_state *mystate, uint8_t cdev_id)
 	//printf("max_sgl_segs setting: %d\n",mystate->max_sgl_segs);
 	if (mystate->max_sgl_segs > 1  &&
 			(comp_flags & RTE_COMP_FF_OOP_SGL_IN_SGL_OUT) == 0) {
-		PL_LOG_WARN("Compress device does not support "
+		MEILI_LOG_WARN("Compress device does not support "
 				"chained mbufs. Max SGL segments set to 1");
 		mystate->max_sgl_segs = 1;
 	}
@@ -71,7 +71,7 @@ compress_check_capabilities(struct compress_bf_state *mystate, uint8_t cdev_id)
 	/* Level 0 support */
 	if (mystate->level_lst.min == 0 &&
 			(comp_flags & RTE_COMP_FF_NONCOMPRESSED_BLOCKS) == 0) {
-		PL_LOG_ERR("Compress device does not support "
+		MEILI_LOG_ERR("Compress device does not support "
 				"level 0 (no compression)");
 		return -1;
 	}
@@ -118,7 +118,7 @@ initialize_compressdev(struct pipeline_stage *self)
 	enabled_cdev_count = rte_compressdev_devices_get(mystate->driver_name,
 			enabled_cdevs, RTE_COMPRESS_MAX_DEVS);
 	if (enabled_cdev_count == 0) {
-		PL_LOG_ERR("No compress devices type %s available,"
+		MEILI_LOG_ERR("No compress devices type %s available,"
 				    " please check the list of specified devices in EAL section",
 				mystate->driver_name);
 		return -EINVAL;
@@ -133,11 +133,11 @@ initialize_compressdev(struct pipeline_stage *self)
 	 */
 	// if (enabled_cdev_count > nb_lcores) {
 	// 	if (nb_lcores == 0) {
-	// 		PL_LOG_ERR( "Cannot run with 0 cores! Increase the number of cores\n");
+	// 		MEILI_LOG_ERR( "Cannot run with 0 cores! Increase the number of cores\n");
 	// 		return -EINVAL;
 	// 	}
 	// 	enabled_cdev_count = nb_lcores;
-	// 	PL_LOG_ERR(INFO, USER1,
+	// 	MEILI_LOG_ERR(INFO, USER1,
 	// 		"There's more available devices than cores!"
 	// 		" The number of devices has been aligned to %d cores\n",
 	// 		nb_lcores);
@@ -154,13 +154,13 @@ initialize_compressdev(struct pipeline_stage *self)
 	rte_compressdev_info_get(cdev_id, &cdev_info);
 	//printf("max_nb_queue_pairs: %d\n",cdev_info.max_nb_queue_pairs);
 	if (!cdev_info.max_nb_queue_pairs) {
-		PL_LOG_ERR("The maximum number of queue pairs per device is zero.");
+		MEILI_LOG_ERR("The maximum number of queue pairs per device is zero.");
 		return -EINVAL;
 	}
 
 	// if (cdev_info.max_nb_queue_pairs
 	// 	&& mystate->nb_qps > cdev_info.max_nb_queue_pairs) {
-	// 	PL_LOG_ERR("Number of needed queue pairs is higher "
+	// 	MEILI_LOG_ERR("Number of needed queue pairs is higher "
 	// 		"than the maximum number of queue pairs "
 	// 		"per device.");
 	// 	return -EINVAL;
@@ -185,7 +185,7 @@ initialize_compressdev(struct pipeline_stage *self)
 	// mystate->nb_qps = config.nb_queue_pairs;
 
 	if (rte_compressdev_configure(cdev_id, &config) < 0) {
-		PL_LOG_ERR("Compress device %d configuration failed",cdev_id);
+		MEILI_LOG_ERR("Compress device %d configuration failed",cdev_id);
 		return -EINVAL;
 	}
 
@@ -193,7 +193,7 @@ initialize_compressdev(struct pipeline_stage *self)
 		ret = rte_compressdev_queue_pair_setup(cdev_id, j,
 				NUM_MAX_INFLIGHT_OPS, socket_id);
 		if (ret < 0) {
-			PL_LOG_ERR("Failed to setup queue pair %u on compressdev %u",j, cdev_id);
+			MEILI_LOG_ERR("Failed to setup queue pair %u on compressdev %u",j, cdev_id);
 			return -EINVAL;
 		}
 		mystate->dev_qid = j;
@@ -201,7 +201,7 @@ initialize_compressdev(struct pipeline_stage *self)
 
 	ret = rte_compressdev_start(cdev_id);
 	if (ret < 0) {
-		PL_LOG_ERR("Failed to start device %u: error %d\n", cdev_id, ret);
+		MEILI_LOG_ERR("Failed to start device %u: error %d\n", cdev_id, ret);
 		return -EPERM;
 	}
 	
@@ -231,7 +231,7 @@ compress_bf_init(struct pipeline_stage *self)
 	nb_compressdevs = initialize_compressdev(self);
 
 	if (nb_compressdevs < 1) {
-		PL_LOG_ERR("No available compression device");
+		MEILI_LOG_ERR("No available compression device");
 		return -EINVAL;
 	}
 	
@@ -251,7 +251,7 @@ compress_bf_init(struct pipeline_stage *self)
 
 
 	if (rte_compressdev_private_xform_create(dev_id, &xform, &mystate->priv_xform) < 0) {
-		PL_LOG_ERR("Private xform could not be created");
+		MEILI_LOG_ERR("Private xform could not be created");
 		return -EINVAL;
 	}
 
@@ -264,7 +264,7 @@ compress_bf_init(struct pipeline_stage *self)
 	for(int i=0; i<self->batch_size ; i++){
 		mystate->ops[i] = (struct rte_comp_op *)rte_malloc(NULL, sizeof(struct rte_comp_op), 0);
 		if (!mystate->ops[i]){
-			PL_LOG_ERR("Allocation of input compression operations failed");
+			MEILI_LOG_ERR("Allocation of input compression operations failed");
 			return -ENOMEM;
 		}	
 	}
@@ -326,7 +326,7 @@ compress_bf_init(struct pipeline_stage *self)
 	for(int i=0; i<NB_OUTPUT_BUFS_MAX ; i++){
 		mystate->output_bufs[i] = rte_pktmbuf_alloc(mbuf_pool);
 		if (!mystate->output_bufs[i]){
-			PL_LOG_ERR("Allocation of output compressed/decompressed bufs failed");
+			MEILI_LOG_ERR("Allocation of output compressed/decompressed bufs failed");
 			return -ENOMEM;
 		}	
 		mystate->output_bufs[i]->data_len = mystate->out_seg_sz;
@@ -339,7 +339,7 @@ compress_bf_init(struct pipeline_stage *self)
 	// 				mem->comp_bufs[i],
 	// 				mystate->out_seg_sz);
 	// if (data_addr == NULL) {
-	// 	PL_LOG_ERR( "Could not append data\n");
+	// 	MEILI_LOG_ERR( "Could not append data\n");
 	// 	return -1;
 	// }
 

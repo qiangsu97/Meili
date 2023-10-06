@@ -16,7 +16,7 @@ int app_init_substages(struct pipeline_stage *self,
         sub_stage->worker_qid = self->worker_qid;
         ret = pipeline_stage_init_safe(sub_stage, type_map[i]);  
         if(ret){
-            PL_LOG_ERR("Error when initalizing sub-stage");
+            MEILI_LOG_ERR("Error when initalizing sub-stage");
             return ret;
         }        
     }

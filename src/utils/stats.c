@@ -21,7 +21,7 @@
 #include <rte_mbuf.h>
 #include <rte_mbuf_dyn.h>
 
-#include "rxpb_log.h"
+#include "log/log.h"
 #include "stats.h"
 
 #include "./timestamp/timestamp.h"
@@ -147,7 +147,7 @@ stats_init(rb_conf *run_conf)
 	#ifdef ONLY_SPLIT_THROUGHPUT
 	log_fp = fopen("throughput_log_2.txt", "w+");
 	if(!log_fp){
-		PL_LOG_ERR("Open log file failed");
+		MEILI_LOG_ERR("Open log file failed");
 		return -EINVAL;
 	}
 	#endif

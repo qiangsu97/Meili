@@ -21,7 +21,7 @@
 #include <rte_malloc.h>
 
 #include "input.h"
-#include "rxpb_log.h"
+#include "log/log.h"
 #include "utils.h"
 
 // TODO: need to migrate definition of exp_matches out of regex_dev.h 

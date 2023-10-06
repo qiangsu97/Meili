@@ -9,9 +9,9 @@
 #include "run_mode.h"
 #include "apps/app_shared.h"
 
-#include "./packet_ordering/packet_ordering.h"
-#include "./packet_timestamping/packet_timestamping.h"
-#include "./utils/input.h"
+#include "../packet_ordering/packet_ordering.h"
+#include "../packet_timestamping/packet_timestamping.h"
+#include "../utils/input.h"
 
 
 typedef int (*pl_register_functions)(struct pipeline_stage *);
@@ -45,7 +45,7 @@ init_dpdk(struct pipeline_conf *run_conf)
 	int ret;
 
 	if (run_conf->dpdk_argc <= 1) {
-		PL_LOG_ERR("Too few DPDK parameters.");
+		MEILI_LOG_ERR("Too few DPDK parameters.");
 		return -EINVAL;
 	}
 
@@ -67,7 +67,7 @@ int pipeline_runtime_init(struct pipeline *pl, struct pipeline_conf *run_conf, c
 
 	/* Confirm there are enough DPDK lcores for user core request. */
 	if (run_conf->cores > rte_lcore_count()) {
-		PL_LOG_WARN_REC(run_conf, "requested cores (%d) > dpdk lcores (%d) - using %d.", run_conf->cores,
+		MEILI_LOG_WARN_REC(run_conf, "requested cores (%d) > dpdk lcores (%d) - using %d.", run_conf->cores,
 				  rte_lcore_count(), rte_lcore_count());
 		run_conf->cores = rte_lcore_count();
 	}
@@ -120,7 +120,7 @@ int pipeline_runtime_init(struct pipeline *pl, struct pipeline_conf *run_conf, c
 		goto clean_pipeline;
 	}
 
-    PL_LOG_INFO("Pipeline runtime initalization finished");
+    MEILI_LOG_INFO("Pipeline runtime initalization finished");
     goto end;
 
 clean_pipeline:
@@ -432,16 +432,16 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path){
     int ret = 0;
 
     /* Read pipeline topo from pl.conf */
-    PL_LOG_INFO("Initializing pl from file %s\n",config_path);
+    MEILI_LOG_INFO("Initializing pl from file %s\n",config_path);
     fp = fopen(config_path,"r"); 
     if(fp == NULL){
-        PL_LOG_ERR("Failed to load pl config file!");
+        MEILI_LOG_ERR("Failed to load pl config file!");
         return -EINVAL;
     }
 
     while(!feof(fp)){
         if(pl->nb_pl_stages >= NB_PIPELINE_STAGE_MAX){
-            PL_LOG_WARN("# of stages exceeding pre-defined threshold");
+            MEILI_LOG_WARN("# of stages exceeding pre-defined threshold");
             break;
         }
 
@@ -456,7 +456,7 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path){
             //printf("%s ",token);
 
             if(pl->stage_types[k] >= PL_NB_OF_STAGE_TYPES){
-                PL_LOG_ERR("stage type of stage %d is invalid", k);
+                MEILI_LOG_ERR("stage type of stage %d is invalid", k);
                 pl->stage_types[k] = PL_NB_OF_STAGE_TYPES-1;
                 return -EINVAL;
             }
@@ -466,7 +466,7 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path){
             //printf("%s\n",token);
             pl->nb_inst_per_pl_stage[k] = atoi(token);
             if(pl->nb_inst_per_pl_stage[k] > NB_INSTANCE_PER_PIPELINE_STAGE_MAX){
-                PL_LOG_WARN("# of stage instances of stage %d exceeding pre-defined threshold", k);   
+                MEILI_LOG_WARN("# of stage instances of stage %d exceeding pre-defined threshold", k);   
                 return -EINVAL; 
             }
             
@@ -488,19 +488,19 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path){
     }
     else{
         sprintf(pool_name, "PRELOADED POOL");
-        PL_LOG_INFO("creating mbuf pool, pool size: %d, mbuf szie: %d",MBUF_POOL_SIZE,MBUF_SIZE);
+        MEILI_LOG_INFO("creating mbuf pool, pool size: %d, mbuf szie: %d",MBUF_POOL_SIZE,MBUF_SIZE);
         /* Pool size should be > dpdk descriptor queue. */
         //pl->mbuf_pool = rte_pktmbuf_pool_create(pool_name, MBUF_POOL_SIZE, MBUF_CACHE_SIZE, 0, RTE_PKTMBUF_HEADROOM + run_conf->input_buf_len, rte_socket_id());
         pl->mbuf_pool = rte_pktmbuf_pool_create(pool_name, MBUF_POOL_SIZE, MBUF_CACHE_SIZE, 0, MBUF_SIZE, rte_socket_id());
         if (!pl->mbuf_pool) {
-            PL_LOG_ERR("Failed to create mbuf pool.");
+            MEILI_LOG_ERR("Failed to create mbuf pool.");
             return -EINVAL;
         }
     }
 
     /*----------------------------Start of per-stage initialization----------------------------------------*/
     /* Print initialization info beforehand */
-    PL_LOG_INFO("Initializing pipeline stages...");
+    MEILI_LOG_INFO("Initializing pipeline stages...");
   
     /* Check if pl parameters for stages(number, ...) are valid */
     if(nb_pl_stages > NB_PIPELINE_STAGE_MAX || nb_pl_stages < 0 ){
@@ -533,7 +533,7 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path){
 
             if(ret){
                 GET_STAGE_TYPE_STRING(stage_types[i],stage_type_name);
-                PL_LOG_ERR("Initialization for %s pipeline stage failed",stage_type_name);
+                MEILI_LOG_ERR("Initialization for %s pipeline stage failed",stage_type_name);
                 return ret;
             }
             pl->stages[i][j] = self;
@@ -563,14 +563,14 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path){
 		return -EINVAL;
 	}
 
-    PL_LOG_INFO("Seq and reorder initialized");
+    MEILI_LOG_INFO("Seq and reorder initialized");
 
     /*----------------------------End of per-stage initialization----------------------------------------*/
 
     /*----------------------------Start of topology construction-----------------------------------------*/
     /* Create head ring_in/tail ring_out for PL. Rings are shared. */
     #ifdef SHARED_BUFFER
-    PL_LOG_INFO("Using shared ring buffer for inter-core communication");
+    MEILI_LOG_INFO("Using shared ring buffer for inter-core communication");
     pl->ring_in = rte_ring_create("head_ring_in", RING_SIZE, rte_socket_id(),RING_F_SP_ENQ | RING_F_MC_HTS_DEQ);
     /* another mode of shared rte ring */
     //pl->ring_in = rte_ring_create("head_ring_in", RING_SIZE, rte_socket_id(),RING_F_SP_ENQ | RING_F_MC_RTS_DEQ);
@@ -605,7 +605,7 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path){
 
     #else
     /* Create head ring_in/tail ring_out for PL. Rings are NOT shared. */
-    PL_LOG_INFO("Using separated ring buffer for inter-core communication");
+    MEILI_LOG_INFO("Using separated ring buffer for inter-core communication");
     if(nb_pl_stages == 0){
         /* no worker stages */
         pl->ring_in[0] = rte_ring_create("head_ring_in", RING_SIZE, rte_socket_id(),RING_F_SP_ENQ | RING_F_SC_DEQ);
@@ -641,7 +641,7 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path){
         }
     }
     #endif
-    PL_LOG_INFO("Main thread in_ring/out_ring initialized");
+    MEILI_LOG_INFO("Main thread in_ring/out_ring initialized");
     
 
     /* For intermediatte stages, allocate ring_in/ring_out and connect */
@@ -708,7 +708,7 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path){
                 child = pl->stages[i+1][k];
                 snprintf(ring_name,64,"inter_worker_ring_%d_%d_%d_%d", i, i+1, j, k);
                 //debug
-                PL_LOG_INFO("creating inter-stage buffer:%s",ring_name);
+                MEILI_LOG_INFO("creating inter-stage buffer:%s",ring_name);
                 self->ring_out[self->nb_ring_out] = rte_ring_create(ring_name, RING_SIZE, rte_socket_id(),RING_F_SP_ENQ | RING_F_SC_DEQ);
                 if (self->ring_out == NULL){
                     return -ENOMEM;
@@ -725,8 +725,8 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path){
     /*----------------------------End of topology construction-----------------------------------------*/
 
     /* Print pipeline topology */
-    PL_LOG_INFO("Pipeline stages initialized");
-    PL_LOG_INFO("Total %d stage(s)", nb_pl_stages);
+    MEILI_LOG_INFO("Pipeline stages initialized");
+    MEILI_LOG_INFO("Total %d stage(s)", nb_pl_stages);
     printf("%8s %16s %16s %16s %16s\n","Stage","Type","# Instance","# RING_IN","# RING_OUT");
     #ifdef SHARED_BUFFER
     for(int i=0; i<nb_pl_stages; i++){
@@ -792,7 +792,7 @@ launch_worker(void *args)
 	struct pipeline_stage *self = args;
 	int ret;
     
-    PL_LOG_INFO("worker qid %d on socket %d launched",self->worker_qid, rte_socket_id());
+    MEILI_LOG_INFO("worker qid %d on socket %d launched",self->worker_qid, rte_socket_id());
 	/* Kick off a pipeline stage thread for this worker. */
     ret = pipeline_stage_run_safe(self);
 
@@ -869,10 +869,10 @@ int pipeline_run(struct pipeline *pl){
 
     
     // launch workers and main core
-    PL_LOG_INFO("Total cores: %d", pl_conf->cores);
-    PL_LOG_INFO("Total stage instances: %d", pl->nb_pl_stage_inst);
+    MEILI_LOG_INFO("Total cores: %d", pl_conf->cores);
+    MEILI_LOG_INFO("Total stage instances: %d", pl->nb_pl_stage_inst);
     if (pl->nb_pl_stage_inst >= pl_conf->cores){
-        PL_LOG_ERR("Not enough cores for workers");
+        MEILI_LOG_ERR("Not enough cores for workers");
         return -EINVAL; 
     }
 
@@ -909,10 +909,10 @@ int pipeline_run(struct pipeline *pl){
 
         worker_qid++;
         #ifndef BASELINE_MODE
-        PL_LOG_INFO("starting core %d, worker_qid %d", lcore_id, self->worker_qid);
+        MEILI_LOG_INFO("starting core %d, worker_qid %d", lcore_id, self->worker_qid);
 		ret = rte_eal_remote_launch(launch_worker, self, lcore_id);
         if(ret){
-            PL_LOG_ERR("Failed to launch core %d, worker_qid %d", lcore_id, self->worker_qid);
+            MEILI_LOG_ERR("Failed to launch core %d, worker_qid %d", lcore_id, self->worker_qid);
             goto post_run;
         }
         #endif
@@ -931,7 +931,7 @@ int pipeline_run(struct pipeline *pl){
 
     stats->rm_stats[0].self = &pl->seq_stage;
 
-    PL_LOG_INFO("starting on main core...");
+    MEILI_LOG_INFO("starting on main core...");
     ret = run_mode_launch(pl);
 	
 
@@ -941,7 +941,7 @@ post_run:
     run_conf->running = false;
 
 	if (ret) {
-        PL_LOG_ERR("Failure in run mode");
+        MEILI_LOG_ERR("Failure in run mode");
 	}
 
     //printf("main thread running=%d, finished running\n",run_conf->running);
@@ -952,10 +952,10 @@ post_run:
 	/* Wait on all threads/lcore processing to complete. */
 	RTE_LCORE_FOREACH_WORKER(lcore_id) {
 		ret = rte_eal_wait_lcore(lcore_id);
-        PL_LOG_INFO("Core %d finished processing", lcore_id);
+        MEILI_LOG_INFO("Core %d finished processing", lcore_id);
 		if(ret) {
             snprintf(err, ERR_STR_SIZE, "Lcore %u returned a runtime error", lcore_id);
-            PL_LOG_ERR("Lcore %u returned a runtime error", lcore_id);
+            MEILI_LOG_ERR("Lcore %u returned a runtime error", lcore_id);
         }		
 	}
 

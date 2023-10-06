@@ -22,7 +22,7 @@
 
 #include "../../utils/conf.h"
 #include "../../utils/dpdk_live_shared.h"
-#include "../../utils/rxpb_log.h"
+#include "../../utils/log/log.h"
 #include "../../utils/stats.h"
 
 #include "../../pipeline.h"

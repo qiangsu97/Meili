@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <rte_mbuf.h>
 #include "../pipeline.h"
-#include "../utils/rxpb_log.h"
+#include "../utils/log/log.h"
 
 #define APP_MAX_STAGE 8 
 

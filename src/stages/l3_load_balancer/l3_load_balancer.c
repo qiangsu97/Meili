@@ -12,7 +12,7 @@
 #include "../../utils/flow_utils.h"
 #include "../../utils/pkt_utils.h"
 #include "../../utils/port_utils.h"
-#include "../../utils/rxpb_log.h"
+#include "../../utils/log/log.h"
 
 
 int
@@ -246,7 +246,7 @@ l3_lb_exec(struct pipeline_stage *self, struct rte_mbuf **mbuf, int nb_enq,
             /* backend server -> lb_server_port -> lb_client_port -> client */
             //if (get_port_macaddr(mystate->client_port, &ehdr->s_addr) == -1) {
             if (get_fake_macaddr(&ehdr->s_addr) == -1) {    
-                PL_LOG_ERR("Failed to obtain MAC address");
+                MEILI_LOG_ERR("Failed to obtain MAC address");
                 return -EINVAL;
             }
             for (j = 0; j < MEILI_ETHER_ADDR_LEN; j++) {
@@ -264,7 +264,7 @@ l3_lb_exec(struct pipeline_stage *self, struct rte_mbuf **mbuf, int nb_enq,
             /* client -> lb, should be delivered to corresponding backend server */
             //if (get_port_macaddr(mystate->server_port, &ehdr->s_addr) == -1) {
             if (get_fake_macaddr(&ehdr->s_addr) == -1) { 
-                PL_LOG_ERR("Failed to obtain MAC address");
+                MEILI_LOG_ERR("Failed to obtain MAC address");
                 return -EINVAL;
             }
             for (j = 0; j < MEILI_ETHER_ADDR_LEN; j++) {

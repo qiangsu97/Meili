@@ -22,7 +22,7 @@
 #include <rte_malloc.h>
 
 #include "rules_file_utils.h"
-#include "../../utils/rxpb_log.h"
+#include "../../utils/log/log.h"
 #include "../../utils/utils.h"
 
 #define ID_SEPARATOR_HS	 ':'

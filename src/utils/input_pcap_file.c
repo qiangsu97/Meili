@@ -19,7 +19,7 @@
 #include <rte_malloc.h>
 
 #include "input.h"
-#include "rxpb_log.h"
+#include "log/log.h"
 #include "stats.h"
 #include "utils.h"
 #include "pkt_utils.h"

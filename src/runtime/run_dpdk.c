@@ -22,18 +22,18 @@
 
 // #include "./regex/regex_dev.h"
 
-#include "./utils/dpdk_live_shared.h"
-#include "./utils/rxpb_log.h"
-#include "./utils/utils.h"
-#include "./utils/pkt_utils.h"
-#include "./utils/port_utils.h"
-#include "./utils/stats.h"
+#include "../utils/dpdk_live_shared.h"
+#include "../utils/log/log.h"
+#include "../utils/utils.h"
+#include "../utils/pkt_utils.h"
+#include "../utils/port_utils.h"
+#include "../utils/stats.h"
 #include "run_mode.h"
 #include "pipeline.h"
-#include "packet_ordering/packet_ordering.h"
-#include "packet_timestamping/packet_timestamping.h"
+#include "../packet_ordering/packet_ordering.h"
+#include "../packet_timestamping/packet_timestamping.h"
 
-#include "./utils/rte_reorder/rte_reorder.h"
+#include "../utils/rte_reorder/rte_reorder.h"
 
 static uint16_t primary_port_id;
 static uint16_t second_port_id;
@@ -181,7 +181,7 @@ update_addr(struct rte_mbuf *m, unsigned dest_portid)
 // 	pkt_stats = &rm_stats->pkt_stats;
 // 	dpdk_tx = rte_malloc(NULL, sizeof(*dpdk_tx), 64);
 // 	if (!dpdk_tx) {
-// 		PL_LOG_ERR("Memory failure on tx queue.");
+// 		MEILI_LOG_ERR("Memory failure on tx queue.");
 // 		return -ENOMEM;
 // 	}
 
@@ -190,7 +190,7 @@ update_addr(struct rte_mbuf *m, unsigned dest_portid)
 // 	//sleep(3);
 // 	ret = rte_eth_dev_get_port_by_name(run_conf->port1, &primary_port_id);
 // 	if (ret) {
-// 		PL_LOG_ERR("Cannot find port %s.", run_conf->port1);
+// 		MEILI_LOG_ERR("Cannot find port %s.", run_conf->port1);
 // 		return -EINVAL;
 // 	}
 
@@ -549,42 +549,42 @@ run_dpdk(struct pipeline *pl)
 	pkt_stats = &rm_stats->pkt_stats;
 	dpdk_tx = rte_malloc(NULL, sizeof(*dpdk_tx), 64);
 	if (!dpdk_tx) {
-		PL_LOG_ERR("Memory failure on tx queue.");
+		MEILI_LOG_ERR("Memory failure on tx queue.");
 		return -ENOMEM;
 	}
 
 
-	PL_LOG_INFO("Checking port %s",run_conf->port1);
+	MEILI_LOG_INFO("Checking port %s",run_conf->port1);
 	ret = rte_eth_dev_get_port_by_name(run_conf->port1, &primary_port_id);
 	if (ret) {
-		PL_LOG_ERR("Cannot find port %s.", run_conf->port1);
+		MEILI_LOG_ERR("Cannot find port %s.", run_conf->port1);
 		return -EINVAL;
 	}
 	ret = get_port_macaddr(primary_port_id, &primary_mac_addr);
 	if(ret){
-		PL_LOG_ERR("Cannot get port %s eth addr.", run_conf->port1);
+		MEILI_LOG_ERR("Cannot get port %s eth addr.", run_conf->port1);
 		return -EINVAL;
 	}
 
 	/* second port is for sending traffic out of the pipeline */
 	dual_port = false;
 	if (run_conf->port2) {
-		PL_LOG_INFO("Checking port %s",run_conf->port2);
+		MEILI_LOG_INFO("Checking port %s",run_conf->port2);
 		ret = rte_eth_dev_get_port_by_name(run_conf->port2, &second_port_id);
 		if (ret) {
-			PL_LOG_ERR("Cannot find port %s.", run_conf->port2);
+			MEILI_LOG_ERR("Cannot find port %s.", run_conf->port2);
 			return -EINVAL;
 		}
 		ret = get_port_macaddr(second_port_id, &second_mac_addr);
 		if(ret){
-			PL_LOG_ERR("Cannot get port %s eth addr.", run_conf->port1);
+			MEILI_LOG_ERR("Cannot get port %s eth addr.", run_conf->port1);
 			return -EINVAL;
 		}
 		dual_port = true;
 	}
 
 	if(dual_port){
-		PL_LOG_INFO("Using dual port, %s-port %d-rx, %s-port %d-tx",run_conf->port1, primary_port_id, run_conf->port2, second_port_id);
+		MEILI_LOG_INFO("Using dual port, %s-port %d-rx, %s-port %d-tx",run_conf->port1, primary_port_id, run_conf->port2, second_port_id);
 	}
 
 	
@@ -611,7 +611,7 @@ run_dpdk(struct pipeline *pl)
 
 	start = rte_rdtsc();
 
-	PL_LOG_INFO("Eth batch size = %d, batch_size_in = %d, batch_size_out = %d",DEFAULT_ETH_BATCH_SIZE, batch_size_in, batch_size_out);
+	MEILI_LOG_INFO("Eth batch size = %d, batch_size_in = %d, batch_size_out = %d",DEFAULT_ETH_BATCH_SIZE, batch_size_in, batch_size_out);
 
 	// /* temporary remedy for reorder bug */
 	// #ifdef RATE_LIMIT_BPS_ON
@@ -1104,42 +1104,42 @@ run_dpdk(struct pipeline *pl)
 	pkt_stats = &rm_stats->pkt_stats;
 	dpdk_tx = rte_malloc(NULL, sizeof(*dpdk_tx), 64);
 	if (!dpdk_tx) {
-		PL_LOG_ERR("Memory failure on tx queue.");
+		MEILI_LOG_ERR("Memory failure on tx queue.");
 		return -ENOMEM;
 	}
 
 
-	PL_LOG_INFO("Checking port %s",run_conf->port1);
+	MEILI_LOG_INFO("Checking port %s",run_conf->port1);
 	ret = rte_eth_dev_get_port_by_name(run_conf->port1, &primary_port_id);
 	if (ret) {
-		PL_LOG_ERR("Cannot find port %s.", run_conf->port1);
+		MEILI_LOG_ERR("Cannot find port %s.", run_conf->port1);
 		return -EINVAL;
 	}
 	ret = get_port_macaddr(primary_port_id, &primary_mac_addr);
 	if(ret){
-		PL_LOG_ERR("Cannot get port %s eth addr.", run_conf->port1);
+		MEILI_LOG_ERR("Cannot get port %s eth addr.", run_conf->port1);
 		return -EINVAL;
 	}
 
 	/* second port is for sending traffic out of the pipeline */
 	dual_port = false;
 	if (run_conf->port2) {
-		PL_LOG_INFO("Checking port %s",run_conf->port2);
+		MEILI_LOG_INFO("Checking port %s",run_conf->port2);
 		ret = rte_eth_dev_get_port_by_name(run_conf->port2, &second_port_id);
 		if (ret) {
-			PL_LOG_ERR("Cannot find port %s.", run_conf->port2);
+			MEILI_LOG_ERR("Cannot find port %s.", run_conf->port2);
 			return -EINVAL;
 		}
 		ret = get_port_macaddr(second_port_id, &second_mac_addr);
 		if(ret){
-			PL_LOG_ERR("Cannot get port %s eth addr.", run_conf->port1);
+			MEILI_LOG_ERR("Cannot get port %s eth addr.", run_conf->port1);
 			return -EINVAL;
 		}
 		dual_port = true;
 	}
 
 	if(dual_port){
-		PL_LOG_INFO("Using dual port, %s-port %d-rx, %s-port %d-tx",run_conf->port1, primary_port_id, run_conf->port2, second_port_id);
+		MEILI_LOG_INFO("Using dual port, %s-port %d-rx, %s-port %d-tx",run_conf->port1, primary_port_id, run_conf->port2, second_port_id);
 	}
 
 	
@@ -1166,8 +1166,8 @@ run_dpdk(struct pipeline *pl)
 
 	start = rte_rdtsc();
 
-	PL_LOG_INFO("Using test mode: ALL_REMOTE_ON_ARRIVAL");
-	PL_LOG_INFO("Eth batch size = %d, batch_size_in = %d, batch_size_out = %d",DEFAULT_ETH_BATCH_SIZE, batch_size_in, batch_size_out);
+	MEILI_LOG_INFO("Using test mode: ALL_REMOTE_ON_ARRIVAL");
+	MEILI_LOG_INFO("Eth batch size = %d, batch_size_in = %d, batch_size_out = %d",DEFAULT_ETH_BATCH_SIZE, batch_size_in, batch_size_out);
 
 
 	/* start reading packets from eth */
@@ -1358,42 +1358,42 @@ run_dpdk(struct pipeline *pl)
 	pkt_stats = &rm_stats->pkt_stats;
 	dpdk_tx = rte_malloc(NULL, sizeof(*dpdk_tx), 64);
 	if (!dpdk_tx) {
-		PL_LOG_ERR("Memory failure on tx queue.");
+		MEILI_LOG_ERR("Memory failure on tx queue.");
 		return -ENOMEM;
 	}
 
 
-	PL_LOG_INFO("Checking port %s",run_conf->port1);
+	MEILI_LOG_INFO("Checking port %s",run_conf->port1);
 	ret = rte_eth_dev_get_port_by_name(run_conf->port1, &primary_port_id);
 	if (ret) {
-		PL_LOG_ERR("Cannot find port %s.", run_conf->port1);
+		MEILI_LOG_ERR("Cannot find port %s.", run_conf->port1);
 		return -EINVAL;
 	}
 	ret = get_port_macaddr(primary_port_id, &primary_mac_addr);
 	if(ret){
-		PL_LOG_ERR("Cannot get port %s eth addr.", run_conf->port1);
+		MEILI_LOG_ERR("Cannot get port %s eth addr.", run_conf->port1);
 		return -EINVAL;
 	}
 
 	/* second port is for sending traffic out of the pipeline */
 	dual_port = false;
 	if (run_conf->port2) {
-		PL_LOG_INFO("Checking port %s",run_conf->port2);
+		MEILI_LOG_INFO("Checking port %s",run_conf->port2);
 		ret = rte_eth_dev_get_port_by_name(run_conf->port2, &second_port_id);
 		if (ret) {
-			PL_LOG_ERR("Cannot find port %s.", run_conf->port2);
+			MEILI_LOG_ERR("Cannot find port %s.", run_conf->port2);
 			return -EINVAL;
 		}
 		ret = get_port_macaddr(second_port_id, &second_mac_addr);
 		if(ret){
-			PL_LOG_ERR("Cannot get port %s eth addr.", run_conf->port1);
+			MEILI_LOG_ERR("Cannot get port %s eth addr.", run_conf->port1);
 			return -EINVAL;
 		}
 		dual_port = true;
 	}
 
 	if(dual_port){
-		PL_LOG_INFO("Using dual port, %s-port %d-rx, %s-port %d-tx",run_conf->port1, primary_port_id, run_conf->port2, second_port_id);
+		MEILI_LOG_INFO("Using dual port, %s-port %d-rx, %s-port %d-tx",run_conf->port1, primary_port_id, run_conf->port2, second_port_id);
 	}
 
 	
@@ -1420,8 +1420,8 @@ run_dpdk(struct pipeline *pl)
 
 	start = rte_rdtsc();
 
-	PL_LOG_INFO("Using test mode: BASELINE MODE");
-	PL_LOG_INFO("Eth batch size = %d, batch_size_in = %d, batch_size_out = %d",DEFAULT_ETH_BATCH_SIZE, batch_size_in, batch_size_out);
+	MEILI_LOG_INFO("Using test mode: BASELINE MODE");
+	MEILI_LOG_INFO("Eth batch size = %d, batch_size_in = %d, batch_size_out = %d",DEFAULT_ETH_BATCH_SIZE, batch_size_in, batch_size_out);
 
 	self = pl->stages[0][0];
 	/* start reading packets from eth */

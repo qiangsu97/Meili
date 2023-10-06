@@ -20,7 +20,7 @@
 
 #include "dpdk_live_shared.h"
 #include "input.h"
-#include "rxpb_log.h"
+#include "log/log.h"
 #include "utils.h"
 
 //#define NUM_MBUFS		8191
@@ -65,7 +65,7 @@ input_dpdk_port_init_queues(uint16_t port_id, uint16_t q_id, int port_idx, unsig
 	snprintf(pool_name, sizeof(pool_name), "mbufpool_%u:%u", port_id, q_id);
 	pool = rte_pktmbuf_pool_create(pool_name, NUM_MBUFS, MBUF_CACHE_SIZE, 0, RTE_MBUF_DEFAULT_BUF_SIZE, numa_id);
 	if (!pool) {
-		PL_LOG_ERR("Failed to create mbuf pool for dev %u.", port_id);
+		MEILI_LOG_ERR("Failed to create mbuf pool for dev %u.", port_id);
 		return -ENOMEM;
 	}
 
@@ -73,13 +73,13 @@ input_dpdk_port_init_queues(uint16_t port_id, uint16_t q_id, int port_idx, unsig
 
 	ret = rte_eth_rx_queue_setup(port_id, q_id, nb_rxd, numa_id, rxconf, pool);
 	if (ret < 0) {
-		PL_LOG_ERR("Failed rx queue setup on dev %u.", port_id);
+		MEILI_LOG_ERR("Failed rx queue setup on dev %u.", port_id);
 		return ret;
 	}
 
 	ret = rte_eth_tx_queue_setup(port_id, q_id, nb_txd, numa_id, txconf);
 	if (ret < 0) {
-		PL_LOG_ERR("Failed tx queue setup on dev %u.", port_id);
+		MEILI_LOG_ERR("Failed tx queue setup on dev %u.", port_id);
 		return ret;
 	}
 
@@ -105,13 +105,13 @@ input_dpdk_port_init(uint16_t port_id, uint32_t num_queues, int port_idx)
 
 	/* Returns 1 on success. */
 	if (!rte_eth_dev_is_valid_port(port_id)) {
-		PL_LOG_ERR("Port %u is invalid.", port_id);
+		MEILI_LOG_ERR("Port %u is invalid.", port_id);
 		return -EINVAL;
 	}
 
 	ret = rte_eth_dev_info_get(port_id, &dev_info);
 	if (ret) {
-		PL_LOG_ERR("Failed to get config of eth dev %u: %s.", port_id, strerror(-ret));
+		MEILI_LOG_ERR("Failed to get config of eth dev %u: %s.", port_id, strerror(-ret));
 		return ret;
 	}
 
@@ -123,13 +123,13 @@ input_dpdk_port_init(uint16_t port_id, uint32_t num_queues, int port_idx)
 
 	ret = rte_eth_dev_configure(port_id, num_rx_queues, num_tx_queues, &port_conf);
 	if (ret) {
-		PL_LOG_ERR("Failed to configure eth dev %u: %s,", port_id, strerror(-ret));
+		MEILI_LOG_ERR("Failed to configure eth dev %u: %s,", port_id, strerror(-ret));
 		return ret;
 	}
 
 	ret = rte_eth_dev_adjust_nb_rx_tx_desc(port_id, &nb_rxd, &nb_txd);
 	if (ret != 0) {
-		PL_LOG_ERR("Failed to adjust rx/tx descriptors.");
+		MEILI_LOG_ERR("Failed to adjust rx/tx descriptors.");
 		return ret;
 	}
 
@@ -163,14 +163,14 @@ input_dpdk_port_init(uint16_t port_id, uint32_t num_queues, int port_idx)
 
 	ret = rte_eth_dev_start(port_id);
 	if (ret) {
-		PL_LOG_ERR("Failed to start eth device %u: %s.", port_id, strerror(-ret));
+		MEILI_LOG_ERR("Failed to start eth device %u: %s.", port_id, strerror(-ret));
 		return ret;
 	}
 
 	/* Set device to promiscumous mode. */
 	ret = rte_eth_promiscuous_enable(port_id);
 	if (ret) {
-		PL_LOG_ERR("Failed to enable promis mode on dev %u.", port_id);
+		MEILI_LOG_ERR("Failed to enable promis mode on dev %u.", port_id);
 		return ret;
 	}
 
@@ -191,7 +191,7 @@ input_dpdk_port_init_ports(rb_conf *run_conf)
 	int i;
 
 	if (rte_eth_dev_count_avail() == 0) {
-		PL_LOG_ERR("No available ethernet devices.");
+		MEILI_LOG_ERR("No available ethernet devices.");
 		return -EINVAL;
 	}
 
@@ -200,9 +200,9 @@ input_dpdk_port_init_ports(rb_conf *run_conf)
 		num_ports++;
 	}
 
-	PL_LOG_INFO("Initializing dpdk ports...");
-	PL_LOG_INFO("# queues pairs per port : %d",num_queues);
-	PL_LOG_INFO("# of dpdk ports: %d",num_ports);
+	MEILI_LOG_INFO("Initializing dpdk ports...");
+	MEILI_LOG_INFO("# queues pairs per port : %d",num_queues);
+	MEILI_LOG_INFO("# of dpdk ports: %d",num_ports);
 	
 
 	/* Assign an mbuf pool per queue and per port - reference by [port_idx][qid]. */
@@ -211,7 +211,7 @@ input_dpdk_port_init_ports(rb_conf *run_conf)
 	mbuf_pools = rte_zmalloc(NULL, sizeof(*mbuf_pools) * num_ports, 0);
 	//mbuf_pools = rte_zmalloc(NULL, sizeof(struct rte_mempool **) * num_ports, 0);
 	if (!mbuf_pools) {
-		PL_LOG_ERR("Memory failure on dpdk live mbufs.");
+		MEILI_LOG_ERR("Memory failure on dpdk live mbufs.");
 		return -ENOMEM;
 	}
 
@@ -219,7 +219,7 @@ input_dpdk_port_init_ports(rb_conf *run_conf)
 		mbuf_pools[i] = rte_zmalloc(NULL, sizeof(**mbuf_pools) * num_queues, 0);
 		//mbuf_pools = rte_zmalloc(NULL, sizeof(struct rte_mempool *) * num_queues, 0);
 		if (!mbuf_pools[i]) {
-			PL_LOG_ERR("Memory failure on dpdk live mbufs.");
+			MEILI_LOG_ERR("Memory failure on dpdk live mbufs.");
 			return -ENOMEM;
 		}
 	}
@@ -228,10 +228,10 @@ input_dpdk_port_init_ports(rb_conf *run_conf)
 	RTE_ETH_FOREACH_DEV(port_id) {
 		/* Port index references mbufs - port_ids may not be 0-N. */
 		/* configure eth device here */
-		PL_LOG_INFO("Initializing dpdk port %d...", port_id);
+		MEILI_LOG_INFO("Initializing dpdk port %d...", port_id);
 		ret = input_dpdk_port_init(port_id, num_queues, port_idx);
 		if (ret) {
-			PL_LOG_ERR("Failed to init port: %u.", port_id);
+			MEILI_LOG_ERR("Failed to init port: %u.", port_id);
 			input_dpdk_port_clean(run_conf);
 			return ret;
 		}

@@ -25,11 +25,11 @@
 #include "run_mode.h"
 #include "pipeline.h"
 
-#include "utils/stats.h"
-#include "utils/conf.h"
-#include "utils/input.h"
-#include "utils/rxpb_log.h"
-#include "utils/utils.h"
+#include "../utils/stats.h"
+#include "../utils/conf.h"
+#include "../utils/input.h"
+#include "../utils/log/log.h"
+#include "../utils/utils.h"
 
 volatile bool force_quit;
 
@@ -43,7 +43,7 @@ static void
 signal_handler(int signum)
 {
 	if (signum == SIGINT || signum == SIGTERM) {
-		PL_LOG_INFO("Signal %d received, preparing to exit...", signum);
+		MEILI_LOG_INFO("Signal %d received, preparing to exit...", signum);
 		force_quit = true;
 	}
 }
@@ -94,12 +94,11 @@ main(int argc, char **argv)
 
 
 	/* Main core gets regex queue 0 and stats position 0. */
-	/* main core is responsible for  */
 	stats = run_conf->stats;
 	stats->rm_stats[0].lcore_id = rte_get_main_lcore();
 
 
-	PL_LOG_INFO("Beginning Processing...");
+	MEILI_LOG_INFO("Beginning Processing...");
 	start_cycles = rte_get_timer_cycles();
 
 	/* Start each worker lcore and then main core. */

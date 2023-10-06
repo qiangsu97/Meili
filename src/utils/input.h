@@ -19,7 +19,7 @@
 #include <rte_malloc.h>
 
 #include "conf.h"
-#include "rxpb_log.h"
+#include "log/log.h"
 
 /*
  * Input types should implement their own init and clean functions.

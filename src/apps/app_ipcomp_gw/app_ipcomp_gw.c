@@ -11,7 +11,7 @@
 #include "app_ipcomp_gw.h"
 #include "../app_shared.h"
 #include "../../pipeline.h"
-#include "../../utils/rxpb_log.h"
+#include "../../utils/log/log.h"
 
 int
 app_ipcomp_gw_init(struct pipeline_stage *self)

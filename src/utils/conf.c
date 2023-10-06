@@ -24,7 +24,7 @@
 
 #include "conf.h"
 #include "dpdk_live_shared.h"
-#include "rxpb_log.h"
+#include "log/log.h"
 #include "utils.h"
 #include "../run_mode.h"
 #include "../pipeline.h"
@@ -77,12 +77,12 @@ conf_extract_regex_pcie_addr(rb_conf *run_conf, char *dpdk_pcie)
 	}
 
 	if (!pcie) {
-		PL_LOG_ERR("Memory failure getting regex pcie addr.");
+		MEILI_LOG_ERR("Memory failure getting regex pcie addr.");
 		return -ENOMEM;
 	}
 
 	if (strlen(pcie) < 3) {
-		PL_LOG_ERR("Invalid PCIe address extracted: %s.", pcie);
+		MEILI_LOG_ERR("Invalid PCIe address extracted: %s.", pcie);
 		free(pcie);
 		return -EINVAL;
 	}
@@ -111,7 +111,7 @@ conf_parse_dpdk_params(rb_conf *run_conf, char *prgname, char *params)
 		return 0;
 
 	if (!params) {
-		PL_LOG_ERR("DPDK EAL options not detected.");
+		MEILI_LOG_ERR("DPDK EAL options not detected.");
 		return -EINVAL;
 	}
 
@@ -137,7 +137,7 @@ conf_parse_dpdk_params(rb_conf *run_conf, char *prgname, char *params)
 
 		run_conf->dpdk_argv[run_conf->dpdk_argc] = strdup(dpdk_arg);
 		if (!run_conf->dpdk_argv[run_conf->dpdk_argc]) {
-			PL_LOG_ERR("Memory failure copying dpdk args.");
+			MEILI_LOG_ERR("Memory failure copying dpdk args.");
 			return -ENOMEM;
 		}
 
@@ -145,7 +145,7 @@ conf_parse_dpdk_params(rb_conf *run_conf, char *prgname, char *params)
 		dpdk_arg = strtok(NULL, " ");
 
 		if (run_conf->dpdk_argc >= MAX_DPDK_ARGS) {
-			PL_LOG_ERR("DPDK EAL options exceed max.");
+			MEILI_LOG_ERR("DPDK EAL options exceed max.");
 			return -ENOTSUP;
 		}
 	}
@@ -164,7 +164,7 @@ conf_set_uint32_t(uint32_t *dest, char opt, char *optarg)
 		return 0;
 
 	if (util_str_to_dec(optarg, &tmp, sizeof(uint32_t))) {
-		PL_LOG_ERR("invalid param -%c %s.", opt, optarg);
+		MEILI_LOG_ERR("invalid param -%c %s.", opt, optarg);
 		return -EINVAL;
 	}
 
@@ -193,7 +193,7 @@ conf_set_string(char **dest, char *optarg)
 
 	*dest = strdup(optarg);
 	if (!*dest) {
-		PL_LOG_ERR("Memory failure copying optarg.");
+		MEILI_LOG_ERR("Memory failure copying optarg.");
 		return -ENOMEM;
 	}
 
@@ -254,9 +254,9 @@ pipeline_usage(const char *prgname)
 static void
 rxpbench_version(void)
 {
-	PL_LOG_INFO("Meili VERSION %s  (%s)", PIPELINE_VERSION , GIT_SHA);
-	PL_LOG_INFO("Build time - %s, %s", __DATE__, __TIME__);
-	// PL_LOG_INFO("DOCA VERSION %s", DOCA_VER_STRING);
+	MEILI_LOG_INFO("Meili VERSION %s  (%s)", PIPELINE_VERSION , GIT_SHA);
+	MEILI_LOG_INFO("Build time - %s, %s", __DATE__, __TIME__);
+	// MEILI_LOG_INFO("DOCA VERSION %s", DOCA_VER_STRING);
 }
 
 static struct option conf_opts_long[] = {
@@ -363,7 +363,7 @@ conf_parse_args(rb_conf *run_conf, int argc, char **argv)
 			else if (strcmp(optarg, "doca_regex") == 0 || strcmp(optarg, "doca") == 0)
 				run_conf->regex_dev_type = REGEX_DEV_DOCA_REGEX;
 			else {
-				PL_LOG_ERR("Invalid regex device.");
+				MEILI_LOG_ERR("Invalid regex device.");
 				pipeline_usage(prgname);
 				return -EINVAL;
 			}
@@ -384,7 +384,7 @@ conf_parse_args(rb_conf *run_conf, int argc, char **argv)
 			else if (strcmp(optarg, "remote_mmap") == 0)
 				run_conf->input_mode = INPUT_REMOTE_MMAP;
 			else {
-				PL_LOG_ERR("Invalid input type.");
+				MEILI_LOG_ERR("Invalid input type.");
 				pipeline_usage(prgname);
 				return -EINVAL;
 			}
@@ -555,7 +555,7 @@ conf_parse_file(rb_conf *run_conf, char *prgname)
 
 	config_file = fopen(conf_file, "r");
 	if (!config_file) {
-		PL_LOG_WARN("No config file at  %s.", conf_file);
+		MEILI_LOG_WARN("No config file at  %s.", conf_file);
 		return 0;
 	}
 
@@ -566,7 +566,7 @@ conf_parse_file(rb_conf *run_conf, char *prgname)
 
 		ret = rte_strsplit(conf, strlen(conf), fields, 2, ':');
 		if (ret < 0) {
-			PL_LOG_ERR("Failed reading config file line: %s.", conf);
+			MEILI_LOG_ERR("Failed reading config file line: %s.", conf);
 			goto out;
 		}
 
@@ -578,7 +578,7 @@ conf_parse_file(rb_conf *run_conf, char *prgname)
 
 		/* ensure there are 2 spaces to write to. */
 		if (conf_argc >= CONFIG_FILE_MAX_ARGS - 2) {
-			PL_LOG_WARN("Max config file fields reached.");
+			MEILI_LOG_WARN("Max config file fields reached.");
 			goto process_args;
 		}
 
@@ -586,7 +586,7 @@ conf_parse_file(rb_conf *run_conf, char *prgname)
 		if (opt_len == 1) {
 			opt_formatted = malloc(opt_len + 2);
 			if (!opt_formatted) {
-				PL_LOG_ERR("Memory failure copying config file short opt.");
+				MEILI_LOG_ERR("Memory failure copying config file short opt.");
 				ret = -ENOMEM;
 				goto out;
 			}
@@ -596,7 +596,7 @@ conf_parse_file(rb_conf *run_conf, char *prgname)
 		} else {
 			opt_formatted = malloc(opt_len + 3);
 			if (!opt_formatted) {
-				PL_LOG_ERR("Memory failure copying config file long opt.");
+				MEILI_LOG_ERR("Memory failure copying config file long opt.");
 				ret = -ENOMEM;
 				goto out;
 			}
@@ -633,14 +633,14 @@ out:
 static void
 conf_validation_dev_warning(rb_conf *run_conf, const char *dev, const char *param)
 {
-	PL_LOG_WARN_REC(run_conf, "%s not applicable to %s regex device.", param, dev);
+	MEILI_LOG_WARN_REC(run_conf, "%s not applicable to %s regex device.", param, dev);
 }
 
 /* Trigger warning that param is not applicable in given mode. */
 static void
 conf_validation_mode_warning(rb_conf *run_conf, const char *mode, const char *param)
 {
-	PL_LOG_WARN_REC(run_conf, "%s not applicable to %s mode.", param, mode);
+	MEILI_LOG_WARN_REC(run_conf, "%s not applicable to %s mode.", param, mode);
 }
 
 /* Check user inputs for invalid or conflicting settings. */
@@ -648,17 +648,17 @@ static int
 conf_validate(rb_conf *run_conf)
 {
 	if (run_conf->cores >= RTE_MAX_LCORE) {
-		PL_LOG_ERR("Input cores out of range.");
+		MEILI_LOG_ERR("Input cores out of range.");
 		return -EINVAL;
 	}
 
 	if (run_conf->verbose > 3) {
-		PL_LOG_ERR("Verbose value out of range.");
+		MEILI_LOG_ERR("Verbose value out of range.");
 		return -EINVAL;
 	}
 
 	if (run_conf->input_batches > TX_RING_SIZE) {
-		PL_LOG_ERR("Buf-group too large (max: %u).", TX_RING_SIZE);
+		MEILI_LOG_ERR("Buf-group too large (max: %u).", TX_RING_SIZE);
 		return -EINVAL;
 	}
 
@@ -668,15 +668,15 @@ conf_validate(rb_conf *run_conf)
 
 		conf_buf_len = run_conf->input_buf_len ? run_conf->input_buf_len : DEFAULT_BUF_LEN;
 		if (run_conf->input_overlap >= conf_buf_len) {
-			PL_LOG_ERR("buf-overlap >= buf-length.");
+			MEILI_LOG_ERR("buf-overlap >= buf-length.");
 			return -EINVAL;
 		}
 		if (!run_conf->input_file) {
-			PL_LOG_ERR("Input file not specified.");
+			MEILI_LOG_ERR("Input file not specified.");
 			return -EINVAL;
 		}
 		if (run_conf->input_duration && run_conf->input_iterations)
-			PL_LOG_WARN_REC(run_conf, "conflicting iteration and time limits.");
+			MEILI_LOG_WARN_REC(run_conf, "conflicting iteration and time limits.");
 	}
 
 	if (run_conf->input_mode == INPUT_TEXT_FILE) {
@@ -708,16 +708,16 @@ conf_validate(rb_conf *run_conf)
 		if (run_conf->input_len_threshold)
 			conf_validation_mode_warning(run_conf, "text_file", "buf-thres");
 		if (run_conf->regex_dev_type != REGEX_DEV_DOCA_REGEX) {
-			PL_LOG_ERR("Remote mmap mode is only supported with DOCA regex");
+			MEILI_LOG_ERR("Remote mmap mode is only supported with DOCA regex");
 			return -EINVAL;
 		}
 	} else if (run_conf->input_mode == INPUT_LIVE) {
 		if (!run_conf->port1) {
-			PL_LOG_ERR("No specified primary port.");
+			MEILI_LOG_ERR("No specified primary port.");
 			return -EINVAL;
 		}
 		if (run_conf->input_batches && run_conf->input_batches < 4) {
-			PL_LOG_ERR("A minimum batch size of 4 is required in live mode - this sets rx queue size.");
+			MEILI_LOG_ERR("A minimum batch size of 4 is required in live mode - this sets rx queue size.");
 			return -EINVAL;
 		}
 		if (run_conf->input_iterations)
@@ -730,13 +730,13 @@ conf_validate(rb_conf *run_conf)
 
 	if (run_conf->regex_dev_type == REGEX_DEV_HYPERSCAN) {
 		if (run_conf->input_mode == INPUT_JOB_FORMAT) {
-			PL_LOG_ERR("Hyperscan does not currently support job format input.");
+			MEILI_LOG_ERR("Hyperscan does not currently support job format input.");
 			return -ENOTSUP;
 		}
 		if (run_conf->free_space)
 			conf_validation_dev_warning(run_conf, "hyperscan", "comp-free-space");
 		if (run_conf->hs_singlematch && run_conf->hs_leftmost) {
-			PL_LOG_ERR("Hyperscan leftmost and single incompatible.");
+			MEILI_LOG_ERR("Hyperscan leftmost and single incompatible.");
 			return -EINVAL;
 		}
 		if (run_conf->latency_mode)
@@ -754,14 +754,14 @@ conf_validate(rb_conf *run_conf)
 		conf_validation_dev_warning(run_conf, "NON DOCA", "sliding-window");
 
 	if (run_conf->sliding_window >= MAX_REGEX_BUF_SIZE) {
-		PL_LOG_ERR("sliding-window %u exceeds max buf size of %u.", run_conf->sliding_window,
+		MEILI_LOG_ERR("sliding-window %u exceeds max buf size of %u.", run_conf->sliding_window,
 			     MAX_REGEX_BUF_SIZE);
 		return -EINVAL;
 	}
 
 	/* Doca regex impliments sliding window so can have input buffers > MAX job size. */
 	if (run_conf->regex_dev_type != REGEX_DEV_DOCA_REGEX && run_conf->input_buf_len > MAX_REGEX_BUF_SIZE) {
-		PL_LOG_ERR("buf-length %u exceeds max of %u.", run_conf->input_buf_len, MAX_REGEX_BUF_SIZE);
+		MEILI_LOG_ERR("buf-length %u exceeds max of %u.", run_conf->input_buf_len, MAX_REGEX_BUF_SIZE);
 		return -EINVAL;
 	}
 
@@ -817,7 +817,7 @@ conf_setup(rb_conf *run_conf, int argc, char **argv)
 	/* Set conf file to default if it is not passed as a param. */
 	default_conf = strdup("runtime.conf");
 	if (!default_conf) {
-		PL_LOG_ERR("Memory failure copying conf file location.");
+		MEILI_LOG_ERR("Memory failure copying conf file location.");
 		return -ENOMEM;
 	}
 	ret = conf_set_string(&conf_file, default_conf);

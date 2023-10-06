@@ -21,7 +21,7 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 
-#include "rxpb_log.h"
+#include "log/log.h"
 #include "utils.h"
 #include "./cJSON/cJSON.h"
 
@@ -37,25 +37,25 @@ util_load_file_to_buffer(const char *file, char **buf, uint64_t *buf_len, uint32
 
 	data_file = fopen(file, "r");
 	if (!data_file) {
-		PL_LOG_ERR("Failed to read file: %s.", file);
+		MEILI_LOG_ERR("Failed to read file: %s.", file);
 		return -ENOTSUP;
 	}
 
 	if (fseek(data_file, 0L, SEEK_END)) {
-		PL_LOG_ERR("Read error on file: %s.", file);
+		MEILI_LOG_ERR("Read error on file: %s.", file);
 		ret = -EINVAL;
 		goto error_file;
 	}
 
 	file_size = ftell(data_file);
 	if (file_size < 0) {
-		PL_LOG_ERR("Text stream error from file: %s.", file);
+		MEILI_LOG_ERR("Text stream error from file: %s.", file);
 		ret = -EINVAL;
 		goto error_file;
 	}
 
 	if (max_len > file_size) {
-		PL_LOG_ERR("Requested %u bytes but %lu detected in file %s.", max_len, file_size, file);
+		MEILI_LOG_ERR("Requested %u bytes but %lu detected in file %s.", max_len, file_size, file);
 		ret = -EINVAL;
 		goto error_file;
 	}
@@ -63,7 +63,7 @@ util_load_file_to_buffer(const char *file, char **buf, uint64_t *buf_len, uint32
 	data_len = max_len ? max_len : file_size;
 	*buf = rte_malloc(NULL, sizeof(char) * (data_len + 1), 4096);
 	if (!*buf) {
-		PL_LOG_ERR("Memory failure when loading file.");
+		MEILI_LOG_ERR("Memory failure when loading file.");
 		ret = -ENOMEM;
 		goto error_file;
 	}

@@ -31,7 +31,7 @@
 #include "../../packet_timestamping/packet_timestamping.h"
 
 #include "../../utils/dpdk_live_shared.h"
-#include "../../utils/rxpb_log.h"
+#include "../../utils/log/log.h"
 #include "../../utils/utils.h"
 
 /* Number of dpdk queue descriptors is 1024 so need more mbuf pool entries. */
@@ -106,7 +106,7 @@ regex_dev_dpdk_bf_config(rb_conf *run_conf, uint8_t dev_id, struct rte_regexdev_
 
 	ret = rte_regexdev_info_get(dev_id, &dev_info);
 	if (ret) {
-		PL_LOG_ERR("Failed to get BF regex device info.");
+		MEILI_LOG_ERR("Failed to get BF regex device info.");
 		return -EINVAL;
 	}
 
@@ -119,13 +119,13 @@ regex_dev_dpdk_bf_config(rb_conf *run_conf, uint8_t dev_id, struct rte_regexdev_
 	 */
 
 	if (num_queues > dev_info.max_queue_pairs) {
-		PL_LOG_ERR("Requested queues/cores (%d) exceeds device max (%d)", num_queues,
+		MEILI_LOG_ERR("Requested queues/cores (%d) exceeds device max (%d)", num_queues,
 			     dev_info.max_queue_pairs);
 		return -EINVAL;
 	}
 
 	if (run_conf->rxp_max_matches > dev_info.max_matches) {
-		PL_LOG_ERR("Requested max matches > device supports.");
+		MEILI_LOG_ERR("Requested max matches > device supports.");
 		return -EINVAL;
 	}
 	dev_cfg->nb_max_matches = run_conf->rxp_max_matches ? run_conf->rxp_max_matches : dev_info.max_matches;
@@ -140,27 +140,27 @@ regex_dev_dpdk_bf_config(rb_conf *run_conf, uint8_t dev_id, struct rte_regexdev_
 	/* Load in rules file. */
 	ret = util_load_file_to_buffer(rules_file, &rules, &rules_len, 0);
 	if (ret) {
-		PL_LOG_ERR("Failed to read in rules file.");
+		MEILI_LOG_ERR("Failed to read in rules file.");
 		return ret;
 	}
 
 	dev_cfg->rule_db = rules;
 	dev_cfg->rule_db_len = rules_len;
 
-	PL_LOG_INFO("Programming card memories....");
+	MEILI_LOG_INFO("Programming card memories....");
 	/* Configure will program the rules to the card. */
 	ret = rte_regexdev_configure(dev_id, dev_cfg);
 	if (ret) {
-		PL_LOG_ERR("Failed to configure BF regex device.");
+		MEILI_LOG_ERR("Failed to configure BF regex device.");
 		rte_free(rules);
 		return ret;
 	}
-	PL_LOG_INFO("Card configured");
+	MEILI_LOG_INFO("Card configured");
 
 	for (i = 0; i < num_queues; i++) {
 		ret = rte_regexdev_queue_pair_setup(dev_id, i, &qp_conf);
 		if (ret) {
-			PL_LOG_ERR("Failed to configure queue pair %u on dev %u.", i, dev_id);
+			MEILI_LOG_ERR("Failed to configure queue pair %u on dev %u.", i, dev_id);
 			rte_free(rules);
 			return ret;
 		}
@@ -219,7 +219,7 @@ regex_dev_init_ops(rb_conf *run_conf,int batch_size, int max_matches, int num_qu
 	// 	run_conf->mbuf_pool[i] =
 	// 		rte_pktmbuf_pool_create(pool_n, MBUF_POOL_SIZE, MBUF_CACHE_SIZE, 0, MBUF_SIZE, rte_socket_id());
 	// 	if (!run_conf->mbuf_pool[i]) {
-	// 		PL_LOG_ERR("Failed to create mbuf pool.");
+	// 		MEILI_LOG_ERR("Failed to create mbuf pool.");
 	// 		goto err_out;
 	// 	}
 	// }
@@ -237,7 +237,7 @@ regex_dev_init_ops(rb_conf *run_conf,int batch_size, int max_matches, int num_qu
 
 err_out:
 	/* Clean happens in calling function. */
-	PL_LOG_ERR("Mem failure initiating dpdk ops.");
+	MEILI_LOG_ERR("Mem failure initiating dpdk ops.");
 
 	return -ENOMEM;
 }
@@ -254,7 +254,7 @@ regex_dev_dpdk_bf_init(rb_conf *run_conf)
 
 	/* Current implementation supports a single regex device */
 	if (rte_regexdev_count() != 1) {
-		PL_LOG_ERR("%u regex devices detected - should be 1.", rte_regexdev_count());
+		MEILI_LOG_ERR("%u regex devices detected - should be 1.", rte_regexdev_count());
 		return -ENOTSUP;
 	}
 
@@ -585,7 +585,7 @@ regex_dev_dpdk_bf_search(int qid, struct rte_mbuf *mbuf, int buf_len, bool push_
 	//op->mbuf = rte_pktmbuf_alloc(mbuf_pool[qid]);
 	op->mbuf = mbuf;
 	// if (!op->mbuf) {
-	// 	PL_LOG_ERR("Failed to get mbuf from pool.");
+	// 	MEILI_LOG_ERR("Failed to get mbuf from pool.");
 	// 	return -ENOMEM;
 	// }
 	// rte_pktmbuf_attach_extbuf(op->mbuf, buf, 0, buf_len, &shinfo);
@@ -616,7 +616,7 @@ regex_dev_dpdk_bf_search_live(int qid, struct rte_mbuf *mbuf, int pay_off, uint1
 	/* Mbuf already prepared so just add to the ops. */
 	op->mbuf = mbuf;
 	if (!op->mbuf) {
-		PL_LOG_ERR("Failed to get mbuf from pool.");
+		MEILI_LOG_ERR("Failed to get mbuf from pool.");
 		return -ENOMEM;
 	}
 
@@ -667,7 +667,7 @@ regex_dev_dpdk_bf_post_search(int qid, regex_stats_t *stats)
 		/* Prevent infinite loops. */
 		diff = rte_rdtsc() - start;
 		if (diff > MAX_POST_SEARCH_DEQUEUE_CYCLES) {
-			PL_LOG_ALERT("Post-processing appears to be in an infinite loop. Breaking...");
+			MEILI_LOG_ALERT("Post-processing appears to be in an infinite loop. Breaking...");
 			break;
 		}
 	}
@@ -750,25 +750,25 @@ regex_bf_init(struct pipeline_stage *self)
 		ret = regex_dev_register(pl_conf);
 		if (ret) {
 			//snprintf(err, ERR_STR_SIZE, "Regex dev registration error");
-			PL_LOG_ERR("Regex dev registration error");
+			MEILI_LOG_ERR("Regex dev registration error");
 			return ret;
 		}
 
 		ret = regex_dev_compile_rules(pl_conf);
 		if (ret) {
 			//snprintf(err, ERR_STR_SIZE, "Regex dev rule compilation error");
-			PL_LOG_ERR("Regex dev rule compilation error");
+			MEILI_LOG_ERR("Regex dev rule compilation error");
 			return ret;
 		}
 
 		ret = regex_dev_init(pl_conf);
 		if (ret) {
 			//snprintf(err, ERR_STR_SIZE, "Failed initialising regex device");	
-			PL_LOG_ERR("Failed initialising regex device");
+			MEILI_LOG_ERR("Failed initialising regex device");
 			return ret;
 		}
 		regex_bf_initialized = true;
-		PL_LOG_INFO("Regex device configuration finished...");
+		MEILI_LOG_INFO("Regex device configuration finished...");
 	}
 	pthread_mutex_unlock(&mutex_regex_bf);
 

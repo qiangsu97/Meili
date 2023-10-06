@@ -12,7 +12,7 @@
 #include "../../pipeline.h"
 #include "mon_hll.h"
 #include "../../utils/hll/hll.h"
-#include "../../utils/rxpb_log.h"
+#include "../../utils/log/log.h"
 #include "../../utils/flow_utils.h"
 #include "../../utils/pkt_utils.h"
 
@@ -33,7 +33,7 @@ monitor_hll_init(struct pipeline_stage *self)
     mystate->hll = (struct HLL *)malloc(sizeof(struct HLL));
     ret = hll_init(mystate->hll, 16);
     if(ret){
-        PL_LOG_ERR("Initalizing hyperloglog failed");
+        MEILI_LOG_ERR("Initalizing hyperloglog failed");
         return -EINVAL;
     }
 

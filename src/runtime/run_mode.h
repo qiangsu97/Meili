@@ -20,8 +20,8 @@
 
 #include "pipeline.h"
 
-#include "./utils/conf.h"
-#include "./utils/rxpb_log.h"
+#include "../utils/conf.h"
+#include "../utils/log/log.h"
 
 #define DEFAULT_ETH_BATCH_SIZE 64
 

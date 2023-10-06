@@ -11,7 +11,7 @@
 #include "../../utils/http_utils/http_parser_utils.h"
 #include "../../utils/pkt_utils.h"
 #include "../../pipeline.h"
-#include "../../utils/rxpb_log.h"
+#include "../../utils/log/log.h"
 
 /* avoid name conflict with library */
 int
@@ -73,11 +73,11 @@ _http_parser_exec(struct pipeline_stage *self, struct rte_mbuf **mbuf, int nb_en
         pay_off = util_get_app_layer_payload(pkt, &pay_len, &ptype);
         if (pay_off < 0) {
             /* skip invalid pkts */
-            PL_LOG_WARN("Unsupported packet detected during parsing app layer payload");
+            MEILI_LOG_WARN("Unsupported packet detected during parsing app layer payload");
             continue;
         }
         else if(pay_len == 0){
-            PL_LOG_WARN("App layer zero length payload detected during parsing app layer payload");
+            MEILI_LOG_WARN("App layer zero length payload detected during parsing app layer payload");
             continue;
         }
 
@@ -100,7 +100,7 @@ _http_parser_exec(struct pipeline_stage *self, struct rte_mbuf **mbuf, int nb_en
         // //debug
         // printf("state: %d\n",mystate->req_parser.state);
         if(err != HPE_OK || nparsed != pay_len){
-            PL_LOG_WARN("HTTP request parser returns error: %d",err);
+            MEILI_LOG_WARN("HTTP request parser returns error: %d",err);
             //printf("%d\n",HPE_INVALID_HEADER_TOKEN);
             // mystate->req_parser.state = s_start_req;
             // mystate->req_parser.http_errno = HPE_OK;

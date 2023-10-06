@@ -16,7 +16,7 @@
 #include "../../utils/utils.h"
 #include "../../utils/pkt_utils.h"
 #include "../../utils/flow_utils.h"
-#include "../../utils/rxpb_log.h"
+#include "../../utils/log/log.h"
 
 typedef int (*parse_5tuple)(char *text, struct acl_rule *rule);
 
@@ -189,7 +189,7 @@ parse_cb_ipv4_rule(char *str, struct acl_rule *v)
 			&v->field[SRC_FIELD_IPV4].value.u32,
 			&v->field[SRC_FIELD_IPV4].mask_range.u32);
 	if (rc != 0) {
-		PL_LOG_ERR("Failed to read source address/mask: %s",
+		MEILI_LOG_ERR("Failed to read source address/mask: %s",
 			in[CB_FLD_SRC_ADDR]);
 		return rc;
 	}
@@ -198,7 +198,7 @@ parse_cb_ipv4_rule(char *str, struct acl_rule *v)
 			&v->field[DST_FIELD_IPV4].value.u32,
 			&v->field[DST_FIELD_IPV4].mask_range.u32);
 	if (rc != 0) {
-		PL_LOG_ERR("Failed to read destination address/mask: %s\n",
+		MEILI_LOG_ERR("Failed to read destination address/mask: %s\n",
 			in[CB_FLD_DST_ADDR]);
 		return rc;
 	}
@@ -298,7 +298,7 @@ add_cb_rules(FILE *f, struct firewall_acl_state *mystate)
 		n = i - k;
 		rc = parser(line, &v);
 		if (rc != 0) {
-			PL_LOG_ERR("line %u: parse_cb_ipv4_rule"
+			MEILI_LOG_ERR("line %u: parse_cb_ipv4_rule"
 				" failed, error code: %d (%s)",
 				i, rc, strerror(-rc));
 			return rc;
@@ -312,7 +312,7 @@ add_cb_rules(FILE *f, struct firewall_acl_state *mystate)
 		rc = rte_acl_add_rules(ctx, (struct rte_acl_rule *)&v, 1);
 		mystate->nb_rules++;
 		if (rc != 0) {
-			PL_LOG_ERR("line %u: failed to add rules "
+			MEILI_LOG_ERR("line %u: failed to add rules "
 				"into ACL context, error code: %d (%s)",
 				i, rc, strerror(-rc));
 			return rc;
@@ -344,7 +344,7 @@ firewall_acl_init(struct pipeline_stage *self)
     memset(self->state, 0x00, sizeof(struct firewall_acl_state));
     
 
-    // PL_LOG_INFO("total rules:%d",mystate->nb_rules);
+    // MEILI_LOG_INFO("total rules:%d",mystate->nb_rules);
     // if(ret){
     //     return -EINVAL;
     // }
@@ -395,15 +395,15 @@ firewall_acl_init(struct pipeline_stage *self)
 	if(shared_acx == NULL){
 		mystate->acx = rte_acl_create(mystate->prm);
 		if (mystate->acx == NULL){
-			PL_LOG_ERR("Failed to create ACL context");
+			MEILI_LOG_ERR("Failed to create ACL context");
 			return -EINVAL;
 		}
 		/* set default classify method for this context. */
 		if (mystate->alg.alg != RTE_ACL_CLASSIFY_DEFAULT) {
-			PL_LOG_INFO("Setting up acl method %s",mystate->alg.name);
+			MEILI_LOG_INFO("Setting up acl method %s",mystate->alg.name);
 			ret = rte_acl_set_ctx_classify(mystate->acx, mystate->alg.alg);
 			if (ret != 0){
-				PL_LOG_ERR("Failed to setup %s method for ACL context", mystate->alg.name);
+				MEILI_LOG_ERR("Failed to setup %s method for ACL context", mystate->alg.name);
 				return -EINVAL;
 			}
 		}
@@ -415,17 +415,17 @@ firewall_acl_init(struct pipeline_stage *self)
 		/* add ACL rules. */
 		f = fopen(mystate->rule_file, "r");
 		if (f == NULL){
-			PL_LOG_ERR("Failed to open file %s\n",mystate->rule_file);
+			MEILI_LOG_ERR("Failed to open file %s\n",mystate->rule_file);
 			return -EINVAL;
 		}
 
 
 		ret = add_cb_rules(f, mystate);
 		if (ret != 0){
-			PL_LOG_ERR("Failed to add rules into ACL context\n");
+			MEILI_LOG_ERR("Failed to add rules into ACL context\n");
 			return -EINVAL;
 		}
-		PL_LOG_INFO("Total %d rules parsed",mystate->nb_rules);
+		MEILI_LOG_INFO("Total %d rules parsed",mystate->nb_rules);
 			
 
 		fclose(f);
@@ -440,7 +440,7 @@ firewall_acl_init(struct pipeline_stage *self)
 		rte_acl_dump(mystate->acx);
 
 		if (ret != 0){
-			PL_LOG_ERR("Failed to build search context\n");
+			MEILI_LOG_ERR("Failed to build search context\n");
 			return -EINVAL;
 		}
 		shared_acx = mystate->acx;

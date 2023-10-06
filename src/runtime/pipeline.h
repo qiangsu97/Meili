@@ -4,8 +4,8 @@
 #include <rte_mbuf.h>
 
 
-#include "utils/stats.h"
-#include "utils/conf.h"
+#include "../utils/stats.h"
+#include "../utils/conf.h"
 
 
 
