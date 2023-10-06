@@ -39,7 +39,7 @@ meili_log_record(rb_conf *run_conf, const char *warning)
 		run_conf->conf_warning[conf_pos] = strdup(warning);
 
 	if (!run_conf->conf_warning[conf_pos]) {
-		meili_log_WARN("Memory failure recording warning.");
+		MEILI_LOG_WARN("Memory failure recording warning.");
 		return;
 	}
 
@@ -66,27 +66,27 @@ __meili_log(rb_conf *run_conf, enum meili_log_level level, const char *format, v
 		va_end(params_copy);
 	}
 
-	output = level == meili_log_LEVEL_ERROR ? stderr : stdout;
+	output = level == MEILI_LOG_LEVEL_ERROR ? stderr : stdout;
 
 	pthread_mutex_lock(&log_lock);
 
 	switch (level) {
-	case meili_log_LEVEL_ERROR:
+	case MEILI_LOG_LEVEL_ERROR:
 		fprintf(output, "<< ERROR: ");
 		vfprintf(output, format, params);
 		fprintf(output, " >>\n");
 		break;
-	case meili_log_LEVEL_WARNING:
+	case MEILI_LOG_LEVEL_WARNING:
 		fprintf(output, "<< WARNING: ");
 		vfprintf(output, format, params);
 		fprintf(output, " >>\n");
 		break;
-	case meili_log_LEVEL_INFO:
+	case MEILI_LOG_LEVEL_INFO:
 		fprintf(output, "INFO: ");
 		vfprintf(output, format, params);
 		fprintf(output, "\n");
 		break;
-	case meili_log_LEVEL_ALERT:
+	case MEILI_LOG_LEVEL_ALERT:
 		fprintf(output, ALERT_MARKER"ALERT: ");
 		vfprintf(output, format, params);
 		fprintf(output, ALERT_MARKER);
