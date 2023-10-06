@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <rte_mbuf.h>
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 
 #define APP_API_GW_NB_STAGE 1
 

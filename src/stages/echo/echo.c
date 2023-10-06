@@ -8,7 +8,7 @@
 #include <string.h>
 #include <time.h>
 #include "echo.h"
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 #include "../../utils/rte_reorder/rte_reorder.h"
 
 

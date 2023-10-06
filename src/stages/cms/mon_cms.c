@@ -9,7 +9,7 @@
 #include <limits.h>
 #include <string.h>
 #include <time.h>
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 #include "mon_cms.h"
 #include "../../utils/cms/count-min-sketch.h"
 #include "../../utils/log/log.h"

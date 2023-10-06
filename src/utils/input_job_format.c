@@ -78,7 +78,7 @@ input_job_format_extract_des(char *file_name, uint16_t *job_len, uint64_t *job_i
 
 	des = fopen(file_name, "r");
 	if (!des) {
-		RXPB_LOG_ERR("Failed to open descriptor file: %s.", file_name);
+		MEILI_LOG_ERR("Failed to open descriptor file: %s.", file_name);
 		return -ENOTSUP;
 	}
 
@@ -101,7 +101,7 @@ input_job_format_extract_des(char *file_name, uint16_t *job_len, uint64_t *job_i
 			goto parsing_error;
 
 		if (util_str_to_dec(util_trim_whitespace(csv_tok), &dec, sizeof(uint64_t))) {
-			RXPB_LOG_ERR("Invalid job id: %s - in %s.", csv_tok, file_name);
+			MEILI_LOG_ERR("Invalid job id: %s - in %s.", csv_tok, file_name);
 			goto error;
 		}
 		*job_id = dec;
@@ -122,7 +122,7 @@ input_job_format_extract_des(char *file_name, uint16_t *job_len, uint64_t *job_i
 			goto parsing_error;
 
 		if (util_str_to_dec(util_trim_whitespace(csv_tok), &dec, sizeof(uint16_t)) || dec == 0) {
-			RXPB_LOG_ERR("Invalid length: %s - in %s.", csv_tok, file_name);
+			MEILI_LOG_ERR("Invalid length: %s - in %s.", csv_tok, file_name);
 			goto error;
 		}
 		*job_len = dec;
@@ -134,7 +134,7 @@ input_job_format_extract_des(char *file_name, uint16_t *job_len, uint64_t *job_i
 				goto parsing_error;
 
 			if (util_str_to_dec(util_trim_whitespace(csv_tok), &dec, sizeof(uint16_t))) {
-				RXPB_LOG_ERR("Invalid subset: %s - in %s.", csv_tok, file_name);
+				MEILI_LOG_ERR("Invalid subset: %s - in %s.", csv_tok, file_name);
 				goto error;
 			}
 			(*job_subsets)[i] = dec;
@@ -142,7 +142,7 @@ input_job_format_extract_des(char *file_name, uint16_t *job_len, uint64_t *job_i
 
 		/* Only verfiy subset 1 is non zero. */
 		if (!*job_subsets[0]) {
-			RXPB_LOG_ERR("Invalid subset id 0 - in %s.", file_name);
+			MEILI_LOG_ERR("Invalid subset id 0 - in %s.", file_name);
 			goto error;
 		}
 
@@ -161,7 +161,7 @@ input_job_format_extract_des(char *file_name, uint16_t *job_len, uint64_t *job_i
 	return 0;
 
 parsing_error:
-	RXPB_LOG_ERR("Bad descriptor format: %s - in: %s.", line, file_name);
+	MEILI_LOG_ERR("Bad descriptor format: %s - in: %s.", line, file_name);
 error:
 	free(line);
 	fclose(des);
@@ -183,7 +183,7 @@ input_job_format_extract_pkt(const char *file_name, uint16_t expected_length, ch
 
 	pkt = fopen(file_name, "r");
 	if (!pkt) {
-		RXPB_LOG_ERR("Failed to open packet file: %s.", file_name);
+		MEILI_LOG_ERR("Failed to open packet file: %s.", file_name);
 		return -ENOTSUP;
 	}
 
@@ -203,14 +203,14 @@ input_job_format_extract_pkt(const char *file_name, uint16_t expected_length, ch
 
 		/* Pkt data is in hex so should be double byte count. */
 		if (line_len != expected_length * 2) {
-			RXPB_LOG_ERR("Data length: %lu != Des length: %u.", (line_len / 2), expected_length);
+			MEILI_LOG_ERR("Data length: %lu != Des length: %u.", (line_len / 2), expected_length);
 			goto error;
 		}
 
 		/* Parse hex file to bytes. */
 		for (i = 0; i < line_len; i += 2) {
 			if (!isxdigit(pkt_line[i]) || !isxdigit(pkt_line[i+1])) {
-				RXPB_LOG_ERR("Invalid hex digit: %c%c.", pkt_line[i], pkt_line[i+1]);
+				MEILI_LOG_ERR("Invalid hex digit: %c%c.", pkt_line[i], pkt_line[i+1]);
 				goto error;
 			}
 
@@ -221,7 +221,7 @@ input_job_format_extract_pkt(const char *file_name, uint16_t expected_length, ch
 	}
 
 	if (!have_data) {
-		RXPB_LOG_ERR("No data detected.");
+		MEILI_LOG_ERR("No data detected.");
 		goto error;
 	}
 
@@ -231,7 +231,7 @@ input_job_format_extract_pkt(const char *file_name, uint16_t expected_length, ch
 	return 0;
 
 error:
-	RXPB_LOG_ERR("Bad packet format in: %s.", file_name);
+	MEILI_LOG_ERR("Bad packet format in: %s.", file_name);
 	free(line);
 	fclose(pkt);
 
@@ -254,7 +254,7 @@ input_job_format_extract_exp(char *file_name, exp_matches_t *exp_matches)
 
 	exp = fopen(file_name, "r");
 	if (!exp) {
-		RXPB_LOG_ERR("Could not open expected file: %s.", file_name);
+		MEILI_LOG_ERR("Could not open expected file: %s.", file_name);
 		return -ENOTSUP;
 	}
 
@@ -279,7 +279,7 @@ input_job_format_extract_exp(char *file_name, exp_matches_t *exp_matches)
 
 	exp_match = rte_malloc(NULL, sizeof(exp_match_t) * exp_cnt, 0);
 	if (!exp_match) {
-		RXPB_LOG_ERR("Memory failure on expect matches.");
+		MEILI_LOG_ERR("Memory failure on expect matches.");
 		goto error;
 	}
 
@@ -304,7 +304,7 @@ input_job_format_extract_exp(char *file_name, exp_matches_t *exp_matches)
 			goto parsing_error;
 
 		if (util_str_to_dec(util_trim_whitespace(csv_tok), &dec, sizeof(uint32_t))) {
-			RXPB_LOG_ERR("Bad rule id: %s - in %s.", csv_tok, file_name);
+			MEILI_LOG_ERR("Bad rule id: %s - in %s.", csv_tok, file_name);
 			goto error;
 		}
 		exp_match[i].rule_id = dec;
@@ -315,7 +315,7 @@ input_job_format_extract_exp(char *file_name, exp_matches_t *exp_matches)
 			goto parsing_error;
 
 		if (util_str_to_dec(util_trim_whitespace(csv_tok), &dec, sizeof(uint16_t))) {
-			RXPB_LOG_ERR("Bad start ptr: %s - in %s.", csv_tok, file_name);
+			MEILI_LOG_ERR("Bad start ptr: %s - in %s.", csv_tok, file_name);
 			goto error;
 		}
 		exp_match[i].start_ptr = dec;
@@ -326,7 +326,7 @@ input_job_format_extract_exp(char *file_name, exp_matches_t *exp_matches)
 			goto parsing_error;
 
 		if (util_str_to_dec(util_trim_whitespace(csv_tok), &dec, sizeof(uint16_t))) {
-			RXPB_LOG_ERR("Bad length %s - in %s.", csv_tok, file_name);
+			MEILI_LOG_ERR("Bad length %s - in %s.", csv_tok, file_name);
 			goto error;
 		}
 		exp_match[i].length = dec;
@@ -344,7 +344,7 @@ out:
 	return 0;
 
 parsing_error:
-	RXPB_LOG_ERR("Bad exp match format: %s - in: %s.", line, file_name);
+	MEILI_LOG_ERR("Bad exp match format: %s - in: %s.", line, file_name);
 error:
 	rte_free(exp_match);
 	free(line);
@@ -374,14 +374,14 @@ input_job_format_read(rb_conf *run_conf)
 
 	/* Check we will not overflow directory path + file name limit. */
 	if (strlen(dir) + JOB_FILE_NAME_LEN + 1 >= JOB_FILE_AND_DIR_LEN) {
-		RXPB_LOG_ERR("Job directory exceeds character limit: %s.", dir);
+		MEILI_LOG_ERR("Job directory exceeds character limit: %s.", dir);
 		return -EINVAL;
 	}
 
 	/* Get all .des files from directory. */
 	ret = scandir(dir, &des_file_name_list, input_job_format_filter_des, alphasort);
 	if (ret <= 0) {
-		RXPB_LOG_ERR("Failed to read job files in directory: %s.", dir);
+		MEILI_LOG_ERR("Failed to read job files in directory: %s.", dir);
 		return -errno;
 	}
 
@@ -394,21 +394,21 @@ input_job_format_read(rb_conf *run_conf)
 	/* Allocate memory to store job lengths, ids, and subsets. */
 	job_lens = rte_malloc(NULL, sizeof(uint16_t) * num_des_files, 0);
 	if (!job_lens) {
-		RXPB_LOG_ERR("Memory failure allocating job format lens.");
+		MEILI_LOG_ERR("Memory failure allocating job format lens.");
 		ret = -ENOMEM;
 		goto free_namelist;
 	}
 
 	job_ids = rte_malloc(NULL, sizeof(uint64_t) * num_des_files, 0);
 	if (!job_ids) {
-		RXPB_LOG_ERR("Memory failure allocating job format ids.");
+		MEILI_LOG_ERR("Memory failure allocating job format ids.");
 		ret = -ENOMEM;
 		goto free_des_data;
 	}
 
 	job_subset_ids = rte_zmalloc(NULL, sizeof(uint16_t *) * num_des_files, 0);
 	if (!job_subset_ids) {
-		RXPB_LOG_ERR("Memory failure allocating job format subsets ids.");
+		MEILI_LOG_ERR("Memory failure allocating job format subsets ids.");
 		ret = -ENOMEM;
 		goto free_des_data;
 	}
@@ -416,7 +416,7 @@ input_job_format_read(rb_conf *run_conf)
 	for (i = 0; i < num_des_files; i++) {
 		job_subset_ids[i] = rte_malloc(NULL, sizeof(uint16_t) * MAX_SUBSET_IDS, 0);
 		if (!job_subset_ids[i]) {
-			RXPB_LOG_ERR("Memory failure allocating job format subsets ids.");
+			MEILI_LOG_ERR("Memory failure allocating job format subsets ids.");
 			ret = -ENOMEM;
 			goto free_des_data;
 		}
@@ -429,7 +429,7 @@ input_job_format_read(rb_conf *run_conf)
 	for (i = 0; i < num_des_files; i++) {
 		ret = snprintf(dir_file, JOB_FILE_AND_DIR_LEN, "%s//%s", dir, des_file_name_list[i]->d_name);
 		if (ret < 0) {
-			RXPB_LOG_ERR("Failed to create des file location.");
+			MEILI_LOG_ERR("Failed to create des file location.");
 			ret = -ENOMEM;
 			goto free_des_data;
 		}
@@ -455,7 +455,7 @@ input_job_format_read(rb_conf *run_conf)
 	}
 
 	if (exp_files && no_exp_files) {
-		RXPB_LOG_ERR("%u des files have exp files while %u do not - exp files must be for all or none.",
+		MEILI_LOG_ERR("%u des files have exp files while %u do not - exp files must be for all or none.",
 			exp_files, no_exp_files);
 		ret = -EINVAL;
 		goto free_des_data;
@@ -463,7 +463,7 @@ input_job_format_read(rb_conf *run_conf)
 
 	data = rte_malloc(NULL, total_bytes, 0);
 	if (!data) {
-		RXPB_LOG_ERR("Failed to allocate memory for job data.");
+		MEILI_LOG_ERR("Failed to allocate memory for job data.");
 		ret = -ENOMEM;
 		goto free_des_data;
 	}
@@ -471,7 +471,7 @@ input_job_format_read(rb_conf *run_conf)
 	if (exp_files) {
 		job_exp_matches = rte_zmalloc(NULL, sizeof(*job_exp_matches) * num_des_files, 0);
 		if (!job_exp_matches) {
-			RXPB_LOG_ERR("Failed to allocate exp match memory for job data.");
+			MEILI_LOG_ERR("Failed to allocate exp match memory for job data.");
 			ret = -ENOMEM;
 			goto free_data;
 		}
@@ -482,7 +482,7 @@ input_job_format_read(rb_conf *run_conf)
 	for (i = 0; i < num_des_files; i++) {
 		ret = snprintf(dir_file, JOB_FILE_AND_DIR_LEN, "%s//%s", dir, des_file_name_list[i]->d_name);
 		if (ret < 0) {
-			RXPB_LOG_ERR("Failed to create pkt file location.");
+			MEILI_LOG_ERR("Failed to create pkt file location.");
 			ret = -ENOMEM;
 			goto free_exp_matches;
 		}

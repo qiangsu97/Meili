@@ -30,7 +30,7 @@ input_pcap_print_snap_len_warning(rb_conf *run_conf)
 	static bool warning = false;
 
 	if (!warning)
-		RXPB_LOG_WARN_REC(run_conf, "PCAP cap length < packet length. Potential unexpected behaviour.");
+		MEILI_LOG_WARN_REC(run_conf, "PCAP cap length < packet length. Potential unexpected behaviour.");
 	warning = true;
 }
 
@@ -61,7 +61,7 @@ input_pcap_file_read(rb_conf *run_conf)
 
 	pcap_handle = pcap_open_offline(file, errbuf);
 	if (!pcap_handle) {
-		RXPB_LOG_ERR("Failed to open pcap file: %s.", file);
+		MEILI_LOG_ERR("Failed to open pcap file: %s.", file);
 		return -EINVAL;
 	}
 
@@ -104,7 +104,7 @@ input_pcap_file_read(rb_conf *run_conf)
 	pcap_close(pcap_handle);
 	pcap_handle = pcap_open_offline(file, errbuf);
 	if (!pcap_handle) {
-		RXPB_LOG_ERR("Failed to open pcap file: %s.", file);
+		MEILI_LOG_ERR("Failed to open pcap file: %s.", file);
 		return -EINVAL;
 	}
 
@@ -112,14 +112,14 @@ input_pcap_file_read(rb_conf *run_conf)
 	bytes_cnt = bytes_max && (bytes_max < bytes_cnt) ? bytes_max : bytes_cnt;
 
 	if (!bytes_cnt) {
-		RXPB_LOG_ERR("No data extracted from PCAP file.");
+		MEILI_LOG_ERR("No data extracted from PCAP file.");
 		return -EINVAL;
 	}
 
 	/* Note: for pcap files, it may take up large space */
 	data = rte_malloc(NULL, bytes_cnt, 0);
 	if (!data) {
-		RXPB_LOG_ERR("Failed to allocate memory for pcap file - reduce num bytes or packet input size.");
+		MEILI_LOG_ERR("Failed to allocate memory for pcap file - reduce num bytes or packet input size.");
 		return -ENOMEM;
 	}
 
@@ -128,7 +128,7 @@ input_pcap_file_read(rb_conf *run_conf)
 		lens = rte_malloc(NULL, sizeof(uint16_t) * pkts_cnt, 0);
 		if (!lens) {
 			rte_free(data);
-			RXPB_LOG_ERR("Memory failure in allocating pcap lengths array.");
+			MEILI_LOG_ERR("Memory failure in allocating pcap lengths array.");
 			return -ENOMEM;
 		}
 	}

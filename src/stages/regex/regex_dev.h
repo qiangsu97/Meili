@@ -25,7 +25,7 @@
 #include "../../utils/log/log.h"
 #include "../../utils/stats.h"
 
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 
 #define MAX_POST_SEARCH_DEQUEUE_SECS	10
 #define MAX_POST_SEARCH_DEQUEUE_CYCLES	MAX_POST_SEARCH_DEQUEUE_SECS * rte_get_timer_hz()
@@ -82,7 +82,7 @@ regex_dev_register(rb_conf *run_conf)
 
 	funcs = rte_zmalloc(NULL, sizeof(regex_func_t), 0);
 	if (!funcs) {
-		RXPB_LOG_ERR("Memory failure in dev register.");
+		MEILI_LOG_ERR("Memory failure in dev register.");
 		return -ENOMEM;
 	}
 

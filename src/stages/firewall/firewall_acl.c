@@ -11,7 +11,7 @@
 #include <rte_acl.h>
 #include <arpa/inet.h>
 #include "firewall_acl.h"
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 #include "../../utils/cJSON/cJSON.h"
 #include "../../utils/utils.h"
 #include "../../utils/pkt_utils.h"

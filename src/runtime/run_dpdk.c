@@ -29,7 +29,7 @@
 #include "../utils/port_utils.h"
 #include "../utils/stats.h"
 #include "run_mode.h"
-#include "pipeline.h"
+#include "runtime/meili_runtime.h"
 #include "../packet_ordering/packet_ordering.h"
 #include "../packet_timestamping/packet_timestamping.h"
 
@@ -198,7 +198,7 @@ update_addr(struct rte_mbuf *m, unsigned dest_portid)
 // 	if (run_conf->port2) {
 // 		ret = rte_eth_dev_get_port_by_name(run_conf->port2, &second_port_id);
 // 		if (ret) {
-// 			RXPB_LOG_ERR("Cannot find port %s.", run_conf->port2);
+// 			MEILI_LOG_ERR("Cannot find port %s.", run_conf->port2);
 // 			return -EINVAL;
 // 		}
 // 		dual_port = true;

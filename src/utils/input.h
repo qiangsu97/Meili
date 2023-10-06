@@ -48,7 +48,7 @@ input_register(rb_conf *run_conf)
 
 	funcs = rte_zmalloc(NULL, sizeof(input_func_t), 0);
 	if (!funcs) {
-		RXPB_LOG_ERR("Memory failure in input register.");
+		MEILI_LOG_ERR("Memory failure in input register.");
 		return -ENOMEM;
 	}
 

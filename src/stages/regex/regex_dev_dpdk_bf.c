@@ -27,7 +27,7 @@
 #include "regex_bf.h"
 #include "rules_file_utils.h"
 
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 #include "../../packet_timestamping/packet_timestamping.h"
 
 #include "../../utils/dpdk_live_shared.h"

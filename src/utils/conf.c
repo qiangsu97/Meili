@@ -27,7 +27,7 @@
 #include "log/log.h"
 #include "utils.h"
 #include "../run_mode.h"
-#include "../pipeline.h"
+#include "../runtime/meili_runtime.h"
 
 #define PIPELINE_VERSION        "1.0"
 

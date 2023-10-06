@@ -11,7 +11,7 @@
 #include <rte_malloc.h>
 #include <rte_compressdev.h>
 #include "compress_bf.h"
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 #include "../../utils/log/log.h"
 #include "../../utils/rte_reorder/rte_reorder.h"
 

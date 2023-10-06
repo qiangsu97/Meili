@@ -11,7 +11,7 @@
 
 #include "app_ids.h"
 #include "../app_shared.h"
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 
 int
 app_ids_init(struct pipeline_stage *self)

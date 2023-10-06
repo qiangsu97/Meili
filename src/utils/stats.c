@@ -27,7 +27,7 @@
 #include "./timestamp/timestamp.h"
 #include "./rte_reorder/rte_reorder.h"
 
-#include "../pipeline.h"
+#include "../runtime/meili_runtime.h"
 #include "../packet_ordering/packet_ordering.h"
 #include "../packet_timestamping/packet_timestamping.h"
 
@@ -165,7 +165,7 @@ err_rm_stats:
 err_stats:
 	rte_free(run_conf->input_pkt_stats);
 err_input_pkt_stats:
-	RXPB_LOG_ERR("Memory failure when allocating stats.");
+	MEILI_LOG_ERR("Memory failure when allocating stats.");
 
 	return -ENOMEM;
 }

@@ -8,7 +8,7 @@
 #include <string.h>
 #include <time.h>
 #include "aes.h"
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 #include "../../utils/aes/aes_utils.h"
 
 

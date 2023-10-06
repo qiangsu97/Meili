@@ -5,9 +5,9 @@
 #include <string.h>
 #include <rte_errno.h>
 
-#include "pipeline.h"
+#include "runtime/meili_runtime.h"
 #include "run_mode.h"
-#include "apps/app_shared.h"
+#include "../apps/app_shared.h"
 
 #include "../packet_ordering/packet_ordering.h"
 #include "../packet_timestamping/packet_timestamping.h"

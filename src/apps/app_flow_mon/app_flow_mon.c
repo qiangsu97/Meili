@@ -10,7 +10,7 @@
 
 #include "app_flow_mon.h"
 #include "../app_shared.h"
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 #include "../../utils/log/log.h"
 
 int

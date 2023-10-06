@@ -11,7 +11,7 @@
 
 #include "app_ipsec_gw.h"
 #include "../app_shared.h"
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 
 int
 app_ipsec_gw_init(struct pipeline_stage *self)

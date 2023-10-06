@@ -18,7 +18,7 @@
 
 #include <rte_malloc.h>
 
-#include "pipeline.h"
+#include "runtime/meili_runtime.h"
 
 #include "../utils/conf.h"
 #include "../utils/log/log.h"
@@ -91,7 +91,7 @@ run_mode_register(struct pipeline *pl)
 
 	funcs = rte_zmalloc(NULL, sizeof(run_func_t), 0);
 	if (!funcs) {
-		RXPB_LOG_ERR("Memory failure in run mode register.");
+		MEILI_LOG_ERR("Memory failure in run mode register.");
 		return -ENOMEM;
 	}
 

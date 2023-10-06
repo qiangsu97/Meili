@@ -53,7 +53,7 @@ void compression(){};
 void register_meili_apis(){
     Meili.pkt_trans     = pkt_trans;
     Meili.pkt_flt       = pkt_flt;
-    Meili.flow_ext      = flow_ex;
+    Meili.flow_ext      = flow_ext;
     Meili.flow_trans    = flow_trans; 
     Meili.reg_sock      = reg_sock;
     Meili.epoll         = epoll;

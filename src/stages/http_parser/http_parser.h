@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <rte_mbuf.h>
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 #include "../../utils/http_utils/http_parser_utils.h"
 
 #define TOY_REQUEST "GET / HTTP/1.1\r\n"

@@ -8,7 +8,7 @@
 #include <string.h>
 #include <time.h>
 #include "sha.h"
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 #include "../../utils/sha/sha_utils.h"
 
 

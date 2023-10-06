@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <rte_mbuf.h>
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 
 #define APP_IPSEC_GW_STAGE (4-1) /* AES is using a remote accelerator */
 

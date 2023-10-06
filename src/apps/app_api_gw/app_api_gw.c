@@ -10,7 +10,7 @@
 
 #include "app_api_gw.h"
 #include "../app_shared.h"
-#include "../../pipeline.h"
+#include "../../runtime/meili_runtime.h"
 #include "../../utils/log/log.h"
 
 int

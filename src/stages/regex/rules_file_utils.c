@@ -154,7 +154,7 @@ rules_file_utils_rxp_flags_to_hs(char *output_flags, char *input_flags, int *ski
 			(*skipped_flags)++;
 			break;
 		default:
-			RXPB_LOG_ERR("Unrecognised RXP flag: %c,", input_flags[i]);
+			MEILI_LOG_ERR("Unrecognised RXP flag: %c,", input_flags[i]);
 			return -ENOTSUP;
 		}
 	}
@@ -177,13 +177,13 @@ rules_file_utils_write_hs(FILE *file, char *exp, char *id, char *flags, int *ski
 	}
 
 	if (strlen(flags) > 9) {
-		RXPB_LOG_ERR("Rule flags too long for HS: %s.", flags);
+		MEILI_LOG_ERR("Rule flags too long for HS: %s.", flags);
 		return -ENOTSUP;
 	}
 
 	ret = rules_file_utils_rxp_flags_to_hs(&hs_flags[0], flags, skipped_flags);
 	if (ret) {
-		RXPB_LOG_ERR("Failed convert HS flags to RXP: %s.", flags);
+		MEILI_LOG_ERR("Failed convert HS flags to RXP: %s.", flags);
 		return ret;
 	}
 
@@ -224,7 +224,7 @@ rules_file_utils_hs_flags_to_rxp(char *output_flags, char *input_flags, int *ski
 			(*skipped_flags)++;
 			break;
 		default:
-			RXPB_LOG_ERR("Unrecognised HS flag: %c.", input_flags[i]);
+			MEILI_LOG_ERR("Unrecognised HS flag: %c.", input_flags[i]);
 			return -ENOTSUP;
 		}
 	}
@@ -258,7 +258,7 @@ rules_file_utils_escape_fwd_slash(char *exp, char **modified_exp)
 
 	*modified_exp = rte_malloc(NULL, rule_length + fwd_slash_cnt, 0);
 	if (!*modified_exp) {
-		RXPB_LOG_ERR("Memory failure in rule formatting.");
+		MEILI_LOG_ERR("Memory failure in rule formatting.");
 		return -ENOMEM;
 	}
 
@@ -294,13 +294,13 @@ rules_file_utils_write_rxp(FILE *file, char *exp, char *id, char *flags, int *sk
 	}
 
 	if (strlen(flags) > 9) {
-		RXPB_LOG_ERR("Rule flags too long for RXP: %s.", flags);
+		MEILI_LOG_ERR("Rule flags too long for RXP: %s.", flags);
 		return -ENOTSUP;
 	}
 
 	ret = rules_file_utils_hs_flags_to_rxp(&rxp_flags[0], flags, skipped_flags);
 	if (ret) {
-		RXPB_LOG_ERR("Failed convert RXP flags to HS: %s.", flags);
+		MEILI_LOG_ERR("Failed convert RXP flags to HS: %s.", flags);
 		return ret;
 	}
 
@@ -340,7 +340,7 @@ rules_file_utils_convert_rules(rb_conf *run_conf, const char *raw_rules, const c
 
 	ret = util_load_file_to_buffer(raw_rules, &rules, &rules_len, 0);
 	if (ret) {
-		RXPB_LOG_ERR("Failed to read in rule from %s.", raw_rules);
+		MEILI_LOG_ERR("Failed to read in rule from %s.", raw_rules);
 		return ret;
 	}
 
@@ -360,7 +360,7 @@ rules_file_utils_convert_rules(rb_conf *run_conf, const char *raw_rules, const c
 			type = rules_file_utils_determine_type(rule);
 
 			if (type == RULES_FILE_UNKNOWN) {
-				RXPB_LOG_ERR("Rules format invalid: %s.", raw_rules);
+				MEILI_LOG_ERR("Rules format invalid: %s.", raw_rules);
 				ret = -EINVAL;
 				goto out;
 			}
@@ -378,7 +378,7 @@ rules_file_utils_convert_rules(rb_conf *run_conf, const char *raw_rules, const c
 
 		ret = rules_file_utils_parse_rule(rule, &exp, &id, &flags, type);
 		if (ret) {
-			RXPB_LOG_ERR("Syntax error detected in %s.", rule_cpy);
+			MEILI_LOG_ERR("Syntax error detected in %s.", rule_cpy);
 			goto out;
 		}
 
@@ -399,10 +399,10 @@ rules_file_utils_convert_rules(rb_conf *run_conf, const char *raw_rules, const c
 
 	if (skipped_flags) {
 		if (output == RULES_FILE_HS)
-			RXPB_LOG_WARN_REC(run_conf, "%d RXP flags [coOq] with no HS alternative ignored.",
+			MEILI_LOG_WARN_REC(run_conf, "%d RXP flags [coOq] with no HS alternative ignored.",
 					  skipped_flags);
 		else
-			RXPB_LOG_WARN_REC(run_conf, "%d HS flags [HV8W] with no RXP alternative ignored.",
+			MEILI_LOG_WARN_REC(run_conf, "%d HS flags [HV8W] with no RXP alternative ignored.",
 					  skipped_flags);
 	}
 
@@ -439,7 +439,7 @@ rules_file_compile_for_rxp(rb_conf *run_conf)
 	/* Create new directory for rule conversion if one does not exist. */
 	ret = mkdir("rxp_tmp", 0755);
 	if (ret && errno != EEXIST) {
-		RXPB_LOG_ERR("Failed creating rxp temp folder.");
+		MEILI_LOG_ERR("Failed creating rxp temp folder.");
 		return -errno;
 	}
 
@@ -448,7 +448,7 @@ rules_file_compile_for_rxp(rb_conf *run_conf)
 	/* Convert to rxp rules if in hyperscan format. */
 	ret = rules_file_utils_convert_rules(run_conf, run_conf->raw_rules_file, &converted_rules, RULES_FILE_RXP);
 	if (ret) {
-		RXPB_LOG_ERR("Failed to convert raw rules to rxp format.");
+		MEILI_LOG_ERR("Failed to convert raw rules to rxp format.");
 		return ret;
 	}
 
@@ -457,7 +457,7 @@ rules_file_compile_for_rxp(rb_conf *run_conf)
 		free(run_conf->raw_rules_file);
 		run_conf->raw_rules_file = strdup(converted_rules);
 		if (!run_conf->raw_rules_file) {
-			RXPB_LOG_ERR("Memory failure in rules compilation.");
+			MEILI_LOG_ERR("Memory failure in rules compilation.");
 			return -ENOMEM;
 		}
 	}
@@ -465,12 +465,12 @@ rules_file_compile_for_rxp(rb_conf *run_conf)
 	ruleset.number_of_entries = 0;
 	ret = regex_read_ruleset_file(run_conf->raw_rules_file, &ruleset, &ruleset_err);
 	if (ret != REGEX_STATUS_OK) {
-		RXPB_LOG_ERR("Failed reading ruleset from raw file.");
+		MEILI_LOG_ERR("Failed reading ruleset from raw file.");
 		ret = -ENOMEM;
 		goto err_free_resources;
 	}
 
-	RXPB_LOG_ALERT("Compiling rule file with default params.\n"
+	MEILI_LOG_ALERT("Compiling rule file with default params.\n"
 		       "Better performance may be achieved by compiling separately with tailored inputs.");
 
 	compiler_output = REGEX_COMPILER_OUTPUT_COMPILATION_STATISTICS;
@@ -493,32 +493,32 @@ rules_file_compile_for_rxp(rb_conf *run_conf)
 			    REGEX_VERBOSE_LEVEL_1, compiler_output, &comp_stats, NULL, NULL, NULL,
 			    &rof, NULL);
 	if (ret != REGEX_STATUS_OK) {
-		RXPB_LOG_ERR("Regex rules compilation error.");
+		MEILI_LOG_ERR("Regex rules compilation error.");
 		ret = -EINVAL;
 		goto err_free_resources;
 	}
 
 	if (comp_stats->total_number_of_rules != comp_stats->rules_compiled)
-		RXPB_LOG_WARN_REC(run_conf, "%u of %u rules compiled.", comp_stats->rules_compiled,
+		MEILI_LOG_WARN_REC(run_conf, "%u of %u rules compiled.", comp_stats->rules_compiled,
 				  comp_stats->total_number_of_rules);
 
 	ret = regex_write_rof_file(file_loc, rof);
 	if (ret != REGEX_STATUS_OK) {
-		RXPB_LOG_ERR("Failed to create rof2 file in rule compilation.");
+		MEILI_LOG_ERR("Failed to create rof2 file in rule compilation.");
 		ret = -ENOMEM;
 		goto err_free_resources;
 	}
 
 	run_conf->compiled_rules_file = strdup("rxp_tmp/rxp_tmp.rof2.binary");
 	if (!run_conf->compiled_rules_file) {
-		RXPB_LOG_ERR("Memory failure storing compiled file name.");
+		MEILI_LOG_ERR("Memory failure storing compiled file name.");
 		ret = -ENOMEM;
 		goto err_free_resources;
 	}
 
 err_free_resources:
 	if (regex_free_structs(&comp_stats, NULL, NULL, NULL, &rof, NULL, NULL, NULL, 1) != REGEX_STATUS_OK) {
-		RXPB_LOG_ERR("Failed to release regex_compiler resources.\n");
+		MEILI_LOG_ERR("Failed to release regex_compiler resources.\n");
 		ret = -ENOMEM;
 	}
 
