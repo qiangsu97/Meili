@@ -7,14 +7,14 @@
 #ifdef DPDK_BACKEND
 #define meili_pkt struct rte_mbuf
 #else      
-struct _meili_pkt{
+typedef struct _meili_pkt{
     int place_holder;
 }meili_pkt;  
 #endif
 
 
 /* Meili APIs */
-struct _meili_apis{
+typedef struct _meili_apis{
     void *pkt_trans;
     void *pkt_flt;
     void *flow_ext;

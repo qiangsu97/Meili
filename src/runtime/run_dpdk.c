@@ -23,11 +23,10 @@
 // #include "./regex/regex_dev.h"
 
 #include "../utils/dpdk_live_shared.h"
-#include "../utils/log/log.h"
 #include "../utils/utils.h"
+#include "../utils/utils_temp.h"
 #include "../utils/pkt_utils.h"
 #include "../utils/port_utils.h"
-#include "../utils/stats.h"
 #include "run_mode.h"
 #include "pipeline.h"
 #include "../packet_ordering/packet_ordering.h"
@@ -40,36 +39,6 @@ static uint16_t second_port_id;
 
 struct rte_ether_addr primary_mac_addr;
 struct rte_ether_addr second_mac_addr;
-
-
-
-// static inline void
-// run_mode_tx_ports(uint16_t qid, dpdk_egress_t *dpdk_tx)
-// {
-// 	struct rte_mbuf **egress_pkts;
-// 	int to_send, sent;
-// 	uint16_t ret;
-
-// 	to_send = dpdk_tx->port_cnt[PRIM_PORT_IDX];
-// 	sent = 0;
-// 	while (to_send) {
-// 		egress_pkts = &dpdk_tx->egress_pkts[PRIM_PORT_IDX][sent];
-// 		ret = rte_eth_tx_burst(primary_port_id, qid, egress_pkts, to_send);
-// 		to_send -= ret;
-// 		sent += ret;
-// 	}
-// 	dpdk_tx->port_cnt[PRIM_PORT_IDX] = 0;
-
-// 	to_send = dpdk_tx->port_cnt[SEC_PORT_IDX];
-// 	sent = 0;
-// 	while (to_send) {
-// 		egress_pkts = &dpdk_tx->egress_pkts[SEC_PORT_IDX][sent];
-// 		ret = rte_eth_tx_burst(second_port_id, qid, egress_pkts, to_send);
-// 		to_send -= ret;
-// 		sent += ret;
-// 	}
-// 	dpdk_tx->port_cnt[SEC_PORT_IDX] = 0;
-// }
 
 
 static void
@@ -104,358 +73,6 @@ update_addr(struct rte_mbuf *m, unsigned dest_portid)
 
 }
 
-// static int
-// //run_dpdk(rb_conf *run_conf, int qid)
-// run_dpdk(struct pipeline *pl)
-// {
-// 	struct pipeline_conf *run_conf = &pl->pl_conf;
-// 	/* always run on main core */
-// 	int qid=0;
-// 	const uint32_t regex_thres = run_conf->input_len_threshold;
-// 	const uint32_t max_duration = run_conf->input_duration;
-// 	const uint32_t max_packets = run_conf->input_packets;
-// 	const uint16_t batch_size = run_conf->input_batches;
-// 	uint16_t batch_cnt;
-// 	const bool payload_mode = run_conf->input_app_mode;
-// 	const uint32_t max_bytes = run_conf->input_bytes;
-// 	rb_stats_t *stats = run_conf->stats;
-// 	run_mode_stats_t *rm_stats = &stats->rm_stats[qid];
-// 	regex_stats_t *regex_stats = &stats->regex_stats[qid];
-
-
-
-// 	/* for packet transmission */	
-// 	uint16_t cur_rx, cur_tx, tx_port_id, rx_port_id;
-// 	const unsigned char *pkt;
-// 	pkt_stats_t *pkt_stats;
-// 	dpdk_egress_t *dpdk_tx;
-// 	bool dual_port;
-
-// 	/* for time keeping */
-// 	uint64_t prev_cycles;
-// 	uint64_t max_cycles;
-// 	double run_time;
-// 	uint64_t start;
-// 	uint64_t cycles;
-
-// 	/* for payload mode */
-// 	int ptype = 0;
-// 	int pay_off = 0;
-// 	uint32_t pay_len = 0;
-
-// 	bool main_lcore;
-// 	int ret;
-
-// 	int to_send;
-// 	int valid_index;
-
-// 	/* pipeline variables */
-// 	struct pipeline_stage *seq_stage;
-// 	struct pipeline_stage *reorder_stage;
-
-// 	struct rte_mbuf *mbuf_raw[batch_size];
-// 	struct rte_mbuf *mbuf[batch_size];
-// 	struct rte_mbuf *mbuf_out[batch_size];
-
-// 	int nb_enq;
-// 	int to_enq;
-// 	int tot_enq;
-// 	int nb_deq_reorder;
-
-
-// 	/* Keep coverity check happy by initialising. */
-// 	memset(&mbuf_raw[0], '\0', sizeof(struct rte_mbuf *) * batch_size);
-// 	memset(&mbuf[0], '\0', sizeof(struct rte_mbuf *) * batch_size);
-// 	memset(&mbuf_out[0], '\0', sizeof(struct rte_mbuf *) * batch_size);
-
-// 	/* Convert duration to cycles. */
-// 	max_cycles = max_duration * rte_get_timer_hz();
-// 	prev_cycles = 0;
-// 	cycles = 0;
-
-// 	main_lcore = rte_lcore_id() == rte_get_main_lcore();
-
-
-
-// 	/* get ports */
-// 	pkt_stats = &rm_stats->pkt_stats;
-// 	dpdk_tx = rte_malloc(NULL, sizeof(*dpdk_tx), 64);
-// 	if (!dpdk_tx) {
-// 		MEILI_LOG_ERR("Memory failure on tx queue.");
-// 		return -ENOMEM;
-// 	}
-
-
-// 	printf("checking port %s\n",run_conf->port1);
-// 	//sleep(3);
-// 	ret = rte_eth_dev_get_port_by_name(run_conf->port1, &primary_port_id);
-// 	if (ret) {
-// 		MEILI_LOG_ERR("Cannot find port %s.", run_conf->port1);
-// 		return -EINVAL;
-// 	}
-
-// 	dual_port = false;
-// 	if (run_conf->port2) {
-// 		ret = rte_eth_dev_get_port_by_name(run_conf->port2, &second_port_id);
-// 		if (ret) {
-// 			MEILI_LOG_ERR("Cannot find port %s.", run_conf->port2);
-// 			return -EINVAL;
-// 		}
-// 		dual_port = true;
-// 	}
-
-
-		
-// 	dpdk_tx->port_cnt[PRIM_PORT_IDX] = 0;
-// 	dpdk_tx->port_cnt[SEC_PORT_IDX] = 0;
-
-// 	/* Default mode ingresses and egresses on the primary port. */
-// 	cur_rx = primary_port_id;
-// 	cur_tx = primary_port_id;
-// 	rx_port_id = PRIM_PORT_IDX;
-// 	tx_port_id = PRIM_PORT_IDX;
-// 	pay_off = 0;
-
-
-// 	seq_stage = &pl->seq_stage;
-// 	reorder_stage = &pl->reorder_stage;
-
-// 	ret = seq_init(seq_stage);
-// 	if(ret){
-// 		return -EINVAL;
-// 	}
-// 	ret = reorder_init(reorder_stage);
-// 	if(ret){
-// 		return -EINVAL;
-// 	}
-
-
-// 	if (main_lcore){
-// 		stats_print_update(stats, run_conf->cores, 0.0, false);
-// 	}
-
-// 	start = rte_rdtsc();
-
-
-// 	//run_conf->latency_mode = 1;
-// 	//printf("latency mode: %d\n",run_conf->latency_mode);
-
-// 	while (!force_quit && (!max_packets || rm_stats->tx_buf_cnt <= max_packets) &&
-// 	       (!max_bytes || rm_stats->tx_buf_bytes <= max_bytes) && (!max_cycles || cycles <= max_cycles)) {
-
-// 		batch_cnt = 0;
-
-		
-
-// 		// if (dual_port) {
-// 		// 	/* Flip the port on each loop. */
-// 		// 	if (cur_rx == primary_port_id) {
-// 		// 		cur_rx = second_port_id;
-// 		// 		cur_tx = primary_port_id;
-// 		// 		rx_port_id = SEC_PORT_IDX;
-// 		// 		tx_port_id = PRIM_PORT_IDX;
-// 		// 	} else {
-// 		// 		cur_rx = primary_port_id;
-// 		// 		cur_tx = second_port_id;
-// 		// 		rx_port_id = PRIM_PORT_IDX;
-// 		// 		tx_port_id = SEC_PORT_IDX;
-// 		// 	}
-// 		// }
-
-// 		batch_cnt = rte_eth_rx_burst(cur_rx, qid, mbuf_raw, batch_size);
-
-// 		// if (!batch_cnt) {
-// 		// 	/* Idle on RX so poll for match responses. */
-// 		// 	/* TODO: goto dequeue from ring */
-// 		// 	//regex_dev_force_batch_pull(run_conf, qid, dpdk_tx, regex_stats);
-// 		// 	//run_mode_tx_ports(qid, dpdk_tx);
-// 		// 	continue;
-// 		// }
-
-
-		
-// 		/* If packet data is to be examined, pull batch into cache. */
-// 		/* the payload_mode here means the whole pipeline will be using only the payload of pakcets, which is rare */
-// 		/* valid_index will record the number of valid packets in this batch */
-// 		/* TODO: add payload mode support to regex stage */
-// 		valid_index = 0;
-// 		if (payload_mode){
-// 			/* prefetch packets */
-// 			for (int i = 0; i < batch_cnt; i++){
-// 				rte_prefetch0(rte_pktmbuf_mtod(mbuf_raw[i], void *));
-// 			}
-
-// 			for(int i = 0; i < batch_cnt; i++){
-// 				ptype = 0;
-// 				pkt = rte_pktmbuf_mtod(mbuf_raw[i], const unsigned char *);
-// 				pay_off = util_get_app_layer_payload(pkt, &pay_len, &ptype);
-
-// 				if (pay_off < 0) {
-// 					pkt_stats->unsupported_pkts++;
-// 					dpdk_live_add_to_tx(dpdk_tx, cur_tx, mbuf_raw[i]);
-// 					continue;
-// 				}
-
-// 				if (pay_len == 0) {
-// 					pkt_stats->no_payload++;
-// 					dpdk_live_add_to_tx(dpdk_tx, cur_tx, mbuf_raw[i]);
-// 					continue;
-// 				}
-
-// 				if (pay_len < regex_thres || pay_len > MAX_REGEX_BUF_SIZE) {
-// 					pkt_stats->thres_drop++;
-// 					dpdk_live_add_to_tx(dpdk_tx, cur_tx, mbuf_raw[i]);
-// 					continue;
-// 				}
-
-// 				rm_stats->pkt_stats.valid_pkts++;
-// 				mbuf[valid_index] = mbuf_raw[i];
-// 				valid_index++;
-				
-// 				stats_update_pkt_stats(pkt_stats, ptype);
-// 			}
-// 		}
-// 		else{
-// 			// TODO: change this part of logic into application part
-// 			// For the ingress part, we should also drop packets with invalid length
-// 			for(int i = 0; i < batch_cnt; i++){
-// 				if (pay_len < regex_thres || pay_len > MAX_REGEX_BUF_SIZE) {
-// 					pkt_stats->thres_drop++;
-// 					dpdk_live_add_to_tx(dpdk_tx, cur_tx, mbuf_raw[i]);
-// 					continue;
-// 				}
-			
-
-// 				rm_stats->pkt_stats.valid_pkts++;
-// 				mbuf[valid_index] = mbuf_raw[i];
-// 				valid_index++;
-// 			}
-// 		}
-
-
-// 		// for(int i = 0; i < batch_cnt; i++){
-// 		// 	if (pay_len < regex_thres || pay_len > MAX_REGEX_BUF_SIZE) {
-// 		// 		pkt_stats->thres_drop++;
-// 		// 		dpdk_live_add_to_tx(dpdk_tx, cur_tx, mbuf_raw[i]);
-// 		// 		continue;
-// 		// 	}
-		
-
-// 		// 	rm_stats->pkt_stats.valid_pkts++;
-// 		// 	mbuf[valid_index] = mbuf_raw[i];
-// 		// 	valid_index++;
-// 		// }
-
-// 		batch_cnt = valid_index;
-
-
-		
-// 		//for (i = 0; i < batch_cnt; i++) {
-// 			// ret = regex_dev_search_live(run_conf, qid, mbuf[i], pay_off, rx_port_id, tx_port_id, dpdk_tx,
-// 			// 			    regex_stats);
-// 			// if (ret){
-// 			// 	return ret;
-// 			// }
-// 		//}
-
-// 		/* only record valid packets */
-// 		for (int i = 0; i < batch_cnt; i++) {
-// 			rm_stats->rx_buf_cnt++;
-// 			pay_len = mbuf[i]->data_len;
-// 			rm_stats->rx_buf_bytes += pay_len;
-// 		}
-
-// 		seq_exec(seq_stage, mbuf, batch_cnt);
-
-
-// 		/* TODO: currently we do not consider different flows, should direct flows with less volume to remote workers based on a table */
-
-// 		/* put packets into first ring_in */
-// 		//to_enq = RTE_MIN(batch_cnt,batch_cnt);
-// 		tot_enq = 0;
-// 		to_enq = batch_cnt;
-// 		nb_enq = 0;
-// 		while(tot_enq < batch_cnt){
-// 			//test
-// 			//nb_enq = rte_ring_enqueue_burst(pl->ring_in, (void *)(&mbuf[tot_enq]), to_enq, NULL);
-// 			//rte_ring_sp_enqueue_burst(pl->ring_in, (void *)(&mbuf[tot_enq]), to_enq, NULL);
-// 			tot_enq += nb_enq;
-// 			to_enq -= nb_enq;
-// 		}
-		
-
-
-// 		/* read packets from last ring_out(reorder) */
-// 		/* reorder packets based on sequence number */
-// 		//test
-// 		//batch_cnt = rte_ring_dequeue_burst(pl->ring_out,(void *)mbuf, batch_size, NULL);
-
-// 		//debug
-// 		// for (int i = 0; i < batch_cnt; i++) {
-// 		// 	rm_stats->tx_buf_cnt++;
-// 		// 	rm_stats->tx_buf_bytes += mbuf[i]->data_len;
-
-// 		// 	/* here we simply free the mbuf */
-// 		//     //if (rte_mbuf_refcnt_read(mbuf[i]) == 1) {
-// 		//         //printf("freeing pkts\n");
-// 		// 	rte_pktmbuf_detach_extbuf(mbuf[i]);
-// 		// 	rte_pktmbuf_free(mbuf[i]);
-// 		//     //}
-// 		// }
-
-		
-
-		
-
-// 		// if (batch_cnt) {
-// 		// 	/* Push batch if contains some valid packets. */
-// 		// 	//rm_stats->tx_batch_cnt++;
-// 		// 	rm_stats->tx_buf_cnt++;
-// 		// 	rm_stats->tx_buf_bytes += pay_len;
-			
-// 		// 	//regex_dev_force_batch_push(run_conf, rx_port_id, qid, dpdk_tx, regex_stats);
-// 		// }
-
-		
-// 		reorder_exec(reorder_stage, mbuf, batch_cnt, mbuf_out, &nb_deq_reorder);
-// 		if(nb_deq_reorder>=0){
-// 			rm_stats->tx_batch_cnt++;
-// 		}
-// 		for (int i = 0; i < nb_deq_reorder; i++) {
-// 			rm_stats->tx_buf_cnt++;
-// 			rm_stats->tx_buf_bytes += mbuf_out[i]->data_len;
-// 			// a.k.a. rte_pktmbuf_data_len(mbuf_out[i])
-
-// 			/* here we simply free the mbuf, if requires transmission, then add packets to dpdk_tx and call run_mode_tx_ports(qid, dpdk_tx); */
-// 			if (rte_mbuf_refcnt_read(mbuf_out[i]) == 1) {
-// 				//printf("freeing pkts\n");
-// 				rte_pktmbuf_detach_extbuf(mbuf_out[i]);
-// 				rte_pktmbuf_free(mbuf_out[i]);
-// 			}
-// 			// run_mode_tx_ports(qid, dpdk_tx);
-// 		}
-		
-
-// 		cycles = rte_rdtsc() - start;
-
-// 		if (!main_lcore){
-// 			continue;
-// 		}
-
-// 		if (cycles - prev_cycles > STATS_INTERVAL_CYCLES) {
-// 			run_time = (double)cycles / rte_get_timer_hz();
-// 			prev_cycles = cycles;
-// 			stats_print_update(stats, run_conf->cores, run_time, false);
-// 		}
-// 	}
-
-// 	return 0;
-// }
-
-
-
-
-
 
 /* read data from preloaded file */
 #ifdef MEILI_MODE
@@ -480,7 +97,7 @@ run_dpdk(struct pipeline *pl)
 	rb_stats_t *stats = run_conf->stats;
 	run_mode_stats_t *rm_stats = &stats->rm_stats[qid];
 	// TODO: rename regex_stats_t to other names
-	regex_stats_t *regex_stats = &stats->regex_stats[qid];
+	//regex_stats_t *regex_stats = &stats->regex_stats[qid];
 
 	/* for packet transmission */	
 	uint16_t cur_rx, cur_tx, tx_port_id, rx_port_id;
@@ -1035,7 +652,7 @@ run_dpdk(struct pipeline *pl)
 	rb_stats_t *stats = run_conf->stats;
 	run_mode_stats_t *rm_stats = &stats->rm_stats[qid];
 	// TODO: rename regex_stats_t to other names
-	regex_stats_t *regex_stats = &stats->regex_stats[qid];
+	//regex_stats_t *regex_stats = &stats->regex_stats[qid];
 
 	/* for packet transmission */	
 	uint16_t cur_rx, cur_tx, tx_port_id, rx_port_id;
@@ -1289,7 +906,7 @@ run_dpdk(struct pipeline *pl)
 	rb_stats_t *stats = run_conf->stats;
 	run_mode_stats_t *rm_stats = &stats->rm_stats[qid];
 	// TODO: rename regex_stats_t to other names
-	regex_stats_t *regex_stats = &stats->regex_stats[qid];
+	//regex_stats_t *regex_stats = &stats->regex_stats[qid];
 
 	/* for packet transmission */	
 	uint16_t cur_rx, cur_tx, tx_port_id, rx_port_id;

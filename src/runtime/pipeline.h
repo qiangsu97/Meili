@@ -4,7 +4,7 @@
 #include <rte_mbuf.h>
 
 
-#include "../utils/stats.h"
+#include "../utils/utils.h"
 #include "../utils/conf.h"
 
 
@@ -268,9 +268,8 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path);
 int pipeline_free(struct pipeline *pl);
 int pipeline_run(struct pipeline *pl);
 
-void stats_update_time_main(struct rte_mbuf **mbuf, int nb_mbuf, struct pipeline *pl);
 
 
- void extbuf_free_cb(void *addr __rte_unused, void *fcb_opaque __rte_unused);
+void extbuf_free_cb(void *addr __rte_unused, void *fcb_opaque __rte_unused);
 
 #endif /* _INCLUDE_PIPELINE_H */

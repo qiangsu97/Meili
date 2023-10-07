@@ -25,14 +25,14 @@
 
 #include "regex_dev.h"
 #include "regex_bf.h"
-#include "rules_file_utils.h"
+#include "rules_file_utils_temp.h"
 
 #include "../../runtime/meili_runtime.h"
 #include "../../packet_timestamping/packet_timestamping.h"
 
 #include "../../utils/dpdk_live_shared.h"
-#include "../../utils/log/log.h"
-#include "../../utils/utils.h"
+#include "../utils/utils.h"
+#include "../../utils/utils_temp.h"
 
 /* Number of dpdk queue descriptors is 1024 so need more mbuf pool entries. */
 // #define MBUF_POOL_SIZE		     2047 /* Should be n = (2^q - 1)*/

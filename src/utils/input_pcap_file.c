@@ -19,9 +19,8 @@
 #include <rte_malloc.h>
 
 #include "input.h"
-#include "log/log.h"
-#include "stats.h"
 #include "utils.h"
+#include "utils_temp.h"
 #include "pkt_utils.h"
 
 static inline void

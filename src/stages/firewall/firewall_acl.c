@@ -13,9 +13,9 @@
 #include "firewall_acl.h"
 #include "../../runtime/meili_runtime.h"
 #include "../../utils/cJSON/cJSON.h"
-#include "../../utils/utils.h"
+#include "../../utils/utils_temp.h"
 #include "../../utils/pkt_utils.h"
-#include "../../utils/flow_utils.h"
+#include "../../utils/flow_utils_temp.h"
 #include "../../utils/log/log.h"
 
 typedef int (*parse_5tuple)(char *text, struct acl_rule *rule);

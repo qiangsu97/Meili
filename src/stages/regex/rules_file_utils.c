@@ -21,9 +21,9 @@
 #include <regex-compiler.h>
 #include <rte_malloc.h>
 
-#include "rules_file_utils.h"
+#include "rules_file_utils_temp.h"
 #include "../../utils/log/log.h"
-#include "../../utils/utils.h"
+#include "../../utils/utils_temp.h"
 
 #define ID_SEPARATOR_HS	 ':'
 #define ID_SEPARATOR_RXP ','
@@ -193,7 +193,7 @@ rules_file_utils_write_hs(FILE *file, char *exp, char *id, char *flags, int *ski
 }
 
 static int
-rules_file_utils_hs_flags_to_rxp(char *output_flags, char *input_flags, int *skipped_flags)
+rules_file_utils_temp.hs_flags_to_rxp(char *output_flags, char *input_flags, int *skipped_flags)
 {
 	size_t i;
 	int j;
@@ -298,7 +298,7 @@ rules_file_utils_write_rxp(FILE *file, char *exp, char *id, char *flags, int *sk
 		return -ENOTSUP;
 	}
 
-	ret = rules_file_utils_hs_flags_to_rxp(&rxp_flags[0], flags, skipped_flags);
+	ret = rules_file_utils_temp.hs_flags_to_rxp(&rxp_flags[0], flags, skipped_flags);
 	if (ret) {
 		MEILI_LOG_ERR("Failed convert RXP flags to HS: %s.", flags);
 		return ret;

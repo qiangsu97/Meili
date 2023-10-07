@@ -1,15 +1,3 @@
-/*
- * Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES, ALL RIGHTS RESERVED.
- *
- * This software product is a proprietary product of NVIDIA CORPORATION &
- * AFFILIATES (the "Company") and all right, title, and interest in and to the
- * software product, including all associated intellectual property rights, are
- * and shall remain exclusively with the Company.
- *
- * This software product is governed by the End User License Agreement
- * provided with the software product.
- *
- */
 
 #ifndef _INCLUDE_STATS_H_
 #define _INCLUDE_STATS_H_
@@ -47,43 +35,7 @@ typedef struct pkt_stats {
 	uint64_t udp;
 } pkt_stats_t;
 
-typedef struct regex_custom_rxp_exp_matches {
-	uint64_t score7;
-	uint64_t score6;
-	uint64_t score4;
-	uint64_t score0;
-	uint64_t false_positives;
-} rxp_exp_match_stats_t;
 
-typedef struct regex_custom_rxp {
-	uint64_t rx_invalid;
-	uint64_t rx_timeout;
-	uint64_t rx_max_match;
-	uint64_t rx_max_prefix;
-	uint64_t rx_resource_limit;
-	uint64_t rx_idle;
-	uint64_t tx_busy;
-	uint64_t tot_lat;
-	uint64_t max_lat;
-	uint64_t min_lat;
-	/* queuing time before get processed by this stage */
-	uint64_t tot_in_lat;
-
-	/* Expected match results. */
-	rxp_exp_match_stats_t exp;
-	rxp_exp_match_stats_t max_exp;
-
-	// sample 
-	uint64_t time_diff_sample[NUMBER_OF_SAMPLE];
-	int nb_sampled;
-
-} rxp_stats_t;
-
-typedef struct regex_custom_hs {
-	uint64_t tot_lat;
-	uint64_t max_lat;
-	uint64_t min_lat;
-} hs_stats_t;
 
 /* Stats per core are stored as an array. */
 typedef struct run_mode_stats {
@@ -109,22 +61,19 @@ typedef struct run_mode_stats {
 	};
 } run_mode_stats_t;
 
-typedef struct regex_dev_stats {
-	union {
-		struct {
-			uint64_t rx_valid;
-			uint64_t rx_buf_match_cnt;
-			uint64_t rx_total_match;
-			void *custom; /* Stats defined by dev in use. */
-		};
-		/* Ensure multiple cores don't access the same cache line. */
-		unsigned char cache_align[CACHE_LINE_SIZE];
-	};
-} regex_stats_t;
+
+typedef struct lat_stats {
+	uint64_t tot_lat;
+	uint64_t max_lat;
+	uint64_t min_lat;
+	// sample 
+	uint64_t time_diff_sample[NUMBER_OF_SAMPLE];
+	int nb_sampled;
+} lat_stats_t;
 
 typedef struct rxpbench_stats {
 	run_mode_stats_t *rm_stats;
-	regex_stats_t *regex_stats;
+	lat_stats_t *lat_stats;
 } rb_stats_t;
 
 /* Modify packet stats (common to live and pcap modes). */
@@ -148,12 +97,11 @@ stats_update_pkt_stats(pkt_stats_t *pkt_stats, int rte_ptype)
 		pkt_stats->udp++;
 }
 
-void stats_print_update(rb_stats_t *stats, int num_queues, double time, bool end);
-
 int stats_init(rb_conf *run_conf);
-
-void stats_print_end_of_run(rb_conf *run_conf, double run_time);
-
 void stats_clean(rb_conf *run_conf);
+void stats_print_update(rb_stats_t *stats, int num_queues, double time, bool end);
+void stats_print_end_of_run(rb_conf *run_conf, double run_time);
+void stats_update_time_main(struct rte_mbuf **mbuf, int nb_mbuf, struct pipeline *pl);
+
 
 #endif /* _INCLUDE_STATS_H_ */

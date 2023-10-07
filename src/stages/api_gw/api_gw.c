@@ -9,7 +9,7 @@
 #include <time.h>
 #include "api_gw.h"
 #include "../../runtime/meili_runtime.h"
-#include "../../utils/sha/sha_utils.h"
+#include "../../utils/sha/sha_utils_temp.h"
 #include "../../utils/rte_reorder/rte_reorder.h"
 
 

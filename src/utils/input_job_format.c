@@ -22,7 +22,7 @@
 
 #include "input.h"
 #include "log/log.h"
-#include "utils.h"
+#include "utils_temp.h"
 
 // TODO: need to migrate definition of exp_matches out of regex_dev.h 
 #include "../stages/regex/regex_dev.h"

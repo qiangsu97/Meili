@@ -1,16 +1,3 @@
-/*
- * Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES, ALL RIGHTS RESERVED.
- *
- * This software product is a proprietary product of NVIDIA CORPORATION &
- * AFFILIATES (the "Company") and all right, title, and interest in and to the
- * software product, including all associated intellectual property rights, are
- * and shall remain exclusively with the Company.
- *
- * This software product is governed by the End User License Agreement
- * provided with the software product.
- *
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -22,7 +9,7 @@
 #include <rte_udp.h>
 
 #include "log/log.h"
-#include "utils.h"
+#include "utils_temp.h"
 #include "./cJSON/cJSON.h"
 
 /* Read all or max_len bytes of file into buf, returning length in buf_len. */

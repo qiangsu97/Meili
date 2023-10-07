@@ -383,7 +383,7 @@ compress_bf_dequeue(struct pipeline_stage *self, int nb_enq,
 	struct compress_bf_state *mystate = (struct compress_bf_state*)self->state;
 	int qid = mystate->dev_qid;
 	int cdev_id = mystate->cdev_id;
-	// regex_stats_t *stats = mystate->regex_stats;
+
 
 	// rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
 
@@ -552,7 +552,6 @@ compress_bf_exec(struct pipeline_stage *self, struct rte_mbuf **mbuf, int nb_enq
     int qid = self->worker_qid;
 
 	struct compress_bf_state *mystate = (struct compress_bf_state*)self->state;
-	// regex_stats_t *stats = mystate->regex_stats;
 
 	// uint16_t per_q_offset = core_vars[qid].op_offset;
 	// int q_offset = qid * max_batch_size;

@@ -25,7 +25,7 @@
 
 //#include "./regex/regex_dev.h"
 
-#include "../utils/stats.h"
+#include "../utils/utils.h"
 #include "../utils/pkt_utils.h"
 #include "../packet_ordering/packet_ordering.h"
 #include "../packet_timestamping/packet_timestamping.h"
@@ -286,7 +286,7 @@ run_local(struct pipeline *pl)
 	rb_stats_t *stats = run_conf->stats;
 	run_mode_stats_t *rm_stats = &stats->rm_stats[qid];
 	// TODO: rename regex_stats_t to other names
-	regex_stats_t *regex_stats = &stats->regex_stats[qid];
+	//regex_stats_t *regex_stats = &stats->regex_stats[qid];
 
 	struct file_state fs;
 

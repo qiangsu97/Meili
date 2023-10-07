@@ -34,11 +34,17 @@ typedef struct rxpbench_stats rb_stats_t;
 typedef struct pkt_stats pkt_stats_t;
 typedef struct exp_matches exp_matches_t;
 
-enum rxpbench_regex_dev
+enum meili_regex_dev
 {
 	REGEX_DEV_DPDK_REGEX,
 	REGEX_DEV_HYPERSCAN,
 	REGEX_DEV_DOCA_REGEX,
+	REGEX_DEV_UNKNOWN
+};
+
+enum meili_regex_dev
+{
+	COMP_DEV_DPDK_COMP,
 	REGEX_DEV_UNKNOWN
 };
 
@@ -61,7 +67,7 @@ typedef struct pipeline_conf {
 	uint32_t cores;
 
 	/* Config: required input. */
-	enum rxpbench_regex_dev regex_dev_type;
+	enum meili_regex_dev regex_dev_type;
 	enum rxpbench_input_type input_mode;
 	char *input_file;
 	char *raw_rules_file;

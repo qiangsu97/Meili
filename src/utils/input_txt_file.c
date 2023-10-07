@@ -18,7 +18,7 @@
 #include <rte_malloc.h>
 
 #include "input.h"
-#include "utils.h"
+#include "utils_temp.h"
 
 static int
 input_txt_file_read(rb_conf *run_conf)

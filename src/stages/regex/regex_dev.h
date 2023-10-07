@@ -23,7 +23,7 @@
 #include "../../utils/conf.h"
 #include "../../utils/dpdk_live_shared.h"
 #include "../../utils/log/log.h"
-#include "../../utils/stats.h"
+#include "stats.h"
 
 #include "../../runtime/meili_runtime.h"
 

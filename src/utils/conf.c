@@ -25,7 +25,7 @@
 #include "conf.h"
 #include "dpdk_live_shared.h"
 #include "log/log.h"
-#include "utils.h"
+#include "utils_temp.h"
 // #include "../run_mode.h"
 #include "../runtime/meili_runtime.h"
 
