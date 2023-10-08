@@ -10,6 +10,8 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 
+#include "../../utils/conf.h"
+
 typedef struct regex_custom_rxp_exp_matches {
 	uint64_t score7;
 	uint64_t score6;
