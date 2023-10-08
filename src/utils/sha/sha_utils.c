@@ -13,7 +13,7 @@
 /* for uint32_t */
 #include <stdint.h>
 
-#include "sha_utils_temp.h"
+#include "sha_utils.h"
 
 
 #define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))

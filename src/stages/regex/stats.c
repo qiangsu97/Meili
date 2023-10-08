@@ -9,6 +9,7 @@
 #include <rte_mbuf_dyn.h>
 
 #include "stats.h"
+#include "../utils/conf.h"
 
 // int
 // stats_init(rb_conf *run_conf)
