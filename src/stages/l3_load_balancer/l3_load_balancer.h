@@ -9,7 +9,7 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 
-#include "../../utils/flow_utils_temp.h"
+#include "../../utils/flow_utils.h"
 #include "../../utils/pkt_utils.h"
 
 #define L3_LB_MAX_FT_SIZE 128
