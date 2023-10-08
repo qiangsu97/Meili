@@ -31,7 +31,7 @@
 #include "../../packet_timestamping/packet_timestamping.h"
 
 #include "../../utils/dpdk_live_shared.h"
-#include "../utils/utils.h"
+#include "../../utils/utils.h"
 #include "../../utils/utils_temp.h"
 
 /* Number of dpdk queue descriptors is 1024 so need more mbuf pool entries. */
