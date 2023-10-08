@@ -11,7 +11,7 @@
 #include <rte_udp.h>
 
 #include "../conf.h"
-#include "../runtime/meili_runtime.h"
+#include "../../runtime/meili_runtime.h"
 
 #define ONLY_SPLIT_THROUGHPUT
 
