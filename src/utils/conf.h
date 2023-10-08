@@ -42,10 +42,10 @@ enum meili_regex_dev
 	REGEX_DEV_UNKNOWN
 };
 
-enum meili_regex_dev
+enum meili_comp_dev
 {
 	COMP_DEV_DPDK_COMP,
-	REGEX_DEV_UNKNOWN
+	COMP_DEV_UNKNOWN
 };
 
 enum rxpbench_input_type
