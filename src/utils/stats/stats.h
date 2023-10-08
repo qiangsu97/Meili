@@ -10,7 +10,7 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 
-#include "conf.h"
+#include "../conf.h"
 
 #define ONLY_SPLIT_THROUGHPUT
 
