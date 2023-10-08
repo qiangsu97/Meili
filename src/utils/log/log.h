@@ -14,7 +14,7 @@
 #ifndef _INCLUDE_LOG_H_
 #define _INCLUDE_LOG_H_
 
-#include "../conf.h"
+#include "../conf/conf.h"
 
 enum meili_log_level {
 	MEILI_LOG_LEVEL_ERROR,

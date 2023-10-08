@@ -20,7 +20,7 @@
 #include <rte_malloc.h>
 #include <rte_mbuf_core.h>
 
-#include "../../utils/conf.h"
+// #include "../../utils/conf.h"
 #include "../../utils/dpdk_live_shared.h"
 #include "../../utils/log/log.h"
 #include "stats.h"

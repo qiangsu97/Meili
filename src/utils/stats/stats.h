@@ -10,7 +10,7 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 
-#include "../conf.h"
+#include "../conf/conf.h"
 #include "../../runtime/meili_runtime.h"
 
 #define ONLY_SPLIT_THROUGHPUT
@@ -67,6 +67,8 @@ typedef struct lat_stats {
 	uint64_t tot_lat;
 	uint64_t max_lat;
 	uint64_t min_lat;
+	/* queuing time before get processed by this stage */
+	uint64_t tot_in_lat;
 	// sample 
 	uint64_t time_diff_sample[NUMBER_OF_SAMPLE];
 	int nb_sampled;

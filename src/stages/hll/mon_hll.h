@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <rte_mbuf.h>
 
-#include "../../utils/hll/hll.h"
+#include "../lib/hll/hll.h"
 
 struct monitor_hll_state{
     struct HLL *hll;

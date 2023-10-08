@@ -10,7 +10,7 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 
-#include "../../utils/conf.h"
+#include "../../utils/utils.h"
 
 typedef struct regex_custom_rxp_exp_matches {
 	uint64_t score7;
@@ -31,8 +31,6 @@ typedef struct regex_custom_rxp {
 	uint64_t tot_lat;
 	uint64_t max_lat;
 	uint64_t min_lat;
-	/* queuing time before get processed by this stage */
-	uint64_t tot_in_lat;
 
 	/* Expected match results. */
 	rxp_exp_match_stats_t exp;

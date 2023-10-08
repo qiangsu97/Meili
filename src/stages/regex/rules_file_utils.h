@@ -14,7 +14,9 @@
 #ifndef _INCLUDE_RULES_FILE_UTILS_H_
 #define _INCLUDE_RULES_FILE_UTILS_H_
 
-#include "../../utils/conf.h"
+// #include "../../utils/conf.h"
+
+#include "../../utils/utils.h"
 
 enum rules_file_utils_type {
 	RULES_FILE_RXP,

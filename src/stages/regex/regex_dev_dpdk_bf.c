@@ -23,7 +23,7 @@
 #include <rte_timer.h>
 
 
-#include "regex_dev.h"
+//#include "regex_dev.h"
 #include "regex_bf.h"
 #include "rules_file_utils.h"
 

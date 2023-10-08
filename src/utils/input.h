@@ -18,7 +18,7 @@
 
 #include <rte_malloc.h>
 
-#include "conf.h"
+#include "conf/conf.h"
 #include "log/log.h"
 
 /*

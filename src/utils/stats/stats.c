@@ -21,15 +21,15 @@
 #include <rte_mbuf.h>
 #include <rte_mbuf_dyn.h>
 
-#include "log/log.h"
+#include "../log/log.h"
 #include "stats.h"
 
-#include "./timestamp/timestamp.h"
-#include "./rte_reorder/rte_reorder.h"
+#include "../timestamp/timestamp.h"
+#include "../rte_reorder/rte_reorder.h"
 
 #include "../../runtime/meili_runtime.h"
-#include "../packet_ordering/packet_ordering.h"
-#include "../packet_timestamping/packet_timestamping.h"
+#include "../../packet_ordering/packet_ordering.h"
+#include "../../packet_timestamping/packet_timestamping.h"
 
 #define GIGA			1000000000.0
 #define MEGA			1000000.0
@@ -551,42 +551,40 @@ int cmpfunc (const void * a, const void * b)
 static void
 stats_print_lat(rb_stats_t *stats, int num_queues, enum meili_regex_dev dev __rte_unused, uint32_t batches, bool lat_mode)
 {
-	regex_stats_t *regex_stats = stats->regex_stats;
+	lat_stats_t *lat_stats = stats->lat_stats;
 	run_mode_stats_t *run_stats = stats->rm_stats;
-	rxp_stats_t *rxp_stats;
-	rxp_stats_t rxp_total;
+
+	lat_stats_t lat_total;
 	uint64_t total_bufs;
 	int i;
 
 	int nb_samples = 0;
 
-	memset(&rxp_total, 0, sizeof(rxp_total));
-	rxp_total.min_lat = UINT64_MAX;
-	rxp_total.max_lat = 0;
+	memset(&lat_total, 0, sizeof(lat_total));
+	lat_total.min_lat = UINT64_MAX;
+	lat_total.max_lat = 0;
 	total_bufs = 0;
 
-	/* get main core timer keeping status */ 
-	rxp_stats = (rxp_stats_t *)regex_stats[0].custom;
 	
-	nb_samples = RTE_MIN(rxp_stats->nb_sampled, NUMBER_OF_SAMPLE);
+	nb_samples = RTE_MIN(lat_stats->nb_sampled, NUMBER_OF_SAMPLE);
 	/* sort time_diff_sample */
-	qsort(rxp_stats->time_diff_sample,nb_samples,sizeof(uint64_t),cmpfunc);
+	qsort(lat_stats->time_diff_sample,nb_samples,sizeof(uint64_t),cmpfunc);
 
 	total_bufs = run_stats->tx_buf_cnt;
 
-	rxp_total.tot_lat = rxp_stats->tot_lat;
-	rxp_total.tot_in_lat = rxp_stats->tot_in_lat;
-	if (rxp_stats->min_lat < rxp_total.min_lat)
-		rxp_total.min_lat = rxp_stats->min_lat;
-	if (rxp_stats->max_lat > rxp_total.max_lat)
-		rxp_total.max_lat = rxp_stats->max_lat;
+	lat_total.tot_lat = lat_stats->tot_lat;
+	lat_total.tot_in_lat = lat_stats->tot_in_lat;
+	if (lat_stats->min_lat < lat_total.min_lat)
+		lat_total.min_lat = lat_stats->min_lat;
+	if (lat_stats->max_lat > lat_total.max_lat)
+		lat_total.max_lat = lat_stats->max_lat;
 
 
 	/* Get per core average for some of the total stats. */
-	rxp_total.tot_lat = total_bufs ? rxp_total.tot_lat / total_bufs : 0;
-	rxp_total.tot_in_lat = total_bufs ? rxp_total.tot_in_lat / total_bufs : 0;
-	if (rxp_total.min_lat == UINT64_MAX)
-		rxp_total.min_lat = 0;
+	lat_total.tot_lat = total_bufs ? lat_total.tot_lat / total_bufs : 0;
+	lat_total.tot_in_lat = total_bufs ? lat_total.tot_in_lat / total_bufs : 0;
+	if (lat_total.min_lat == UINT64_MAX)
+		lat_total.min_lat = 0;
 
 
 	stats_print_banner("PACKET LATENCY STATS", STATS_BANNER_LEN);
@@ -603,7 +601,6 @@ stats_print_lat(rb_stats_t *stats, int num_queues, enum meili_regex_dev dev __rt
 	int tail_95_index = (int)(nb_samples*95)/100 ;
 	int tail_99_index = (int)(nb_samples*99)/100 ;
 	int tail_999_index = (int)(nb_samples*999)/1000 ;
-	rxp_stats = (rxp_stats_t *)regex_stats[0].custom;
 	fprintf(stdout,
 		"| PER PACKET LATENCY (usecs) 						       |\n"
 		//"| - BATCH SIZE:  		          %-42.4u |\n"
@@ -619,44 +616,42 @@ stats_print_lat(rb_stats_t *stats, int num_queues, enum meili_regex_dev dev __rt
 		"| - AVERAGE QUEUING LATENCY(TX):    %-42.4f |\n"
 		"|%*s|\n",
 		//batches, 
-		total_bufs,nb_samples,(double)rxp_total.max_lat / rte_get_timer_hz() * 1000000.0,
-		(double)rxp_total.min_lat / rte_get_timer_hz() * 1000000.0,
-		(double)rxp_total.tot_lat / rte_get_timer_hz() * 1000000.0, 
-		(double)rxp_stats->time_diff_sample[tail_90_index] / rte_get_timer_hz() * 1000000.0, 
-		(double)rxp_stats->time_diff_sample[tail_95_index] / rte_get_timer_hz() * 1000000.0,
-		(double)rxp_stats->time_diff_sample[tail_99_index] / rte_get_timer_hz() * 1000000.0, 
-		(double)rxp_stats->time_diff_sample[tail_999_index] / rte_get_timer_hz() * 1000000.0,
-		(double)rxp_total.tot_in_lat / rte_get_timer_hz() * 1000000.0,
+		total_bufs,nb_samples,(double)lat_total.max_lat / rte_get_timer_hz() * 1000000.0,
+		(double)lat_total.min_lat / rte_get_timer_hz() * 1000000.0,
+		(double)lat_total.tot_lat / rte_get_timer_hz() * 1000000.0, 
+		(double)lat_stats->time_diff_sample[tail_90_index] / rte_get_timer_hz() * 1000000.0, 
+		(double)lat_stats->time_diff_sample[tail_95_index] / rte_get_timer_hz() * 1000000.0,
+		(double)lat_stats->time_diff_sample[tail_99_index] / rte_get_timer_hz() * 1000000.0, 
+		(double)lat_stats->time_diff_sample[tail_999_index] / rte_get_timer_hz() * 1000000.0,
+		(double)lat_total.tot_in_lat / rte_get_timer_hz() * 1000000.0,
 		78, "");
 
-		/* print latency breakdown */
-		for (i = 1; i < num_queues; i++) {
+		// /* print latency breakdown */
+		// for (i = 1; i < num_queues; i++) {
 			
-			rxp_stats = (rxp_stats_t *)regex_stats[i].custom;	
-			rxp_total.tot_lat = total_bufs ? rxp_stats->tot_lat / total_bufs : 0;
-			rxp_total.tot_in_lat = total_bufs ? rxp_stats->tot_in_lat / total_bufs : 0;
+		// 	lat_stats = (rxp_stats_t *)regex_stats[i].custom;	
+		// 	lat_total.tot_lat = total_bufs ? lat_stats->tot_lat / total_bufs : 0;
+		// 	lat_total.tot_in_lat = total_bufs ? lat_stats->tot_in_lat / total_bufs : 0;
 
-		fprintf(stdout,
-			"| - CORE:                           %-42d |\n"
-			"| - AVERAGE PROCESSING LATENCY:     %-42.4f |\n"
-			"| - AVERAGE QUEUING LATENCY(RX):    %-42.4f |\n"
-			"|%*s|\n",
-			run_stats[i].lcore_id,
-			(double)rxp_total.tot_lat / rte_get_timer_hz() * 1000000.0, 
-			(double)rxp_total.tot_in_lat / rte_get_timer_hz() * 1000000.0,
-			78, "");
-		}
+		// fprintf(stdout,
+		// 	"| - CORE:                           %-42d |\n"
+		// 	"| - AVERAGE PROCESSING LATENCY:     %-42.4f |\n"
+		// 	"| - AVERAGE QUEUING LATENCY(RX):    %-42.4f |\n"
+		// 	"|%*s|\n",
+		// 	run_stats[i].lcore_id,
+		// 	(double)lat_total.tot_lat / rte_get_timer_hz() * 1000000.0, 
+		// 	(double)lat_total.tot_in_lat / rte_get_timer_hz() * 1000000.0,
+		// 	78, "");
+		// }
 		fprintf(stdout, STATS_BORDER "\n");
 
 		// for(int k=0;k<100;k++){
-		// 	printf("%f\n",(double)rxp_stats->time_diff_sample[k]/ rte_get_timer_hz() * 1000000.0);
+		// 	printf("%f\n",(double)lat_stats->time_diff_sample[k]/ rte_get_timer_hz() * 1000000.0);
 		// }
 
-		/* print the last 1% pkts latency out */
-		rxp_stats = (rxp_stats_t *)regex_stats[0].custom;
 		for(int k=tail_99_index; k<nb_samples; k++){
 		//for(int k=0; k<nb_samples; k++){
-			printf("%f\n",(double)rxp_stats->time_diff_sample[k] / rte_get_timer_hz() * 1000000.0);
+			printf("%f\n",(double)lat_stats->time_diff_sample[k] / rte_get_timer_hz() * 1000000.0);
 		}
 
 }
@@ -683,8 +678,7 @@ void
 stats_update_time_main(struct rte_mbuf **mbuf, int nb_mbuf, struct pipeline *pl)
 {
 	struct pipeline_conf *run_conf = &pl->pl_conf;
-	// regex_stats_t *stats = &run_conf->stats->regex_stats[0];
-	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
+	lat_stats_t *lat_stats = run_conf->stats->lat_stats;
 
 	uint64_t time_diff;
 	uint64_t time_end, time_start;
@@ -708,8 +702,6 @@ stats_update_time_main(struct rte_mbuf **mbuf, int nb_mbuf, struct pipeline *pl)
 		//time_mbuf = util_get_64_bit_from_2_32(&mbuf->dynfield1[DF_TIME_HIGH]);
 
 		// OR
-        stats = &run_conf->stats->regex_stats[0];
-	    rxp_stats = (rxp_stats_t *)stats->custom;
         offset1 = pl->ts_start_offset;
 	    offset2 = pl->ts_end_offset;
 
@@ -718,77 +710,77 @@ stats_update_time_main(struct rte_mbuf **mbuf, int nb_mbuf, struct pipeline *pl)
 		
 		time_diff = (time_end - time_start);
 
-		rxp_stats->tot_lat += time_diff;
-		if (time_diff < rxp_stats->min_lat)
-			rxp_stats->min_lat = time_diff;
-		if (time_diff > rxp_stats->max_lat)
-			rxp_stats->max_lat = time_diff;
+		lat_stats->tot_lat += time_diff;
+		if (time_diff < lat_stats->min_lat)
+			lat_stats->min_lat = time_diff;
+		if (time_diff > lat_stats->max_lat)
+			lat_stats->max_lat = time_diff;
         
         #ifdef PKT_LATENCY_SAMPLE_ON
-        rxp_stats->time_diff_sample[rxp_stats->nb_sampled & NUMBER_OF_SAMPLE] = time_diff;
-        rxp_stats->nb_sampled++;  
+        lat_stats->time_diff_sample[lat_stats->nb_sampled & NUMBER_OF_SAMPLE] = time_diff;
+        lat_stats->nb_sampled++;  
         #endif
         
-        #ifdef PKT_LATENCY_BREAKDOWN_ON
-        /* record breakdown latency of pipeline stages */
-        // seq_num = *rte_reorder_seqn(mbuf[i]);
-		// sample = seq_num % NUMBER_OF_SAMPLE;
-        /* pl's tot in latency, temporarily used for queuing latency between last stage and final processing */
-        self = pl->stages[pl->nb_pl_stages-1][0];
-        // mystate1 = (struct pkt_ts_state *)self->ts_start_stage.state;
-        // mystate2 = (struct pkt_ts_state *)pl->ts_end_stage.state;
-        offset1 = self->ts_end_offset;
-        offset2 = pl->ts_end_offset;
-        time_start  = *(RTE_MBUF_DYNFIELD(mbuf[i], offset1, uint64_t *));
-        time_end = *(RTE_MBUF_DYNFIELD(mbuf[i], offset2, uint64_t *));
+    //     #ifdef PKT_LATENCY_BREAKDOWN_ON
+    //     /* record breakdown latency of pipeline stages */
+    //     // seq_num = *rte_reorder_seqn(mbuf[i]);
+	// 	// sample = seq_num % NUMBER_OF_SAMPLE;
+    //     /* pl's tot in latency, temporarily used for queuing latency between last stage and final processing */
+    //     self = pl->stages[pl->nb_pl_stages-1][0];
+    //     // mystate1 = (struct pkt_ts_state *)self->ts_start_stage.state;
+    //     // mystate2 = (struct pkt_ts_state *)pl->ts_end_stage.state;
+    //     offset1 = self->ts_end_offset;
+    //     offset2 = pl->ts_end_offset;
+    //     time_start  = *(RTE_MBUF_DYNFIELD(mbuf[i], offset1, uint64_t *));
+    //     time_end = *(RTE_MBUF_DYNFIELD(mbuf[i], offset2, uint64_t *));
         
-        time_diff = (time_end - time_start);
+    //     time_diff = (time_end - time_start);
 
-        rxp_stats->tot_in_lat += time_diff;
+    //     lat_stats->tot_in_lat += time_diff;
 
-        /* traverse pl stages */
-        // TODO: only register one dynfield for each layer of pipeline, instead of each instance
-        for(int j=0; j<pl->nb_pl_stages; j++){
-            for(int k=0; k<pl->nb_inst_per_pl_stage[j]; k++){
-                // if(i=0){
-                //     printf("self->worker_qid = %d\n",self->worker_qid);
-                // }
-                    self = pl->stages[j][k];
-                	stats = &run_conf->stats->regex_stats[self->worker_qid];
-	                rxp_stats = (rxp_stats_t *)stats->custom;
-                    //mystate1 = (struct pkt_ts_state *)self->ts_start_stage.state;
+    //     /* traverse pl stages */
+    //     // TODO: only register one dynfield for each layer of pipeline, instead of each instance
+    //     for(int j=0; j<pl->nb_pl_stages; j++){
+    //         for(int k=0; k<pl->nb_inst_per_pl_stage[j]; k++){
+    //             // if(i=0){
+    //             //     printf("self->worker_qid = %d\n",self->worker_qid);
+    //             // }
+    //                 self = pl->stages[j][k];
+    //             	stats = &run_conf->stats->regex_stats[self->worker_qid];
+	//                 lat_stats = (rxp_stats_t *)stats->custom;
+    //                 //mystate1 = (struct pkt_ts_state *)self->ts_start_stage.state;
 
-                    /* self's tot in latency */
-                    if(j==0){
-                        //mystate2 = (struct pkt_ts_state *)pl->ts_start_stage.state;
-                        offset2 = pl->ts_start_offset;
-                    }
-                    else{
-                        parent = pl->stages[j-1][0];
-                        //mystate2 = (struct pkt_ts_state *)parent->ts_end_stage.state;
-                        offset2 = parent->ts_end_offset;
-                    }
-                    offset1 = self->ts_start_offset;
+    //                 /* self's tot in latency */
+    //                 if(j==0){
+    //                     //mystate2 = (struct pkt_ts_state *)pl->ts_start_stage.state;
+    //                     offset2 = pl->ts_start_offset;
+    //                 }
+    //                 else{
+    //                     parent = pl->stages[j-1][0];
+    //                     //mystate2 = (struct pkt_ts_state *)parent->ts_end_stage.state;
+    //                     offset2 = parent->ts_end_offset;
+    //                 }
+    //                 offset1 = self->ts_start_offset;
 	                
-                    time_end  = *(RTE_MBUF_DYNFIELD(mbuf[i], offset1, uint64_t *));
-                    time_start = *(RTE_MBUF_DYNFIELD(mbuf[i], offset2, uint64_t *));
+    //                 time_end  = *(RTE_MBUF_DYNFIELD(mbuf[i], offset1, uint64_t *));
+    //                 time_start = *(RTE_MBUF_DYNFIELD(mbuf[i], offset2, uint64_t *));
                     
-                    time_diff = (time_end - time_start);
+    //                 time_diff = (time_end - time_start);
 
-                    rxp_stats->tot_in_lat += time_diff;
+    //                 lat_stats->tot_in_lat += time_diff;
 
-                    /* self's tot latency */
-                    //mystate2 = (struct pkt_ts_state *)self->ts_end_stage.state;
-                    offset2 = self->ts_end_offset;
-                    time_start = *(RTE_MBUF_DYNFIELD(mbuf[i], offset1, uint64_t *));
-                    time_end = *(RTE_MBUF_DYNFIELD(mbuf[i], offset2, uint64_t *));
+    //                 /* self's tot latency */
+    //                 //mystate2 = (struct pkt_ts_state *)self->ts_end_stage.state;
+    //                 offset2 = self->ts_end_offset;
+    //                 time_start = *(RTE_MBUF_DYNFIELD(mbuf[i], offset1, uint64_t *));
+    //                 time_end = *(RTE_MBUF_DYNFIELD(mbuf[i], offset2, uint64_t *));
                     
-                    time_diff = (time_end - time_start);
+    //                 time_diff = (time_end - time_start);
 
-                    rxp_stats->tot_lat += time_diff;
-            }
-        }   
-    #endif 
+    //                 lat_stats->tot_lat += time_diff;
+    //         }
+    //     }   
+    // #endif 
 	}
 
 }

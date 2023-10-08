@@ -26,7 +26,6 @@
 #include "meili_runtime.h"
 
 #include "../utils/utils.h"
-#include "../utils/conf.h"
 #include "../utils/input.h"
 #include "../utils/utils_temp.h"
 
