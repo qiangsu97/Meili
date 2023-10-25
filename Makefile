@@ -5,7 +5,7 @@
 APP = meili
 
 # all source are stored in SRCS-y
-SRCS-ALL := $(shell find . -type f -name '*.c')
+SRCS-ALL := $(shell find ./src -type f -name '*.c')
 
 SRCS-y := $(SRCS-ALL)
 

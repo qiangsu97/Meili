@@ -65,14 +65,6 @@ input_register(rb_conf *run_conf)
 		input_dpdk_port_reg(funcs);
 		break;
 
-	case INPUT_JOB_FORMAT:
-		input_job_format_reg(funcs);
-		break;
-
-	case INPUT_REMOTE_MMAP:
-		input_remote_mmap_reg(funcs);
-		break;
-
 	default:
 		rte_free(funcs);
 		return -ENOTSUP;
