@@ -20,8 +20,8 @@
 
 #include "dpdk_live_shared.h"
 #include "input.h"
-#include "log/log.h"
-#include "utils_temp.h"
+#include "../log/log.h"
+#include "../utils_temp.h"
 
 //#define NUM_MBUFS		8191
 #define NUM_MBUFS		65535

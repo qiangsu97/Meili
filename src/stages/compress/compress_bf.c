@@ -562,7 +562,7 @@ compress_bf_exec(struct pipeline_stage *self, struct rte_mbuf **mbuf, int nb_enq
 	// 	printf("exec start: sample seq num=%d\n",*rte_reorder_seqn(mbuf[0]));
 	// }
 	
-
+	// TODO: this logic(logic for quick return if no packets are received) can be added to regex as well
 	*nb_deq = 0;
 	if(nb_enq<=0 && mystate->wait_on_dequeue>0){
 		compress_bf_dequeue(self, 0, *mbuf_out, nb_deq);

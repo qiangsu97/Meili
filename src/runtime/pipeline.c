@@ -12,7 +12,7 @@
 
 #include "../packet_ordering/packet_ordering.h"
 #include "../packet_timestamping/packet_timestamping.h"
-#include "../utils/input.h"
+#include "../utils/input_mode/input.h"
 
 
 typedef int (*pl_register_functions)(struct pipeline_stage *);

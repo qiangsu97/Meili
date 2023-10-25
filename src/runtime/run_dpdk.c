@@ -20,9 +20,7 @@
 
 #include <unistd.h>
 
-// #include "./regex/regex_dev.h"
-
-#include "../utils/dpdk_live_shared.h"
+#include "../utils/input_mode/dpdk_live_shared.h"
 #include "../utils/utils.h"
 #include "../utils/utils_temp.h"
 #include "../utils/pkt_utils.h"

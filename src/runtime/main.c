@@ -26,7 +26,7 @@
 #include "meili_runtime.h"
 
 #include "../utils/utils.h"
-#include "../utils/input.h"
+#include "../utils/input_mode/input.h"
 #include "../utils/utils_temp.h"
 
 volatile bool force_quit;

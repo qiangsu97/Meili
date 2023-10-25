@@ -18,8 +18,8 @@
 
 #include <rte_malloc.h>
 
-#include "conf/conf.h"
-#include "log/log.h"
+#include "../conf/conf.h"
+#include "../log/log.h"
 
 /*
  * Input types should implement their own init and clean functions.

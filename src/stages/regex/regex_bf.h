@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <rte_mbuf.h>
+#include "./stats.h"
 
 
 struct regex_bf_state{

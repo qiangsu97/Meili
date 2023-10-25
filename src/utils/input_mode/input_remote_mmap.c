@@ -20,7 +20,7 @@
 #include <rte_malloc.h>
 
 #include "input.h"
-#include "utils_temp.h"
+#include "../utils_temp.h"
 
 static int
 input_remote_mmap_init(rb_conf *run_conf)

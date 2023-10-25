@@ -21,11 +21,10 @@
 #include <rte_malloc.h>
 
 #include "input.h"
-#include "log/log.h"
-#include "utils_temp.h"
+#include "../log/log.h"
+#include "../utils_temp.h"
 
-// TODO: need to migrate definition of exp_matches out of regex_dev.h 
-#include "../stages/regex/regex_dev.h"
+// #include "../stages/regex/regex_dev.h"
 
 /* File should be of the form job_0xXXXXXXXX.yyy */
 #define JOB_FILE_AND_DIR_LEN	150

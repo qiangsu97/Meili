@@ -23,7 +23,7 @@
 #include <rte_string_fns.h>
 
 #include "conf.h"
-#include "dpdk_live_shared.h"
+#include "../input_mode/dpdk_live_shared.h"
 #include "../log/log.h"
 #include "../utils_temp.h"
 

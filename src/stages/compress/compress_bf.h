@@ -44,6 +44,9 @@ struct compress_bf_state{
     //uint16_t nb_qps;
     unsigned int dev_qid;
 
+	/* enqueue batch size */
+	int batch_size;
+
     /* compression algorithm */
     enum rte_comp_algorithm algo;
 
