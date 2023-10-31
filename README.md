@@ -12,12 +12,12 @@ This allows
 In particular, Meili provides a flexible modular programming model on the one-NIC abstraction, a parallelized and resource-efficient data-plane, and a lightweight control plane that ensures adaptive scaling and application availability. 
 
 ## Open-sourcing Schedule
-Currently we have released our data-plane prototype of Meili. We have planned to open-source the following contents:
+Currently we have released our data-plane prototype of Meili. We have planned to open-source the following contents in stage one:
 - Meili API support
-  - L4 packet/flow processing (in 2 weeks)
-  - Hardware acceleration (in 2 weeks)
-  - L7 socket programming (in 4 weeks)
-  - State API support (in 4 weeks)
+  - L4 packet/flow processing (before 2023/11/14)
+  - Hardware acceleration (before 2023/11/14)
+  - L7 socket programming (before 2023/11/28)
+  - State API support (before 2023/11/28)
    
 And more to be released in next stage.
 
