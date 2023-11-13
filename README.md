@@ -14,10 +14,10 @@ In particular, Meili provides a flexible modular programming model on the one-NI
 ## Open-sourcing Schedule
 Currently we have released our data-plane prototype of Meili. We have planned to open-source the following contents in stage one:
 - Meili API support
-  - L4 packet/flow processing (before 2023/11/14)
-  - Hardware acceleration (before 2023/11/14)
-  - L7 socket programming (before 2023/11/28)
-  - State API support (before 2023/11/28)
+  - L4 packet/flow processing (in the week of 2023/11/13)
+  - Hardware acceleration (in the week of 2023/11/13)
+  - L7 socket programming (in the week of 2023/11/27)
+  - State API support (in the week of 2023/11/27)
    
 And more to be released in next stage.
 
