@@ -3,6 +3,8 @@
 
 #include <rte_mbuf.h>
 
+#include "../lib/meili.h"
+
 #include "../utils/conf/conf.h"
 
 
@@ -136,6 +138,8 @@ enum pipeline_type {
                                     else{*y = -1;}
 
 struct pipeline_stage{
+    meili_apis apis;
+
     enum pipeline_type type;    /* stage workload type */
     //bool push_batch;
     void *state;                /* stage private state */
@@ -216,11 +220,12 @@ struct pipeline{
 typedef struct pipeline_func {
     int (*pipeline_stage_init)(struct pipeline_stage *self);
     int (*pipeline_stage_free)(struct pipeline_stage *self);
-    int (*pipeline_stage_exec)(struct pipeline_stage *self, 
-                            struct rte_mbuf **mbuf,
-                            int nb_enq,
-                            struct rte_mbuf ***mbuf_out,
-                            int *nb_deq);
+    // int (*pipeline_stage_exec)(struct pipeline_stage *self, 
+    //                         struct rte_mbuf **mbuf,
+    //                         int nb_enq,
+    //                         struct rte_mbuf ***mbuf_out,
+    //                         int *nb_deq);
+    int (*pipeline_stage_exec)(struct pipeline_stage *self, meili_pkt *pkt);
 } pipeline_func_t;
 
 
@@ -253,11 +258,11 @@ int app_l7_lb_pipeline_stage_func_reg(struct pipeline_stage *stage);
 /* general functions for pipeline stages */
 int pipeline_stage_init_safe(struct pipeline_stage *self, enum pipeline_type pp_type);
 int pipeline_stage_free_safe(struct pipeline_stage *self);
-int pipeline_stage_exec_safe(struct pipeline_stage *self, 
-                            struct rte_mbuf **mbuf,
-                            int nb_enq,
-                            struct rte_mbuf ***mbuf_out,
-                            int *nb_deq);
+// int pipeline_stage_exec_safe(struct pipeline_stage *self, 
+//                             struct rte_mbuf **mbuf,
+//                             int nb_enq,
+//                             struct rte_mbuf ***mbuf_out,
+//                             int *nb_deq);
 int pipeline_stage_run_safe(struct pipeline_stage *self);
 
 /* functions for pipelines */

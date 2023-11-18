@@ -59,6 +59,7 @@ init_dpdk(struct pipeline_conf *run_conf)
 /* Init neccessary dpdk environments and construct pipeline */
 int pipeline_runtime_init(struct pipeline *pl, struct pipeline_conf *run_conf, char *err){
     int ret = 0;
+
     /* initalize dpdk related environment */
     ret = init_dpdk(run_conf);
 	if (ret) {
@@ -73,6 +74,7 @@ int pipeline_runtime_init(struct pipeline *pl, struct pipeline_conf *run_conf, c
 		run_conf->cores = rte_lcore_count();
 	}
 
+    /* init global stats recording structures */
 	ret = stats_init(run_conf);
 	if (ret) {
 		snprintf(err, ERR_STR_SIZE, "Failed initialising stats");
@@ -83,15 +85,15 @@ int pipeline_runtime_init(struct pipeline *pl, struct pipeline_conf *run_conf, c
      * 1) INPUT_TEXT_FILE       Load txt file into memory. Note that for txt files, it may take up large space.
      * 2) INPUT_PCAP_FILE       Load pcap file into memory. Note that for pcap files, it may take up large space.
      * 3) INPUT_LIVE            Use dpdk port to receive pkts. 
-     * 4) INPUT_JOB_FORMAT      
-     * 5) INPUT_REMOTE_MMAP
+     * 4) INPUT_JOB_FORMAT      N/A
+     * 5) INPUT_REMOTE_MMAP     N/A
     */
 	ret = input_register(run_conf);
 	if (ret) {
 		snprintf(err, ERR_STR_SIZE, "Input registration error");
 		goto clean_stats;
 	}
-
+    /* set up input configurations */
 	ret = input_init(run_conf);
 	if (ret) {
 		snprintf(err, ERR_STR_SIZE, "Input method initialization failed");
@@ -227,20 +229,20 @@ int pipeline_stage_free_safe(struct pipeline_stage *self){
 }
 
 /* pipeline processing operation on a single mbuf object */
-int pipeline_stage_exec_safe(struct pipeline_stage *self, 
-                            struct rte_mbuf **mbuf,
-                            int nb_enq,
-                            struct rte_mbuf ***mbuf_out,
-                            int *nb_deq){
+// int pipeline_stage_exec_safe(struct pipeline_stage *self, 
+//                             struct rte_mbuf **mbuf,
+//                             int nb_enq,
+//                             struct rte_mbuf ***mbuf_out,
+//                             int *nb_deq){
 
-    struct pipeline_func *funcs = self->funcs;
+//     struct pipeline_func *funcs = self->funcs;
 
-	if(funcs->pipeline_stage_exec){
-        return funcs->pipeline_stage_exec(self, mbuf, nb_enq, mbuf_out, nb_deq);
-    }
+// 	if(funcs->pipeline_stage_exec){
+//         return funcs->pipeline_stage_exec(self, mbuf, nb_enq, mbuf_out, nb_deq);
+//     }
 		
-    return -EINVAL;
-}
+//     return -EINVAL;
+// }
 
 /* worker function for a pipeline */
 #ifdef SHARED_BUFFER 
@@ -275,6 +277,14 @@ int pipeline_stage_run_safe(struct pipeline_stage *self){
     int to_enq = 0;
     int tot_enq = 0;
 
+    struct pipeline_func *funcs = self->funcs;
+
+	if(!funcs->pipeline_stage_exec){
+        MEILI_LOG_WARN("Invalid execution function");
+        return -EINVAL;
+    }
+
+
     // main loop of pipeline stage
     while(!force_quit && pl_conf->running == true){
         /* read packets from ring_in */
@@ -287,7 +297,12 @@ int pipeline_stage_run_safe(struct pipeline_stage *self){
         //pkt_ts_exec(self->ts_start_offset, mbufs_in, nb_deq);
 
         /* process packets */
-        pipeline_stage_exec_safe(self, mbufs_in, nb_deq, &mbufs_out, &out_num);
+        //pipeline_stage_exec_safe(self, mbufs_in, nb_deq, &mbufs_out, &out_num);
+        for(int i=0; i<nb_deq; i++){
+            funcs->pipeline_stage_exec(self, mbufs_in[i]);
+            mbufs_out[i] = mbufs_in[i];  
+            out_num++;
+        }
 
 
         /* put packets into ring_out */
@@ -366,8 +381,14 @@ int pipeline_stage_run_safe(struct pipeline_stage *self){
 
         //pkt_ts_exec(self->ts_start_offset, mbufs_in, nb_deq);
         /* process packets */
-        pipeline_stage_exec_safe(self, mbufs_in, nb_deq, &mbufs_out, &out_num);
-
+        //pipeline_stage_exec_safe(self, mbufs_in, nb_deq, &mbufs_out, &out_num);
+        for(int i=0; i<nb_deq; i++){
+            funcs->pipeline_stage_exec(self, mbufs_in[i]);
+            mbufs_out[i] = mbufs_in[i];  
+            out_num++;
+        }
+        
+        
         //pkt_ts_exec(self->ts_end_offset, mbufs_out, out_num);
 
         /* put packets into ring_out in a round-robin manner */
