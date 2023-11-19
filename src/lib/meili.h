@@ -2,19 +2,28 @@
 #define _INCLUDE_MEILI_H_
 
 #define MEILI_STATE_DECLS(x) struct (x)##_state {
-#define MEILI_STATE_DECLS_END
+#define MEILI_STATE_DECLS_END };
 
-#define MEILI_INIT(x) int (x)##_stage_init(struct pipeline_stage *self){
+#define MEILI_INIT(x) int (x)##_init(struct pipeline_stage *self){
 
-#define MEILI_FREE(x) int (x)##_stage_free(struct pipeline_stage *self){
+#define MEILI_FREE(x) int (x)##_free(struct pipeline_stage *self){
 
-#define MEILI_EXEC(x)  int (x)##_stage_exec(struct pipeline_stage *self, \
+#define MEILI_EXEC(x)  int (x)##_exec(struct pipeline_stage *self, \
                             struct rte_mbuf **mbuf,                                   \
                             int nb_enq,                                               \
                             struct rte_mbuf ***mbuf_out,                              \
                             int *nb_deq){meili_apis Meili = self->apis;
 
 #define MEILI_END_DECLS  return 0;}
+
+
+#define MEILI_REGISTER(x) int meili_pipeline_stage_func_reg(struct pipeline_stage *stage) \
+{\
+	stage->funcs->pipeline_stage_init = (x)##_init;\
+	stage->funcs->pipeline_stage_free = (x)##_free;\
+	stage->funcs->pipeline_stage_exec = (x)##_exec;\
+    return 0;\
+}
 
 #define DPDK_BACKEND
 

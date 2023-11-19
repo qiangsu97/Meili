@@ -45,7 +45,7 @@ simple_entropy(uint32_t set_bits,
 int
 ddos_init(struct pipeline_stage *self)
 {
-    /* aalocate space for pipeline state */
+    /* allocate space for pipeline state */
     self->state = (struct ddos_state *)malloc(sizeof(struct ddos_state));
     struct ddos_state *mystate = (struct ddos_state *)self->state;
     if(!mystate){
