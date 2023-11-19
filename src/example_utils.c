@@ -4,8 +4,7 @@
 #include "example.h"
 
 // User-customized dataplane functions
-static uint32_t 
-count_bits_64(uint8_t *packet, 
+static uint32_t count_bits_64(uint8_t *packet, 
               uint32_t p_len)
 {
     uint64_t v, set_bits = 0;
