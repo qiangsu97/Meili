@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "meili.h"
+#include "./runtime/pipeline.h"
 
 volatile struct _meili_apis Meili;
 
@@ -13,7 +14,14 @@ void pkt_trans(){};
 /* pkt_flt
 *   - Filter packets with the operation specified by UCO.
 */
-void pkt_flt(){};
+void pkt_flt(struct pipeline_stage *self, int *check, meili_pkt *pkt){
+    int flag = check(self, pkt);
+
+    if(flag == 1){
+        /* filter the packet */
+        ;
+    }
+}
 
 /* flow_ext
 *   - Construct flows from a stream based on UCO.
