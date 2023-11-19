@@ -14,6 +14,6 @@ uint32_t head;
 uint32_t packet_count;
 MEILI_STATE_DECLS_END
 
-int ddos_check(meili_pkt *pkt);
+int ddos_check(struct pipeline_stage *self, meili_pkt *pkt);
 
 #endif

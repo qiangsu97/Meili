@@ -1,3 +1,4 @@
+#include <math.h>
 #include "./lib/meili.h"
 #include "./runtime/meili_runtime.h"
 #include "example.h"
@@ -37,7 +38,7 @@ simple_entropy(uint32_t set_bits,
 int ddos_check(struct pipeline_stage *self, meili_pkt *pkt) {
     char *payload = NULL;
     uint32_t p_len = 0;
-    struct (EXAMPLE)_state *mystate = (struct (EXAMPLE)_state *)self->state;
+    struct EXAMPLE_state *mystate = (struct EXAMPLE_state *)self->state;
     int flag = 0; // indicate whether there's an attack
     uint32_t bits;
     uint32_t set ;

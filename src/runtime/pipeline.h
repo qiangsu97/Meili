@@ -3,9 +3,9 @@
 
 #include <rte_mbuf.h>
 
-#include "../lib/meili.h"
-
 #include "../utils/conf/conf.h"
+
+#include "../lib/net/meili_pkt.h"
 
 
 
@@ -138,7 +138,7 @@ enum pipeline_type {
                                     else{*y = -1;}
 
 struct pipeline_stage{
-    meili_apis apis;
+    void *apis;
 
     enum pipeline_type type;    /* stage workload type */
     //bool push_batch;
@@ -233,26 +233,27 @@ typedef struct pipeline_func {
 /* register functions */
 //int seq_pipeline_stage_func_reg(struct pipeline_stage *stage);
 //int reorder_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int echo_pipeline_stage_func_reg(struct pipeline_stage *self);
-int ddos_pipeline_stage_func_reg(struct pipeline_stage *self);
-int regex_bf_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int compress_bf_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int aes_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int sha_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int firewall_acl_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int monitor_cms_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int monitor_hll_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int l3_lb_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int api_gw_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int http_parser_pipeline_stage_func_reg(struct pipeline_stage *stage);
-/* applications */
-int app_ids_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int app_ipcomp_gw_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int app_ipsec_gw_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int app_fw_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int app_flow_mon_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int app_api_gw_pipeline_stage_func_reg(struct pipeline_stage *stage);
-int app_l7_lb_pipeline_stage_func_reg(struct pipeline_stage *stage);
+
+// int echo_pipeline_stage_func_reg(struct pipeline_stage *self);
+// int ddos_pipeline_stage_func_reg(struct pipeline_stage *self);
+// int regex_bf_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int compress_bf_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int aes_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int sha_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int firewall_acl_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int monitor_cms_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int monitor_hll_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int l3_lb_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int api_gw_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int http_parser_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// /* applications */
+// int app_ids_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int app_ipcomp_gw_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int app_ipsec_gw_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int app_fw_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int app_flow_mon_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int app_api_gw_pipeline_stage_func_reg(struct pipeline_stage *stage);
+// int app_l7_lb_pipeline_stage_func_reg(struct pipeline_stage *stage);
 
 
 /* general functions for pipeline stages */

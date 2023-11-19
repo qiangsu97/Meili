@@ -13,9 +13,9 @@ MEILI_END_DECLS
 
 
 // Meili dataplane API invocation
-MEILI_START_DEFINE(EXAMPLE)
+MEILI_EXEC(EXAMPLE)
 Meili.pkt_flt(self, ddos_check, pkt);
 // Meili.pkt_flt(void *url_check, pkt);
 // Meili.pkt_trans(void *ipsec, pkt);
 // Meili.AES(pkt, ERY_TAG,int BLK_SIZE);
-MEILI_END_DEFINE
+MEILI_END_DECLS

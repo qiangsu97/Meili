@@ -8,7 +8,7 @@
 #include "pipeline.h"
 #include "run_mode.h"
 #include "../utils/utils.h"
-#include "../apps/app_shared.h"
+// #include "../apps/app_shared.h"
 
 #include "../packet_ordering/packet_ordering.h"
 #include "../packet_timestamping/packet_timestamping.h"
@@ -17,28 +17,28 @@
 
 typedef int (*pl_register_functions)(struct pipeline_stage *);
 
-pl_register_functions pl_reg_funcs[PL_NB_OF_STAGE_TYPES] = {
-    echo_pipeline_stage_func_reg,
-    ddos_pipeline_stage_func_reg,
-    regex_bf_pipeline_stage_func_reg,
-    compress_bf_pipeline_stage_func_reg,
-    aes_pipeline_stage_func_reg,
-    sha_pipeline_stage_func_reg,
-    firewall_acl_pipeline_stage_func_reg,
-    monitor_cms_pipeline_stage_func_reg,
-    monitor_hll_pipeline_stage_func_reg,
-    l3_lb_pipeline_stage_func_reg,
-    api_gw_pipeline_stage_func_reg,
-    http_parser_pipeline_stage_func_reg,
-    app_ids_pipeline_stage_func_reg,
-    app_ipcomp_gw_pipeline_stage_func_reg,
-    app_ipsec_gw_pipeline_stage_func_reg,
-    app_fw_pipeline_stage_func_reg,
-    app_flow_mon_pipeline_stage_func_reg,
-    app_api_gw_pipeline_stage_func_reg,
-    app_l7_lb_pipeline_stage_func_reg,
-    NULL
-};
+// pl_register_functions pl_reg_funcs[PL_NB_OF_STAGE_TYPES] = {
+//     echo_pipeline_stage_func_reg,
+//     ddos_pipeline_stage_func_reg,
+//     regex_bf_pipeline_stage_func_reg,
+//     compress_bf_pipeline_stage_func_reg,
+//     aes_pipeline_stage_func_reg,
+//     sha_pipeline_stage_func_reg,
+//     firewall_acl_pipeline_stage_func_reg,
+//     monitor_cms_pipeline_stage_func_reg,
+//     monitor_hll_pipeline_stage_func_reg,
+//     l3_lb_pipeline_stage_func_reg,
+//     api_gw_pipeline_stage_func_reg,
+//     http_parser_pipeline_stage_func_reg,
+//     app_ids_pipeline_stage_func_reg,
+//     app_ipcomp_gw_pipeline_stage_func_reg,
+//     app_ipsec_gw_pipeline_stage_func_reg,
+//     app_fw_pipeline_stage_func_reg,
+//     app_flow_mon_pipeline_stage_func_reg,
+//     app_api_gw_pipeline_stage_func_reg,
+//     app_l7_lb_pipeline_stage_func_reg,
+//     NULL
+// };
 
 static int
 init_dpdk(struct pipeline_conf *run_conf)
@@ -366,6 +366,13 @@ int pipeline_stage_run_safe(struct pipeline_stage *self){
     int nb_enq = 0;
     int to_enq = 0;
     int tot_enq = 0;
+
+    struct pipeline_func *funcs = self->funcs;
+
+	if(!funcs->pipeline_stage_exec){
+        MEILI_LOG_WARN("Invalid execution function");
+        return -EINVAL;
+    }
 
     // main loop of pipeline stage
     while(!force_quit && pl_conf->running == true){
@@ -921,13 +928,13 @@ int pipeline_run(struct pipeline *pl){
         self->worker_qid = worker_qid;
 
         /* if the stage has substage, assign core id and worker qid as well */
-        if(self->has_substage){
-            struct app_state *mystate = (struct app_state *)self->state;
-            for(int sub_index=0; sub_index<mystate->nb_stage; sub_index++){
-                mystate->stages[sub_index]->core_id = lcore_id;
-                mystate->stages[sub_index]->worker_qid = worker_qid;    
-            }
-        }
+        // if(self->has_substage){
+        //     struct app_state *mystate = (struct app_state *)self->state;
+        //     for(int sub_index=0; sub_index<mystate->nb_stage; sub_index++){
+        //         mystate->stages[sub_index]->core_id = lcore_id;
+        //         mystate->stages[sub_index]->worker_qid = worker_qid;    
+        //     }
+        // }
 
         worker_qid++;
         #ifndef BASELINE_MODE
