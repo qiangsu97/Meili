@@ -5,12 +5,7 @@
 APP = meili
 
 # all source are stored in SRCS-y
-SRCS-ALL := src/*.c src/*/*.c src/*/*/*.c
-SRCS-main := src/*.c
-SRCS-stages := src/stages/*/*.c
-SRCS-apps := src/stages/*/*.c
-SRCS-special-stages := src/packet_ordering/*.c src/packet_timestamping/*.c
-SRCS-utils := src/utils/*.c src/utils/*/*.c
+SRCS-ALL := $(shell find ./src -type f -name '*.c')
 
 SRCS-y := $(SRCS-ALL)
 
@@ -63,9 +58,11 @@ GIT_VERSION := "$(shell git rev-parse --short HEAD || echo "release")"
 CFLAGS += -DGIT_SHA=\"$(GIT_VERSION)\"
 
 build/$(APP)-shared: $(SRCS-y) Makefile $(PC_FILE) | build
+	@/bin/echo ' ' CC $<
 	$(CC) $(CFLAGS) $(SRCS-y) -o $@ $(LDFLAGS) $(LDFLAGS_SHARED)
 
 build/$(APP)-static: $(SRCS-y) Makefile $(PC_FILE) | build
+	@/bin/echo ' ' CC $<
 	$(CC) $(CFLAGS) $(SRCS-y) -o $@ $(LDFLAGS) $(LDFLAGS_STATIC)
 
 build:

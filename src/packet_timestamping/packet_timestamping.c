@@ -24,7 +24,7 @@
 #include <rte_ring.h>
 // #include "rte_reorder/rte_reorder.h"
 
-#include "../utils/rxpb_log.h"
+#include "../utils/log/log.h"
 
 int
 pkt_ts_init(int *offset)
@@ -40,7 +40,7 @@ pkt_ts_init(int *offset)
     *offset = timestamp_init();
 
 	if (*offset < 0) {
-		PL_LOG_ERR("Failed to register mbuf field for tiemstamp, rte_errno: %i", rte_errno);
+		MEILI_LOG_ERR("Failed to register mbuf field for tiemstamp, rte_errno: %i", rte_errno);
 		return -ENOMEM;
 	}
     //memset(self->state, 0x00, sizeof(struct entropy_state));

@@ -1,7 +1,7 @@
 #ifndef _PACKET_TIMESTAMPING_H
 #define _PACKET_TIMESTAMPING_H
 
-#include "../pipeline.h"
+#include "../runtime/meili_runtime.h"
 #include <stdint.h>
 #include <rte_mbuf.h>
 #include <rte_mbuf_dyn.h>
