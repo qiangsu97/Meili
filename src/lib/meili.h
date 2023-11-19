@@ -29,6 +29,4 @@ typedef struct _meili_apis{
 
 
 
-
-
 #endif /* _INCLUDE_MEILI_H_ */

@@ -9,8 +9,8 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 
-#include "../../utils/flow_utils.h"
-#include "../../utils/pkt_utils.h"
+#include "../../utils/net/flow_utils.h"
+#include "../../utils/net/pkt_utils.h"
 
 #define L3_LB_MAX_FT_SIZE 128
 #define L3_LB_EXPIRE_CYCLES 32

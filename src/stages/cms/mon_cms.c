@@ -13,8 +13,8 @@
 #include "mon_cms.h"
 #include "../lib/cms/count-min-sketch.h"
 #include "../../utils/log/log.h"
-#include "../../utils/flow_utils.h"
-#include "../../utils/pkt_utils.h"
+#include "../../utils/net/flow_utils.h"
+#include "../../utils/net/pkt_utils.h"
 
 
 

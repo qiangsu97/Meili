@@ -58,9 +58,11 @@ GIT_VERSION := "$(shell git rev-parse --short HEAD || echo "release")"
 CFLAGS += -DGIT_SHA=\"$(GIT_VERSION)\"
 
 build/$(APP)-shared: $(SRCS-y) Makefile $(PC_FILE) | build
+	@/bin/echo ' ' CC $<
 	$(CC) $(CFLAGS) $(SRCS-y) -o $@ $(LDFLAGS) $(LDFLAGS_SHARED)
 
 build/$(APP)-static: $(SRCS-y) Makefile $(PC_FILE) | build
+	@/bin/echo ' ' CC $<
 	$(CC) $(CFLAGS) $(SRCS-y) -o $@ $(LDFLAGS) $(LDFLAGS_STATIC)
 
 build:

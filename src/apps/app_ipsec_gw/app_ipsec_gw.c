@@ -1,5 +1,5 @@
 /*
- * APP: Intrusion Detection
+ * APP: IPsec Gateway
  * - DDoS detection and deep packet inspection
  * -> [DDoS] -> [Regex]
  */
@@ -53,11 +53,13 @@ app_ipsec_gw_exec(struct pipeline_stage *self, struct rte_mbuf **mbuf, int nb_en
 
     /* regex and aes conduct out-of-order processing */
     /* DDoS */
+    /* packet trans */
     sub_stage = mystate->stages[0];
     sub_stage->funcs->pipeline_stage_exec(sub_stage, mbuf, nb_enq, 
                             &mbuf, nb_deq); 
     /* *mbuf_out = mbuf */  
 
+    /* regex */
     /* Regex, in this stage, only use *(&mbuf_temp) */
     sub_stage = mystate->stages[1];
     sub_stage->funcs->pipeline_stage_exec(sub_stage, mbuf, *nb_deq, 
