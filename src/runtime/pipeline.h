@@ -231,6 +231,7 @@ typedef struct pipeline_func {
 
 
 /* register functions */
+int meili_pipeline_stage_func_reg(struct pipeline_stage *stage);
 //int seq_pipeline_stage_func_reg(struct pipeline_stage *stage);
 //int reorder_pipeline_stage_func_reg(struct pipeline_stage *stage);
 
@@ -268,7 +269,8 @@ int pipeline_stage_run_safe(struct pipeline_stage *self);
 
 /* functions for pipelines */
 int pipeline_runtime_init(struct pipeline *pl, struct pipeline_conf *run_conf, char *err);
-int pipeline_init_safe(struct pipeline *pl, char *config_path);
+int pipeline_init_safe(struct pipeline *pl);
+// int pipeline_init_safe(struct pipeline *pl, char *config_path);
 int pipeline_free(struct pipeline *pl);
 int pipeline_run(struct pipeline *pl);
 

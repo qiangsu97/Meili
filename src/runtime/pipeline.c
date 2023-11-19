@@ -138,299 +138,9 @@ end:
     return ret;
 }
 
-/* REGISTER FUNCTION HERE */
-int pipeline_stage_register_safe(struct pipeline_stage *self, enum pipeline_type pp_type){
-    /* register all functions for this pipeline */
-    if(pl_reg_funcs[pp_type](self)){
-        return pl_reg_funcs[pp_type](self);
-    }
 
-    return -EINVAL;
-
-}
-
-/*  pipeline_stage_init_safe
- *  - allocate space for and initialize some fields of a pipeline_stage structure
- *  - fields that are not initalized here: core_id(init before launching), worker_qid(init before launching), pl(init by pipeline topo init)
- */
-int pipeline_stage_init_safe(struct pipeline_stage *self, enum pipeline_type pp_type){
-    
-    int ret;
-    struct pipeline_func * funcs = (struct pipeline_func *)malloc(sizeof(struct pipeline_func));
-    /* allocate space for funcs */
-    self->funcs = funcs;
-
-    if(!self->funcs){
-        return -ENOMEM;
-    }
-
-    /* general fields a pipeline stage must have */
-    self->type = pp_type;
-    self->batch_size = DEFAULT_BATCH_SIZE;
-    self->has_substage = false;
-    #ifdef SHARED_BUFFER
-    self->ring_in = NULL;
-    self->ring_out = NULL;
-    #else
-    self->nb_ring_in = 0;
-    self->nb_ring_out = 0;
-    #endif
-	
-    /* register timestamping module */
-    //ret = pkt_ts_init(&self->ts_start_offset);
-    //	if(ret){
-    //		return -EINVAL;
-    //	}
-    //ret = pkt_ts_init(&self->ts_end_offset);
-    //	if(ret){
-    //		return -EINVAL;
-    //	}
-
-
-    /* register functions for this stage */
-    pipeline_stage_register_safe(self, pp_type);
-
-    /* type-specific initialization */
-	if (funcs->pipeline_stage_init){
-        return funcs->pipeline_stage_init(self);
-    }
-		
-    return -EINVAL;
-}
-
-int pipeline_stage_free_safe(struct pipeline_stage *self){
-
-    struct pipeline_func *funcs = self->funcs;
-
-    /* type-specific free */
-	if (funcs->pipeline_stage_free){
-        if(funcs->pipeline_stage_free(self)){
-            return -EINVAL;
-        }
-    }
-    else{
-        return -EINVAL;
-    }
-
-    free(self->funcs);
-    /* we assume all pp stages are allocated using malloc */
-    free(self);
-
-    // if(self->ring_in){
-    //     rte_ring_free(self->ring_in);
-    // }
-    // if(self->ring_out){
-    //     rte_ring_free(self->ring_out);
-    // }
-
-    /* for rte-related space, i.e. ring_in and ring_out, main() uses rte_eal_cleanup() to free */
-    return 0;   
-		
-}
-
-/* pipeline processing operation on a single mbuf object */
-// int pipeline_stage_exec_safe(struct pipeline_stage *self, 
-//                             struct rte_mbuf **mbuf,
-//                             int nb_enq,
-//                             struct rte_mbuf ***mbuf_out,
-//                             int *nb_deq){
-
-//     struct pipeline_func *funcs = self->funcs;
-
-// 	if(funcs->pipeline_stage_exec){
-//         return funcs->pipeline_stage_exec(self, mbuf, nb_enq, mbuf_out, nb_deq);
-//     }
-		
-//     return -EINVAL;
-// }
-
-/* worker function for a pipeline */
-#ifdef SHARED_BUFFER 
-int pipeline_stage_run_safe(struct pipeline_stage *self){
-    int burst_size = self->batch_size;
-    struct rte_ring *ring_in = self->ring_in;
-    struct rte_ring *ring_out = self->ring_out;
-
-    
-
-    struct rte_mbuf *mbufs_in[MAX_PKTS_BURST];
-    struct rte_mbuf *mbufs_out_static[MAX_PKTS_BURST];
-
-    struct rte_mbuf **mbufs_out = mbufs_out_static;
-
-
-    int out_num = 0;
-
-    struct pipeline *pl = (struct pipeline *)self->pl;
-    struct pipeline_conf *pl_conf = &(pl->pl_conf);
-
-    int qid = self->worker_qid;
-    rb_stats_t *stats = pl_conf->stats;
-	run_mode_stats_t *rm_stats = &stats->rm_stats[qid];
-
-    if(!ring_in || !ring_out){
-        return -EINVAL;
-    }
-
-    int nb_deq = 0;
-    int nb_enq = 0;
-    int to_enq = 0;
-    int tot_enq = 0;
-
-    struct pipeline_func *funcs = self->funcs;
-
-	if(!funcs->pipeline_stage_exec){
-        MEILI_LOG_WARN("Invalid execution function");
-        return -EINVAL;
-    }
-
-
-    // main loop of pipeline stage
-    while(!force_quit && pl_conf->running == true){
-        /* read packets from ring_in */
-        nb_deq = rte_ring_dequeue_burst(ring_in, (void *)mbufs_in, burst_size, NULL);
-        for(int k=0; k<nb_deq ; k++){
-            //printf("updating stats for core %d\n",qid);
-            rm_stats->rx_buf_bytes += mbufs_in[k]->data_len;
-        }
-        rm_stats->rx_buf_cnt += nb_deq;
-        //pkt_ts_exec(self->ts_start_offset, mbufs_in, nb_deq);
-
-        /* process packets */
-        //pipeline_stage_exec_safe(self, mbufs_in, nb_deq, &mbufs_out, &out_num);
-        for(int i=0; i<nb_deq; i++){
-            funcs->pipeline_stage_exec(self, mbufs_in[i]);
-            mbufs_out[i] = mbufs_in[i];  
-            out_num++;
-        }
-
-
-        /* put packets into ring_out */
-        tot_enq = 0;
-        while(out_num > 0){
-            // if(self->core_id == 2){
-            //     printf("out_num=%d\n",out_num);
-            // }
-            to_enq = RTE_MIN(out_num, burst_size);
-            nb_enq = rte_ring_enqueue_burst(ring_out, (void *)(&mbufs_out[tot_enq]), to_enq, NULL);
-            tot_enq += nb_enq;
-            out_num -= nb_enq;
-        }
-        /* update stats */
-        //pkt_ts_exec(self->ts_end_offset, mbufs_out, tot_enq);
-
-        for(int k=0; k<tot_enq ; k++){
-            //printf("updating stats for core %d\n",qid);
-            rm_stats->tx_buf_bytes += mbufs_out[k]->data_len;
-        }
-        rm_stats->tx_buf_cnt += tot_enq;
-        
-    }
-
-    return 0;
-}
-#else
-int pipeline_stage_run_safe(struct pipeline_stage *self){
-    int burst_size = self->batch_size;
-    struct rte_ring **ring_in_array = self->ring_in;
-    struct rte_ring **ring_out_array = self->ring_out;
-    struct rte_ring *ring_in = NULL;
-    struct rte_ring *ring_out = NULL;
-    int nb_ring_in = self->nb_ring_in;
-    int nb_ring_out = self->nb_ring_out;
-    int ring_in_index = 0;
-    int ring_out_index = 0;
-
-    
-
-    struct rte_mbuf *mbufs_in[MAX_PKTS_BURST];
-    struct rte_mbuf *mbufs_out_static[MAX_PKTS_BURST];
-
-    struct rte_mbuf **mbufs_out = mbufs_out_static;
-
-
-    int out_num = 0;
-
-    struct pipeline *pl = (struct pipeline *)self->pl;
-    struct pipeline_conf *pl_conf = &(pl->pl_conf);
-
-    int qid = self->worker_qid;
-    rb_stats_t *stats = pl_conf->stats;
-	run_mode_stats_t *rm_stats = &stats->rm_stats[qid];
-
-    if(!nb_ring_in || !nb_ring_out){
-        return -EINVAL;
-    }
-
-    int nb_deq = 0;
-    int nb_enq = 0;
-    int to_enq = 0;
-    int tot_enq = 0;
-
-    struct pipeline_func *funcs = self->funcs;
-
-	if(!funcs->pipeline_stage_exec){
-        MEILI_LOG_WARN("Invalid execution function");
-        return -EINVAL;
-    }
-
-    // main loop of pipeline stage
-    while(!force_quit && pl_conf->running == true){
-        /* read packets from ring_in in a round-robin manner */
-        ring_in = ring_in_array[ring_in_index];
-        nb_deq = rte_ring_dequeue_burst(ring_in, (void *)mbufs_in, burst_size, NULL);
-        ring_in_index = (ring_in_index+1)%nb_ring_in;
-
-        /* TODO: only add this logic to stages that process packets without using external accelerators because accelerator can also dequeue previous pkts without enqueue this batch of pkts. */
-        // if(!nb_deq){
-        //     goto increment_out_index;
-        // }
-
-        //pkt_ts_exec(self->ts_start_offset, mbufs_in, nb_deq);
-        /* process packets */
-        //pipeline_stage_exec_safe(self, mbufs_in, nb_deq, &mbufs_out, &out_num);
-        for(int i=0; i<nb_deq; i++){
-            funcs->pipeline_stage_exec(self, mbufs_in[i]);
-            mbufs_out[i] = mbufs_in[i];  
-            out_num++;
-        }
-        
-        
-        //pkt_ts_exec(self->ts_end_offset, mbufs_out, out_num);
-
-        /* put packets into ring_out in a round-robin manner */
-        ring_out = ring_out_array[ring_out_index];
-        
-        tot_enq = 0;
-        while(out_num > 0) {
-            to_enq = RTE_MIN(out_num, burst_size);
-            nb_enq = rte_ring_enqueue_burst(ring_out, (void *)(&mbufs_out[tot_enq]), to_enq, NULL);
-            tot_enq += nb_enq;
-            out_num -= nb_enq;
-        }
-        ring_out_index = (ring_out_index+1)%nb_ring_out;
-        /* update statics */
-        for(int k=0; k<tot_enq ; k++){
-            //printf("updating stats for core %d\n",qid);
-            rm_stats->tx_buf_bytes += mbufs_out[k]->data_len;
-        }
-        rm_stats->tx_buf_cnt += tot_enq;
-        
-    }
-
-    return 0;
-}
-#endif
-
-
-int pipeline_init_safe(struct pipeline *pl, char *config_path){
+int pipeline_init_safe(struct pipeline *pl){
     /* TODO optional: connect pipeline stages based on DAG, currently we connect them using very simple topo(fully connected topo) */
-    
-    FILE *fp;
-    char buf[CONFIG_BUF_LEN];
-    int k=0;
-    char *token;
-    char *line;
     
     int nb_pl_stages = 0 ;
     enum pipeline_type *stage_types =NULL;
@@ -460,53 +170,12 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path){
 
     int ret = 0;
 
-    /* Read pipeline topo from pl.conf */
-    MEILI_LOG_INFO("Initializing pl from file %s\n",config_path);
-    fp = fopen(config_path,"r"); 
-    if(fp == NULL){
-        MEILI_LOG_ERR("Failed to load pl config file!");
-        return -EINVAL;
-    }
 
-    while(!feof(fp)){
-        if(pl->nb_pl_stages >= NB_PIPELINE_STAGE_MAX){
-            MEILI_LOG_WARN("# of stages exceeding pre-defined threshold");
-            break;
-        }
+    /* ---------------control plane specified values------------------ */
+    pl->nb_pl_stages = 1;
+    nb_inst_per_pl_stage[0] = PL_MAIN;
+    pl->nb_inst_per_pl_stage[0] = 1;
 
-        if(fgets(buf, CONFIG_BUF_LEN, fp) == NULL){break;}
-        if(buf[0] == '#' || buf[0] == '\0' || buf[0] == '\n'){;}
-        else
-        {   
-	        line = strtok(buf,"\n");		
-            token = strtok(line," ");
-            GET_STAGE_TYPE_NUMBER(token , &pl->stage_types[k]);
-            //debug 
-            //printf("%s ",token);
-
-            if(pl->stage_types[k] >= PL_NB_OF_STAGE_TYPES){
-                MEILI_LOG_ERR("stage type of stage %d is invalid", k);
-                pl->stage_types[k] = PL_NB_OF_STAGE_TYPES-1;
-                return -EINVAL;
-            }
-
-            token = strtok(NULL," ");
-	        //debug
-            //printf("%s\n",token);
-            pl->nb_inst_per_pl_stage[k] = atoi(token);
-            if(pl->nb_inst_per_pl_stage[k] > NB_INSTANCE_PER_PIPELINE_STAGE_MAX){
-                MEILI_LOG_WARN("# of stage instances of stage %d exceeding pre-defined threshold", k);   
-                return -EINVAL; 
-            }
-            
-            pl->nb_pl_stage_inst += pl->nb_inst_per_pl_stage[k];
-            k++;
-            pl->nb_pl_stages++;
-        } 
-    }
-    fclose(fp); 
-
-    /* Assign parsed value from .conf topo */
     nb_pl_stages = pl->nb_pl_stages;
     stage_types = pl->stage_types;
     nb_inst_per_pl_stage = pl->nb_inst_per_pl_stage;
@@ -544,21 +213,15 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path){
             return -EINVAL;
         }
         
-       // pl->nb_pl_stage_inst += nb_inst_per_pl_stage[i];
         for(int j=0; j<nb_inst_per_pl_stage[i]; j++){
              /* allocated space for each stage */
             self = (struct pipeline_stage *)malloc(sizeof(struct pipeline_stage));
             
             self->pl = (void *)pl;
 
-            /* debug for inter-stage interference */
-            // if(j!=0){
-            //     ret = pipeline_stage_init_safe(self, PL_ECHO);
-            // }
-            // else{
-            //     ret = pipeline_stage_init_safe(self, stage_types[i]);
-            // }
             ret = pipeline_stage_init_safe(self, stage_types[i]);
+
+            /* ---------TODO: reload meili api functions based on control plane requirements -------------*/
 
             if(ret){
                 GET_STAGE_TYPE_STRING(stage_types[i],stage_type_name);
@@ -777,6 +440,638 @@ int pipeline_init_safe(struct pipeline *pl, char *config_path){
 
     return 0;
 }
+
+/* REGISTER FUNCTION HERE */
+int pipeline_stage_register_safe(struct pipeline_stage *self, enum pipeline_type pp_type){
+    /* register all functions for this pipeline */
+    meili_pipeline_stage_func_reg(self);
+
+    return -EINVAL;
+}
+
+
+
+// /* REGISTER FUNCTION HERE */
+// int pipeline_stage_register_safe(struct pipeline_stage *self, enum pipeline_type pp_type){
+//     /* register all functions for this pipeline */
+//     if(pl_reg_funcs[pp_type](self)){
+//         return pl_reg_funcs[pp_type](self);
+//     }
+
+//     return -EINVAL;
+
+// }
+
+/*  pipeline_stage_init_safe
+ *  - allocate space for and initialize some fields of a pipeline_stage structure
+ *  - fields that are not initalized here: core_id(init before launching), worker_qid(init before launching), pl(init by pipeline topo init)
+ */
+int pipeline_stage_init_safe(struct pipeline_stage *self, enum pipeline_type pp_type){
+    
+    int ret;
+    struct pipeline_func * funcs = (struct pipeline_func *)malloc(sizeof(struct pipeline_func));
+    /* allocate space for funcs */
+    self->funcs = funcs;
+
+    if(!self->funcs){
+        return -ENOMEM;
+    }
+
+    /* general fields a pipeline stage must have */
+    self->type = pp_type;
+    self->batch_size = DEFAULT_BATCH_SIZE;
+    self->has_substage = false;
+    #ifdef SHARED_BUFFER
+    self->ring_in = NULL;
+    self->ring_out = NULL;
+    #else
+    self->nb_ring_in = 0;
+    self->nb_ring_out = 0;
+    #endif
+
+    /* register functions for this stage */
+    pipeline_stage_register_safe(self, pp_type);
+
+    /* type-specific initialization */
+	if (funcs->pipeline_stage_init){
+        return funcs->pipeline_stage_init(self);
+    }
+		
+    return -EINVAL;
+}
+
+// int pipeline_stage_free_safe(struct pipeline_stage *self){
+
+//     struct pipeline_func *funcs = self->funcs;
+
+//     /* type-specific free */
+// 	if (funcs->pipeline_stage_free){
+//         if(funcs->pipeline_stage_free(self)){
+//             return -EINVAL;
+//         }
+//     }
+//     else{
+//         return -EINVAL;
+//     }
+
+//     free(self->funcs);
+//     /* we assume all pp stages are allocated using malloc */
+//     free(self);
+
+//     // if(self->ring_in){
+//     //     rte_ring_free(self->ring_in);
+//     // }
+//     // if(self->ring_out){
+//     //     rte_ring_free(self->ring_out);
+//     // }
+
+//     /* for rte-related space, i.e. ring_in and ring_out, main() uses rte_eal_cleanup() to free */
+//     return 0;   
+		
+// }
+
+// /* pipeline processing operation on a single mbuf object */
+// // int pipeline_stage_exec_safe(struct pipeline_stage *self, 
+// //                             struct rte_mbuf **mbuf,
+// //                             int nb_enq,
+// //                             struct rte_mbuf ***mbuf_out,
+// //                             int *nb_deq){
+
+// //     struct pipeline_func *funcs = self->funcs;
+
+// // 	if(funcs->pipeline_stage_exec){
+// //         return funcs->pipeline_stage_exec(self, mbuf, nb_enq, mbuf_out, nb_deq);
+// //     }
+		
+// //     return -EINVAL;
+// // }
+
+// /* worker function for a pipeline */
+// #ifdef SHARED_BUFFER 
+// int pipeline_stage_run_safe(struct pipeline_stage *self){
+//     int burst_size = self->batch_size;
+//     struct rte_ring *ring_in = self->ring_in;
+//     struct rte_ring *ring_out = self->ring_out;
+
+    
+
+//     struct rte_mbuf *mbufs_in[MAX_PKTS_BURST];
+//     struct rte_mbuf *mbufs_out_static[MAX_PKTS_BURST];
+
+//     struct rte_mbuf **mbufs_out = mbufs_out_static;
+
+
+//     int out_num = 0;
+
+//     struct pipeline *pl = (struct pipeline *)self->pl;
+//     struct pipeline_conf *pl_conf = &(pl->pl_conf);
+
+//     int qid = self->worker_qid;
+//     rb_stats_t *stats = pl_conf->stats;
+// 	run_mode_stats_t *rm_stats = &stats->rm_stats[qid];
+
+//     if(!ring_in || !ring_out){
+//         return -EINVAL;
+//     }
+
+//     int nb_deq = 0;
+//     int nb_enq = 0;
+//     int to_enq = 0;
+//     int tot_enq = 0;
+
+//     struct pipeline_func *funcs = self->funcs;
+
+// 	if(!funcs->pipeline_stage_exec){
+//         MEILI_LOG_WARN("Invalid execution function");
+//         return -EINVAL;
+//     }
+
+
+//     // main loop of pipeline stage
+//     while(!force_quit && pl_conf->running == true){
+//         /* read packets from ring_in */
+//         nb_deq = rte_ring_dequeue_burst(ring_in, (void *)mbufs_in, burst_size, NULL);
+//         for(int k=0; k<nb_deq ; k++){
+//             //printf("updating stats for core %d\n",qid);
+//             rm_stats->rx_buf_bytes += mbufs_in[k]->data_len;
+//         }
+//         rm_stats->rx_buf_cnt += nb_deq;
+//         //pkt_ts_exec(self->ts_start_offset, mbufs_in, nb_deq);
+
+//         /* process packets */
+//         //pipeline_stage_exec_safe(self, mbufs_in, nb_deq, &mbufs_out, &out_num);
+//         for(int i=0; i<nb_deq; i++){
+//             funcs->pipeline_stage_exec(self, mbufs_in[i]);
+//             mbufs_out[i] = mbufs_in[i];  
+//             out_num++;
+//         }
+
+
+//         /* put packets into ring_out */
+//         tot_enq = 0;
+//         while(out_num > 0){
+//             // if(self->core_id == 2){
+//             //     printf("out_num=%d\n",out_num);
+//             // }
+//             to_enq = RTE_MIN(out_num, burst_size);
+//             nb_enq = rte_ring_enqueue_burst(ring_out, (void *)(&mbufs_out[tot_enq]), to_enq, NULL);
+//             tot_enq += nb_enq;
+//             out_num -= nb_enq;
+//         }
+//         /* update stats */
+//         //pkt_ts_exec(self->ts_end_offset, mbufs_out, tot_enq);
+
+//         for(int k=0; k<tot_enq ; k++){
+//             //printf("updating stats for core %d\n",qid);
+//             rm_stats->tx_buf_bytes += mbufs_out[k]->data_len;
+//         }
+//         rm_stats->tx_buf_cnt += tot_enq;
+        
+//     }
+
+//     return 0;
+// }
+// #else
+// int pipeline_stage_run_safe(struct pipeline_stage *self){
+//     int burst_size = self->batch_size;
+//     struct rte_ring **ring_in_array = self->ring_in;
+//     struct rte_ring **ring_out_array = self->ring_out;
+//     struct rte_ring *ring_in = NULL;
+//     struct rte_ring *ring_out = NULL;
+//     int nb_ring_in = self->nb_ring_in;
+//     int nb_ring_out = self->nb_ring_out;
+//     int ring_in_index = 0;
+//     int ring_out_index = 0;
+
+    
+
+//     struct rte_mbuf *mbufs_in[MAX_PKTS_BURST];
+//     struct rte_mbuf *mbufs_out_static[MAX_PKTS_BURST];
+
+//     struct rte_mbuf **mbufs_out = mbufs_out_static;
+
+
+//     int out_num = 0;
+
+//     struct pipeline *pl = (struct pipeline *)self->pl;
+//     struct pipeline_conf *pl_conf = &(pl->pl_conf);
+
+//     int qid = self->worker_qid;
+//     rb_stats_t *stats = pl_conf->stats;
+// 	run_mode_stats_t *rm_stats = &stats->rm_stats[qid];
+
+//     if(!nb_ring_in || !nb_ring_out){
+//         return -EINVAL;
+//     }
+
+//     int nb_deq = 0;
+//     int nb_enq = 0;
+//     int to_enq = 0;
+//     int tot_enq = 0;
+
+//     // main loop of pipeline stage
+//     while(!force_quit && pl_conf->running == true){
+//         /* read packets from ring_in in a round-robin manner */
+//         ring_in = ring_in_array[ring_in_index];
+//         nb_deq = rte_ring_dequeue_burst(ring_in, (void *)mbufs_in, burst_size, NULL);
+//         ring_in_index = (ring_in_index+1)%nb_ring_in;
+
+//         /* TODO: only add this logic to stages that process packets without using external accelerators because accelerator can also dequeue previous pkts without enqueue this batch of pkts. */
+//         // if(!nb_deq){
+//         //     goto increment_out_index;
+//         // }
+
+//         //pkt_ts_exec(self->ts_start_offset, mbufs_in, nb_deq);
+//         /* process packets */
+//         //pipeline_stage_exec_safe(self, mbufs_in, nb_deq, &mbufs_out, &out_num);
+//         for(int i=0; i<nb_deq; i++){
+//             funcs->pipeline_stage_exec(self, mbufs_in[i]);
+//             mbufs_out[i] = mbufs_in[i];  
+//             out_num++;
+//         }
+        
+        
+//         //pkt_ts_exec(self->ts_end_offset, mbufs_out, out_num);
+
+//         /* put packets into ring_out in a round-robin manner */
+//         ring_out = ring_out_array[ring_out_index];
+        
+//         tot_enq = 0;
+//         while(out_num > 0) {
+//             to_enq = RTE_MIN(out_num, burst_size);
+//             nb_enq = rte_ring_enqueue_burst(ring_out, (void *)(&mbufs_out[tot_enq]), to_enq, NULL);
+//             tot_enq += nb_enq;
+//             out_num -= nb_enq;
+//         }
+//         ring_out_index = (ring_out_index+1)%nb_ring_out;
+//         /* update statics */
+//         for(int k=0; k<tot_enq ; k++){
+//             //printf("updating stats for core %d\n",qid);
+//             rm_stats->tx_buf_bytes += mbufs_out[k]->data_len;
+//         }
+//         rm_stats->tx_buf_cnt += tot_enq;
+        
+//     }
+
+//     return 0;
+// }
+// #endif
+
+
+// int pipeline_init_safe(struct pipeline *pl, char *config_path){
+//     /* TODO optional: connect pipeline stages based on DAG, currently we connect them using very simple topo(fully connected topo) */
+    
+//     FILE *fp;
+//     char buf[CONFIG_BUF_LEN];
+//     int k=0;
+//     char *token;
+//     char *line;
+    
+//     int nb_pl_stages = 0 ;
+//     enum pipeline_type *stage_types =NULL;
+//     int *nb_inst_per_pl_stage = NULL;
+//     struct pipeline_stage *self = NULL;
+//     struct pipeline_stage *child = NULL;
+
+//     char ring_name[64];
+
+//     struct pipeline_conf *run_conf = &(pl->pl_conf);
+
+//     /* assign initial value for each stage to NULL */
+//     pl->nb_pl_stages = 0;
+//     pl->nb_pl_stage_inst = 0;
+    
+//     pl->mbuf_pool = NULL;
+
+//     pl->ts_start_offset = 0;
+//     pl->ts_end_offset = 0;
+
+//     memset(&pl->seq_stage, 0x00, sizeof(struct pipeline_stage));
+//     memset(&pl->reorder_stage, 0x00, sizeof(struct pipeline_stage));
+
+
+//     char pool_name[50];
+//     char stage_type_name[32];
+
+//     int ret = 0;
+
+//     /* Read pipeline topo from pl.conf */
+//     MEILI_LOG_INFO("Initializing pl from file %s\n",config_path);
+//     fp = fopen(config_path,"r"); 
+//     if(fp == NULL){
+//         MEILI_LOG_ERR("Failed to load pl config file!");
+//         return -EINVAL;
+//     }
+
+//     while(!feof(fp)){
+//         if(pl->nb_pl_stages >= NB_PIPELINE_STAGE_MAX){
+//             MEILI_LOG_WARN("# of stages exceeding pre-defined threshold");
+//             break;
+//         }
+
+//         if(fgets(buf, CONFIG_BUF_LEN, fp) == NULL){break;}
+//         if(buf[0] == '#' || buf[0] == '\0' || buf[0] == '\n'){;}
+//         else
+//         {   
+// 	        line = strtok(buf,"\n");		
+//             token = strtok(line," ");
+//             GET_STAGE_TYPE_NUMBER(token , &pl->stage_types[k]);
+//             //debug 
+//             //printf("%s ",token);
+
+//             if(pl->stage_types[k] >= PL_NB_OF_STAGE_TYPES){
+//                 MEILI_LOG_ERR("stage type of stage %d is invalid", k);
+//                 pl->stage_types[k] = PL_NB_OF_STAGE_TYPES-1;
+//                 return -EINVAL;
+//             }
+
+//             token = strtok(NULL," ");
+// 	        //debug
+//             //printf("%s\n",token);
+//             pl->nb_inst_per_pl_stage[k] = atoi(token);
+//             if(pl->nb_inst_per_pl_stage[k] > NB_INSTANCE_PER_PIPELINE_STAGE_MAX){
+//                 MEILI_LOG_WARN("# of stage instances of stage %d exceeding pre-defined threshold", k);   
+//                 return -EINVAL; 
+//             }
+            
+//             pl->nb_pl_stage_inst += pl->nb_inst_per_pl_stage[k];
+//             k++;
+//             pl->nb_pl_stages++;
+//         } 
+//     }
+//     fclose(fp); 
+
+//     /* Assign parsed value from .conf topo */
+//     nb_pl_stages = pl->nb_pl_stages;
+//     stage_types = pl->stage_types;
+//     nb_inst_per_pl_stage = pl->nb_inst_per_pl_stage;
+
+//     /* Allocate space for mempool if using local run mode */
+//     if(run_conf->input_mode != INPUT_TEXT_FILE && run_conf->input_mode != INPUT_PCAP_FILE){
+//         pl->mbuf_pool = NULL;
+//     }
+//     else{
+//         sprintf(pool_name, "PRELOADED POOL");
+//         MEILI_LOG_INFO("creating mbuf pool, pool size: %d, mbuf szie: %d",MBUF_POOL_SIZE,MBUF_SIZE);
+//         /* Pool size should be > dpdk descriptor queue. */
+//         //pl->mbuf_pool = rte_pktmbuf_pool_create(pool_name, MBUF_POOL_SIZE, MBUF_CACHE_SIZE, 0, RTE_PKTMBUF_HEADROOM + run_conf->input_buf_len, rte_socket_id());
+//         pl->mbuf_pool = rte_pktmbuf_pool_create(pool_name, MBUF_POOL_SIZE, MBUF_CACHE_SIZE, 0, MBUF_SIZE, rte_socket_id());
+//         if (!pl->mbuf_pool) {
+//             MEILI_LOG_ERR("Failed to create mbuf pool.");
+//             return -EINVAL;
+//         }
+//     }
+
+//     /*----------------------------Start of per-stage initialization----------------------------------------*/
+//     /* Print initialization info beforehand */
+//     MEILI_LOG_INFO("Initializing pipeline stages...");
+  
+//     /* Check if pl parameters for stages(number, ...) are valid */
+//     if(nb_pl_stages > NB_PIPELINE_STAGE_MAX || nb_pl_stages < 0 ){
+//         return -EINVAL;
+//     }
+
+//     /* Init each stage */
+//     for(int i=0; i<nb_pl_stages ; i++){
+
+//         if(nb_inst_per_pl_stage[i] > NB_INSTANCE_PER_PIPELINE_STAGE_MAX
+//         || nb_inst_per_pl_stage[i] < 0){
+//             return -EINVAL;
+//         }
+        
+//        // pl->nb_pl_stage_inst += nb_inst_per_pl_stage[i];
+//         for(int j=0; j<nb_inst_per_pl_stage[i]; j++){
+//              /* allocated space for each stage */
+//             self = (struct pipeline_stage *)malloc(sizeof(struct pipeline_stage));
+            
+//             self->pl = (void *)pl;
+
+//             /* debug for inter-stage interference */
+//             // if(j!=0){
+//             //     ret = pipeline_stage_init_safe(self, PL_ECHO);
+//             // }
+//             // else{
+//             //     ret = pipeline_stage_init_safe(self, stage_types[i]);
+//             // }
+//             ret = pipeline_stage_init_safe(self, stage_types[i]);
+
+//             if(ret){
+//                 GET_STAGE_TYPE_STRING(stage_types[i],stage_type_name);
+//                 MEILI_LOG_ERR("Initialization for %s pipeline stage failed",stage_type_name);
+//                 return ret;
+//             }
+//             pl->stages[i][j] = self;
+            
+//         }
+//     }
+
+//     /* Init special stages: timestamping start/end, sequencing and reordering */
+//     pl->seq_stage.type = PL_MAIN;
+//     pl->reorder_stage.type = PL_MAIN;
+
+//     ret = pkt_ts_init(&pl->ts_start_offset);
+// 	if(ret){
+// 		return -EINVAL;
+// 	}
+//     ret = pkt_ts_init(&pl->ts_end_offset);
+// 	if(ret){
+// 		return -EINVAL;
+// 	}
+
+// 	ret = seq_init(&pl->seq_stage);
+// 	if(ret){
+// 		return -EINVAL;
+// 	}
+// 	ret = reorder_init(&pl->reorder_stage);
+// 	if(ret){
+// 		return -EINVAL;
+// 	}
+
+//     MEILI_LOG_INFO("Seq and reorder initialized");
+
+//     /*----------------------------End of per-stage initialization----------------------------------------*/
+
+//     /*----------------------------Start of topology construction-----------------------------------------*/
+//     /* Create head ring_in/tail ring_out for PL. Rings are shared. */
+//     #ifdef SHARED_BUFFER
+//     MEILI_LOG_INFO("Using shared ring buffer for inter-core communication");
+//     pl->ring_in = rte_ring_create("head_ring_in", RING_SIZE, rte_socket_id(),RING_F_SP_ENQ | RING_F_MC_HTS_DEQ);
+//     /* another mode of shared rte ring */
+//     //pl->ring_in = rte_ring_create("head_ring_in", RING_SIZE, rte_socket_id(),RING_F_SP_ENQ | RING_F_MC_RTS_DEQ);
+    
+//     if(!pl->ring_in){
+//         return -ENOMEM;
+//     }
+
+//     if(nb_pl_stages == 0){
+//         /* no worker stages */
+//         pl->ring_out = pl->ring_in;
+//     }
+//     else{
+//         pl->ring_out = rte_ring_create("tail_ring_out", RING_SIZE, rte_socket_id(),RING_F_MP_HTS_ENQ | RING_F_SC_DEQ);
+//         //pl->ring_out = rte_ring_create("tail_ring_out", RING_SIZE, rte_socket_id(),RING_F_MP_RTS_ENQ | RING_F_SC_DEQ);
+//         if(!pl->ring_out){
+//             return -ENOMEM;
+//         }
+        
+//         /* connect head ring_in to first stages */
+//         for(int j=0; j<nb_inst_per_pl_stage[0]; j++){
+//             self = pl->stages[0][j];
+//             self->ring_in = pl->ring_in;
+//         }
+
+//         /* connect tail ring_out to last stages */
+//         for(int j=0; j<nb_inst_per_pl_stage[nb_pl_stages-1]; j++){
+//             self = pl->stages[nb_pl_stages-1][j];
+//             self->ring_out = pl->ring_out;
+//         }
+//     }
+
+//     #else
+//     /* Create head ring_in/tail ring_out for PL. Rings are NOT shared. */
+//     MEILI_LOG_INFO("Using separated ring buffer for inter-core communication");
+//     if(nb_pl_stages == 0){
+//         /* no worker stages */
+//         pl->ring_in[0] = rte_ring_create("head_ring_in", RING_SIZE, rte_socket_id(),RING_F_SP_ENQ | RING_F_SC_DEQ);
+//         if(!pl->ring_in[0]){
+//             return -ENOMEM;
+//         }
+//         pl->ring_out[0] = pl->ring_in[0];
+//     }
+//     else{
+//         /* connect head ring_in to first stages */
+//         for(int j=0; j<nb_inst_per_pl_stage[0]; j++){
+//             snprintf(ring_name,64,"head_ring_in_%d", j);
+//             pl->ring_in[j] = rte_ring_create(ring_name, RING_SIZE, rte_socket_id(),RING_F_SP_ENQ | RING_F_SC_DEQ);
+    
+//             if(!pl->ring_in[j]){
+//                 return -ENOMEM;
+//             }
+//             self = pl->stages[0][j];
+//             self->ring_in[0] = pl->ring_in[j];
+//             self->nb_ring_in++;
+//         }
+
+//         /* connect tail ring_out to last stages */
+//         for(int j=0; j<nb_inst_per_pl_stage[nb_pl_stages-1]; j++){
+//             snprintf(ring_name,64,"tail_ring_out_%d", j);
+//             pl->ring_out[j] = rte_ring_create(ring_name, RING_SIZE, rte_socket_id(), RING_F_SP_ENQ | RING_F_SC_DEQ);
+//             if(!pl->ring_out[j]){
+//                 return -ENOMEM;
+//             }
+//             self = pl->stages[nb_pl_stages-1][j];
+//             self->ring_out[0] = pl->ring_out[j];
+//             self->nb_ring_out++;
+//         }
+//     }
+//     #endif
+//     MEILI_LOG_INFO("Main thread in_ring/out_ring initialized");
+    
+
+//     /* For intermediatte stages, allocate ring_in/ring_out and connect */
+//     #ifdef SHARED_BUFFER 
+//     /* Shared rings. */
+
+//     /* TODO(optional): add a field that record parent/child */
+
+//     for(int i=0; i<nb_pl_stages-1 ; i++){
+//         if(nb_inst_per_pl_stage[i] < nb_inst_per_pl_stage[i+1]){
+//             for(int j=0; j<nb_inst_per_pl_stage[i]; j++){
+//                 self = pl->stages[i][j];
+
+//                 /* allocate space for ring_out */
+//                 self->ring_out = rte_ring_create("", RING_SIZE, rte_socket_id(),RING_F_SP_ENQ | RING_F_MC_HTS_DEQ);
+//                 //self->ring_out = rte_ring_create("", RING_SIZE, rte_socket_id(),RING_F_SP_ENQ | RING_F_MC_RTS_DEQ);
+                
+//                 /* could be used to test if shared ring of main thread is the bottleneck (by using seprate ring between workers only) */
+//                 //self->ring_out = rte_ring_create("", RING_SIZE, rte_socket_id(),RING_F_SP_ENQ | RING_SC_DEQ);
+//                 if (self->ring_out == NULL){
+//                     return -ENOMEM;
+//                 }
+//             }
+
+//             for(int j=0; j<nb_inst_per_pl_stage[i+1]; j++){
+//                 self = pl->stages[i+1][j];
+//                 /* connect ring_in to previous ring_out */
+//                 self->ring_in = pl->stages[i][j%nb_inst_per_pl_stage[i]]->ring_out;
+//             }
+//         }
+//         else{
+//             for(int j=0; j<nb_inst_per_pl_stage[i+1]; j++){
+//                 self = pl->stages[i+1][j];
+
+//                 /* allocate space for ring_out */
+//                 self->ring_in = rte_ring_create("", RING_SIZE, rte_socket_id(),RING_F_MP_HTS_ENQ | RING_F_SC_DEQ);
+//                 //self->ring_in = rte_ring_create("", RING_SIZE, rte_socket_id(),RING_F_MP_RTS_ENQ | RING_F_SC_DEQ);
+
+//                 /* could be used to test if shared ring of main thread is the bottleneck (by using seprate ring between workers only) */
+//                 //self->ring_out = rte_ring_create("", RING_SIZE, rte_socket_id(),RING_F_SP_ENQ | RING_F_SC_DEQ);
+//                 if (self->ring_in == NULL){
+//                     return -ENOMEM;
+//                 }
+//             }
+
+//             for(int j=0; j<nb_inst_per_pl_stage[i]; j++){
+//                 self = pl->stages[i][j];
+//                 /* connect ring_in to previous ring_out */
+//                 self->ring_out = pl->stages[i+1][j%nb_inst_per_pl_stage[i+1]]->ring_in;
+//             }
+//         }
+//     }
+    
+//     #else
+//     /* Separate rings. */
+//     /* Queues are all sp/sc, so we adopt fully connected topo for (n,m) */
+//     /* TODO(optional): when assigning cores to workers, take into consideration the microarch, i.e., core 2 and core 3 worker should have connection.  */
+//     /* create i+1 ring_in, and put these rings into i ring_out */
+//     for(int i=0; i<nb_pl_stages-1 ; i++){
+
+//         for(int j=0; j<nb_inst_per_pl_stage[i]; j++){
+//             self = pl->stages[i][j];
+//             for(int k=0; k<nb_inst_per_pl_stage[i+1]; k++){
+//                 child = pl->stages[i+1][k];
+//                 snprintf(ring_name,64,"inter_worker_ring_%d_%d_%d_%d", i, i+1, j, k);
+//                 //debug
+//                 MEILI_LOG_INFO("creating inter-stage buffer:%s",ring_name);
+//                 self->ring_out[self->nb_ring_out] = rte_ring_create(ring_name, RING_SIZE, rte_socket_id(),RING_F_SP_ENQ | RING_F_SC_DEQ);
+//                 if (self->ring_out == NULL){
+//                     return -ENOMEM;
+//                 }
+                
+//                 child->ring_in[child->nb_ring_in] = self->ring_out[self->nb_ring_out];
+//                 self->nb_ring_out++;
+//                 child->nb_ring_in++;
+//             }
+//         }
+//     }
+//     #endif
+
+//     /*----------------------------End of topology construction-----------------------------------------*/
+
+//     /* Print pipeline topology */
+//     MEILI_LOG_INFO("Pipeline stages initialized");
+//     MEILI_LOG_INFO("Total %d stage(s)", nb_pl_stages);
+//     printf("%8s %16s %16s %16s %16s\n","Stage","Type","# Instance","# RING_IN","# RING_OUT");
+//     #ifdef SHARED_BUFFER
+//     for(int i=0; i<nb_pl_stages; i++){
+//         self = pl->stages[i][0];
+//         printf("%8d ", i);
+//         PRINT_STAGE_TYPE(stage_types[i]);
+//         printf("%16d %16d %16d\n", nb_inst_per_pl_stage[i], 1, 1);
+        
+//     }
+//     #else
+//     for(int i=0; i<nb_pl_stages; i++){
+//         self = pl->stages[i][0];
+//         printf("%8d ", i);
+//         PRINT_STAGE_TYPE(stage_types[i]);
+//         printf("%16d %16d %16d\n", nb_inst_per_pl_stage[i], 1, 1);
+        
+//     }
+//     #endif
+
+//     return 0;
+// }
 
 int pipeline_free(struct pipeline *pl){
     int nb_pl_stages = pl->nb_pl_stages;

@@ -1,18 +1,18 @@
 #ifndef _INCLUDE_MEILI_H_
 #define _INCLUDE_MEILI_H_
 
-#include "../runtime/pipeline.h"
-#include "./net/meili_pkt.h"
+#define MEILI_STATE_DECLS(x) struct (x)##_state {
+#define MEILI_STATE_DECLS_END
 
-#define MEILI_STATE_DECLS(x) struct x##_state {
-#define MEILI_STATE_DECLS_END };
+#define MEILI_INIT(x) int (x)##_stage_init(struct pipeline_stage *self){
 
-#define MEILI_INIT(x) int x##_stage_init(struct pipeline_stage *self){
+#define MEILI_FREE(x) int (x)##_stage_free(struct pipeline_stage *self){
 
-#define MEILI_FREE(x) int x##_stage_free(struct pipeline_stage *self){
-
-#define MEILI_EXEC(x)  int x##_stage_exec(struct pipeline_stage *self, \
-                            meili_pkt *pkt){meili_apis Meili = *((meili_apis *)self->apis);
+#define MEILI_EXEC(x)  int (x)##_stage_exec(struct pipeline_stage *self, \
+                            struct rte_mbuf **mbuf,                                   \
+                            int nb_enq,                                               \
+                            struct rte_mbuf ***mbuf_out,                              \
+                            int *nb_deq){meili_apis Meili = self->apis;
 
 #define MEILI_END_DECLS  return 0;}
 
