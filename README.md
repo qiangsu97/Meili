@@ -17,7 +17,6 @@ Currently we have released our data-plane prototype of Meili. We have planned to
   - [x] L4 packet/flow processing
   - [x] Hardware acceleration 
   - [ ] L7 socket programming 
-  - [ ] State API support 
    
 And more to be released in next stage.
 
