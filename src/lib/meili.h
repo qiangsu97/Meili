@@ -19,10 +19,10 @@
 #define MEILI_END_DECLS  return 0;}
 
 //test
-// #define MEILI_REGISTER(x) int meili_pipeline_stage_func_reg(struct pipeline_stage *stage){ \
-//                                 stage->funcs->pipeline_stage_init = x##_stage_init;\
-// 	                            stage->funcs->pipeline_stage_free = x##_stage_free;\
-// 	                            stage->funcs->pipeline_stage_exec = x##_stage_exec;}
+#define MEILI_REGISTER(x) int meili_pipeline_stage_func_reg(struct pipeline_stage *stage){ \
+                                stage->funcs->pipeline_stage_init = x##_stage_init;\
+	                            stage->funcs->pipeline_stage_free = x##_stage_free;\
+	                            stage->funcs->pipeline_stage_exec = x##_stage_exec;}
  
 
 

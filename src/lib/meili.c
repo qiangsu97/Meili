@@ -14,7 +14,7 @@ void pkt_trans(){};
 *   - Filter packets with the operation specified by UCO.
 */
 void pkt_flt(struct pipeline_stage *self, int (*check)(struct pipeline_stage *self, meili_pkt *pkt), meili_pkt *pkt){
-    printf("Meili api pkt_lt called\n");
+    // printf("Meili api pkt_lt called\n");
     int flag = check(self, pkt);
 
     if(flag == 1){
