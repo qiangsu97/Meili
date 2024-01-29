@@ -39,7 +39,7 @@ MEILI_END_DECLS
 
 // Meili dataplane API invocation
 MEILI_EXEC(EXAMPLE)
-// printf("operating on packets by example app\n");
+printf("operating on packets by example app\n");
 Meili.pkt_flt(self, &ddos_check, pkt);
 // Meili.pkt_flt(void *url_check, pkt);
 // Meili.pkt_trans(void *ipsec, pkt);
