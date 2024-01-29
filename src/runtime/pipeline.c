@@ -327,6 +327,7 @@ int pipeline_init_safe(struct pipeline *pl){
             pl->stages[i][j] = self;
             
         }
+        pl->nb_pl_stage_inst += nb_inst_per_pl_stage[i];
     }
 
     /* Init special stages: timestamping start/end, sequencing and reordering */
