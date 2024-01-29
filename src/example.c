@@ -44,4 +44,8 @@ Meili.pkt_flt(self, &ddos_check, pkt);
 // Meili.AES(pkt, ERY_TAG,int BLK_SIZE);
 MEILI_END_DECLS
 
-MEILI_REGISTER(EXAMPLE)
+// MEILI_REGISTER(EXAMPLE)
+int meili_pipeline_stage_func_reg(struct pipeline_stage *stage){ 
+                                stage->funcs->pipeline_stage_init = EXAMPLE_stage_init;
+	                            stage->funcs->pipeline_stage_free = EXAMPLE_stage_free;
+	                            stage->funcs->pipeline_stage_exec = EXAMPLE_stage_exec;}
