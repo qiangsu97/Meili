@@ -8,6 +8,7 @@
 MEILI_INIT(EXAMPLE)
 /* allocate space for pipeline state */
 self->state = (struct EXAMPLE_state *)malloc(sizeof(struct EXAMPLE_state));
+printf("initializing example app\n");
 struct EXAMPLE_state *mystate = (struct EXAMPLE_state *)self->state;
 if(!mystate){
     return -ENOMEM;
