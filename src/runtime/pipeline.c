@@ -74,11 +74,6 @@ int pipeline_runtime_init(struct pipeline *pl, struct pipeline_conf *run_conf, c
 		run_conf->cores = rte_lcore_count();
 	}
 
-    ret = register_meili_apis();
-    if (ret) {
-		snprintf(err, ERR_STR_SIZE, "Failed register Meili APIs");
-		goto end;
-	}
 
     /* init global stats recording structures */
 	ret = stats_init(run_conf);

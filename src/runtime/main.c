@@ -82,6 +82,10 @@ main(int argc, char **argv)
 		rte_exit(EXIT_FAILURE, "Configuration error\n");
 	}
 
+	ret = register_meili_apis();
+	if (ret){
+		rte_exit(EXIT_FAILURE, "Meili API registration failed\n");
+	}
 
 	ret = pipeline_runtime_init(&pl, run_conf, err);
 	if(ret){
