@@ -265,12 +265,11 @@ int pipeline_init_safe(struct pipeline *pl){
     char stage_type_name[32];
 
     int ret = 0;
-    MEILI_LOG_INFO("Input mode: %d",run_conf->input_mode);
     MEILI_LOG_INFO("Starting pipeline initialization...");
     /* ---------------control plane specified values------------------ */
-    pl->nb_pl_stages = 1;
-    nb_inst_per_pl_stage[0] = PL_MAIN;
-    pl->nb_inst_per_pl_stage[0] = 1;
+    // pl->nb_pl_stages = 1;
+    // nb_inst_per_pl_stage[0] = PL_MAIN;
+    // pl->nb_inst_per_pl_stage[0] = 1;
 
     nb_pl_stages = pl->nb_pl_stages;
     stage_types = pl->stage_types;
