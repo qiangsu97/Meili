@@ -4,7 +4,6 @@
 #include "meili.h"
 #include "../runtime/pipeline.h"
 
-volatile struct _meili_apis Meili;
 
 /* pkt_trans
 *   - Run a packet transformation operation specified by UCO.  

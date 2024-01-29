@@ -39,6 +39,8 @@ typedef struct _meili_apis{
     void (*compression)();
 }meili_apis;
 
+volatile struct _meili_apis Meili;
+
 
 
 #endif /* _INCLUDE_MEILI_H_ */
