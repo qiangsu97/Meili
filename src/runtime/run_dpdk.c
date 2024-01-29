@@ -71,8 +71,6 @@ update_addr(struct rte_mbuf *m, unsigned dest_portid)
 
 }
 
-
-/* read data from preloaded file */
 #ifdef MEILI_MODE
 static int
 run_dpdk(struct pipeline *pl)
@@ -535,6 +533,7 @@ run_dpdk(struct pipeline *pl)
 					#endif
 
 					if( likely(nb_deq_reorder > 0) ) {
+						printf("nb_deq_reorder=%d\n",nb_deq_reorder);
 						rm_stats->tx_batch_cnt ++;
 					}
 					for (int i = 0; i < nb_deq_reorder; i++) {
