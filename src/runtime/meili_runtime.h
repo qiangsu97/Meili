@@ -4,7 +4,6 @@
 #include "pipeline.h"
 #include "run_mode.h"
 
- 
 int register_meili_apis();
 
 #endif /* _INCLUDE_PIPELINE_RUNTIME_H */

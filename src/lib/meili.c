@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "meili.h"
-#include "meili_runtime.h"
 #include "../runtime/pipeline.h"
 
 
