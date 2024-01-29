@@ -58,7 +58,8 @@ void AES(){};
 */
 void compression(){};
 
-void register_meili_apis(){
+int register_meili_apis(){
+    printf("register meili apis\n");
     Meili.pkt_trans     = pkt_trans;
     Meili.pkt_flt       = pkt_flt;
     Meili.flow_ext      = flow_ext;
@@ -68,5 +69,5 @@ void register_meili_apis(){
     Meili.regex         = regex;
     Meili.AES           = AES;
     Meili.compression   = compression;
-    return;
+    return 0;
 }
