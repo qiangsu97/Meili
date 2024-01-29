@@ -11,8 +11,10 @@
 
 #define MEILI_FREE(x) int x##_stage_free(struct pipeline_stage *self){
 
+// #define MEILI_EXEC(x)  int x##_stage_exec(struct pipeline_stage *self, \
+//                             meili_pkt *pkt){meili_apis Meili = *((meili_apis *)self->apis);
 #define MEILI_EXEC(x)  int x##_stage_exec(struct pipeline_stage *self, \
-                            meili_pkt *pkt){meili_apis Meili = *((meili_apis *)self->apis);
+                            meili_pkt *pkt){
 
 #define MEILI_END_DECLS  return 0;}
 
