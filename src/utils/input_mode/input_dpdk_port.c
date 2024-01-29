@@ -237,6 +237,7 @@ input_dpdk_port_init_ports(rb_conf *run_conf)
 		}
 		port_idx++;
 	}
+	MEILI_LOG_INFO("DPDK port initialization finished");
 
 	return 0;
 }
