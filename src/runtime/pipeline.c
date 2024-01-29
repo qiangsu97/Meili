@@ -228,6 +228,7 @@ int pipeline_stage_run_safe(struct pipeline_stage *self){
             rm_stats->tx_buf_bytes += mbufs_out[k]->data_len;
         }
         rm_stats->tx_buf_cnt += tot_enq;
+        printf("tx buf_cnt = %d\n",rm_stats->tx_buf_cnt);
         
     }
 
