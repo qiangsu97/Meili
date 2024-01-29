@@ -25,6 +25,7 @@
 // 	                            stage->funcs->pipeline_stage_exec = x##_stage_exec;}
  
 
+int register_meili_apis();
 
 /* Meili APIs */
 typedef struct _meili_apis{
