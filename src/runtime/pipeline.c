@@ -276,9 +276,9 @@ int pipeline_init_safe(struct pipeline *pl){
     stage_types = pl->stage_types;
     nb_inst_per_pl_stage = pl->nb_inst_per_pl_stage;
     
+    MEILI_LOG_INFO("Input mode: %d",run_conf->input_mode);
     /* Allocate space for mempool if using local run mode */
     if(run_conf->input_mode != INPUT_TEXT_FILE && run_conf->input_mode != INPUT_PCAP_FILE){
-        MEILI_LOG_INFO("Input mode: Live");
         pl->mbuf_pool = NULL;
     }
     else{
