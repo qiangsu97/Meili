@@ -267,9 +267,9 @@ int pipeline_init_safe(struct pipeline *pl){
     int ret = 0;
     MEILI_LOG_INFO("Starting pipeline initialization...");
     /* ---------------control plane specified values------------------ */
-    // pl->nb_pl_stages = 1;
-    // nb_inst_per_pl_stage[0] = PL_MAIN;
-    // pl->nb_inst_per_pl_stage[0] = 1;
+    pl->nb_pl_stages = 1;
+    pl->stage_types[0] = PL_MAIN;
+    pl->nb_inst_per_pl_stage[0] = 1;
 
     nb_pl_stages = pl->nb_pl_stages;
     stage_types = pl->stage_types;
