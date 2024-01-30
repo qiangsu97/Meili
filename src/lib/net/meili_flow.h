@@ -107,7 +107,7 @@ flow_table_fill_key(struct ipv4_5tuple *key, struct rte_mbuf *pkt) {
         struct rte_tcp_hdr *tcp_hdr;
         struct rte_udp_hdr *udp_hdr;
 
-        if (unlikely(!pkt_is_ipv4(pkt))) {
+        if (unlikely(!meili_pkt_is_ipv4(pkt))) {
                 return -EPROTONOSUPPORT;
         }
         ipv4_hdr = meili_ipv4_hdr_safe(pkt);
