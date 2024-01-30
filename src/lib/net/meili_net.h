@@ -1,0 +1,7 @@
+#ifndef _INCLUDE_MEILI_NET_H
+#define _INCLUDE_MEILI_NET_H
+
+
+#define MEILI_PKT_DPDK_BACKEND
+
+#endif /* _INCLUDE_MEILI_NET_H */ 
