@@ -1,6 +1,23 @@
 #include "./meili_pkt.h"
 
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #ifdef MEILI_PKT_DPDK_BACKEND
+#include <rte_branch_prediction.h>
+#include <rte_mbuf.h>
+
+#include <rte_ethdev.h>
+#include <rte_ether.h>
+#include <rte_byteorder.h>
+#include <rte_ip.h>
+#include <rte_tcp.h>
+#include <rte_udp.h>
+
+#include <rte_memcpy.h>
+#include <rte_mempool.h>
+
 
 struct rte_ether_hdr*
 meili_ether_hdr(meili_pkt* pkt) {
@@ -20,7 +37,7 @@ meili_tcp_hdr(meili_pkt* pkt) {
                 return NULL;
         }
 
-        if (ipv4->next_proto_id != IP_PROTOCOL_TCP) {
+        if (ipv4->next_proto_id != IP_PROTO_TCP) {
                 return NULL;
         }
 
@@ -39,7 +56,7 @@ meili_udp_hdr(meili_pkt* pkt) {
                 return NULL;
         }
 
-        if (ipv4->next_proto_id != IP_PROTOCOL_UDP) {
+        if (ipv4->next_proto_id != IP_PROTO_UDP) {
                 return NULL;
         }
 
