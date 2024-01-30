@@ -36,7 +36,7 @@ simple_entropy(uint32_t set_bits,
 }
 
 int ddos_check(struct pipeline_stage *self, meili_pkt *pkt) {
-    char *payload = NULL;
+    const unsigned char *payload = NULL;
     uint32_t p_len = 0;
     struct EXAMPLE_state *mystate = (struct EXAMPLE_state *)self->state;
     int flag = 0; // indicate whether there's an attack
