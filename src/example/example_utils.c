@@ -1,4 +1,5 @@
 #include <math.h>
+#include "./libs/sha/sha1.h"
 #include "../lib/meili.h"
 #include "../runtime/meili_runtime.h"
 #include "example.h"

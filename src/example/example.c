@@ -42,7 +42,7 @@ MEILI_EXEC(EXAMPLE)
 // printf("operating on packets by example app\n");
 Meili.pkt_flt(self, &ddos_check, pkt);
 // Meili.pkt_flt(SELF, &url_check, pkt);
-Meili.pkt_trans(void *ipsec, pkt);
+Meili.pkt_trans(self, &ipsec, pkt);
 // Meili.AES(pkt, ERY_TAG,int BLK_SIZE);
 MEILI_END_DECLS
 
