@@ -572,6 +572,9 @@
 // 	return 0;
 // }
 
+static int
+run_local(struct pipeline *pl){return 0;}
+
 void
 run_local_reg(run_func_t *funcs)
 {

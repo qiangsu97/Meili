@@ -204,6 +204,15 @@
 // 	rte_free(run_conf->input_lens);
 // }
 
+static int
+input_pcap_file_read(rb_conf *run_conf){return 0;}
+
+static void
+input_pcap_file_clean(rb_conf *run_conf)
+{
+	;
+}
+
 void
 input_pcap_file_reg(input_func_t *funcs)
 {
