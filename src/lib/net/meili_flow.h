@@ -110,17 +110,17 @@ flow_table_fill_key(struct ipv4_5tuple *key, struct rte_mbuf *pkt) {
         if (unlikely(!pkt_is_ipv4(pkt))) {
                 return -EPROTONOSUPPORT;
         }
-        ipv4_hdr = MEILI_IPV4_HDR(pkt);
+        ipv4_hdr = meili_ipv4_hdr_safe(pkt);
         memset(key, 0, sizeof(struct ipv4_5tuple));
         key->proto = ipv4_hdr->next_proto_id;
         key->src_addr = ipv4_hdr->src_addr;
         key->dst_addr = ipv4_hdr->dst_addr;
-        if (key->proto == IP_PROTOCOL_TCP) {
-                tcp_hdr = pkt_tcp_hdr(pkt);
+        if (key->proto == IP_PROTO_TCP) {
+                tcp_hdr = meili_tcp_hdr_safe(pkt);
                 key->src_port = tcp_hdr->src_port;
                 key->dst_port = tcp_hdr->dst_port;
-        } else if (key->proto == IP_PROTOCOL_UDP) {
-                udp_hdr = pkt_udp_hdr(pkt);
+        } else if (key->proto == IP_PROTO_UDP) {
+                udp_hdr = meili_udp_hdr_safe(pkt);
                 key->src_port = udp_hdr->src_port;
                 key->dst_port = udp_hdr->dst_port;
         } else {

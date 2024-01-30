@@ -20,7 +20,7 @@
 
 
 struct rte_ether_hdr*
-meili_ether_hdr(meili_pkt* pkt) {
+meili_ether_hdr_safe(meili_pkt* pkt) {
         if (unlikely(pkt == NULL)) {
                 return NULL;
         }
@@ -28,8 +28,8 @@ meili_ether_hdr(meili_pkt* pkt) {
 }
 
 struct rte_tcp_hdr*
-meili_tcp_hdr(meili_pkt* pkt) {
-        struct rte_ipv4_hdr* ipv4 = meili_ipv4_hdr(pkt);
+meili_tcp_hdr_safe(meili_pkt* pkt) {
+        struct rte_ipv4_hdr* ipv4 = meili_ipv4_hdr_safe(pkt);
 
         if (unlikely(
                 ipv4 ==
@@ -47,8 +47,8 @@ meili_tcp_hdr(meili_pkt* pkt) {
 }
 
 struct rte_udp_hdr*
-meili_udp_hdr(meili_pkt* pkt) {
-        struct rte_ipv4_hdr* ipv4 = meili_ipv4_hdr(pkt);
+meili_udp_hdr_safe(meili_pkt* pkt) {
+        struct rte_ipv4_hdr* ipv4 = meili_ipv4_hdr_safe(pkt);
 
         if (unlikely(
                 ipv4 ==
@@ -66,7 +66,7 @@ meili_udp_hdr(meili_pkt* pkt) {
 }
 
 struct rte_ipv4_hdr*
-meili_ipv4_hdr(meili_pkt* pkt) {
+meili_ipv4_hdr_safe(meili_pkt* pkt) {
         struct rte_ipv4_hdr* ipv4 =
                 (struct rte_ipv4_hdr*)(rte_pktmbuf_mtod(pkt, uint8_t*) + sizeof(struct rte_ether_hdr));
 
@@ -83,17 +83,17 @@ meili_ipv4_hdr(meili_pkt* pkt) {
 
 int
 meili_pkt_is_tcp(meili_pkt* pkt) {
-        return meili_tcp_hdr(pkt) != NULL;
+        return meili_tcp_hdr_safe(pkt) != NULL;
 }
 
 int
 meili_pkt_is_udp(meili_pkt* pkt) {
-        return meili_udp_hdr(pkt) != NULL;
+        return meili_udp_hdr_safe(pkt) != NULL;
 }
 
 int
 meili_pkt_is_ipv4(meili_pkt* pkt) {
-        return meili_ipv4_hdr(pkt) != NULL;
+        return meili_ipv4_hdr_safe(pkt) != NULL;
 }
 
 #else      
