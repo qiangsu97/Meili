@@ -2,6 +2,7 @@
 #define _INCLUDE_MEILI_FLOW_H
 
 #include "./meili_net.h"
+#include "./meili_pkt.h"
 
 #ifdef MEILI_PKT_DPDK_BACKEND
 
@@ -23,7 +24,7 @@ extern uint8_t rss_symmetric_key[40];
 #define DEFAULT_HASH_FUNC rte_jhash
 #endif
 
-struct _meili_flow_table {
+typedef struct _meili_flow_table {
     struct rte_hash *hash;
     char *data;
     int cnt;
@@ -109,7 +110,7 @@ flow_table_fill_key(struct ipv4_5tuple *key, struct rte_mbuf *pkt) {
         if (unlikely(!pkt_is_ipv4(pkt))) {
                 return -EPROTONOSUPPORT;
         }
-        ipv4_hdr = MBUF_IPV4_HDR(pkt);
+        ipv4_hdr = MEILI_IPV4_HDR(pkt);
         memset(key, 0, sizeof(struct ipv4_5tuple));
         key->proto = ipv4_hdr->next_proto_id;
         key->src_addr = ipv4_hdr->src_addr;
