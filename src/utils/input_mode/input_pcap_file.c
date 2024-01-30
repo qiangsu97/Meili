@@ -21,7 +21,6 @@
 #include "input.h"
 #include "../utils.h"
 #include "../utils_temp.h"
-#include "../net/pkt_utils.h"
 
 static inline void
 input_pcap_print_snap_len_warning(rb_conf *run_conf)

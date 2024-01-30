@@ -26,7 +26,6 @@
 //#include "./regex/regex_dev.h"
 
 #include "../utils/utils.h"
-#include "../utils/net/pkt_utils.h"
 #include "../packet_ordering/packet_ordering.h"
 #include "../packet_timestamping/packet_timestamping.h"
 

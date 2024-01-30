@@ -23,7 +23,6 @@
 #include "../utils/input_mode/dpdk_live_shared.h"
 #include "../utils/utils.h"
 #include "../utils/utils_temp.h"
-#include "../utils/net/pkt_utils.h"
 #include "../utils/net/port_utils.h"
 #include "run_mode.h"
 #include "pipeline.h"
