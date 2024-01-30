@@ -13,7 +13,7 @@
 #include "../conf/conf.h"
 #include "../../runtime/meili_runtime.h"
 
-#define ONLY_SPLIT_THROUGHPUT
+// #define ONLY_SPLIT_THROUGHPUT
 
 #define STATS_INTERVAL_SEC	1
 #define STATS_INTERVAL_CYCLES	STATS_INTERVAL_SEC * rte_get_timer_hz()
