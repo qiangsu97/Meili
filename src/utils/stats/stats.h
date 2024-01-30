@@ -15,7 +15,7 @@
 
 #define ONLY_SPLIT_THROUGHPUT
 
-#define STATS_INTERVAL_SEC	0.01
+#define STATS_INTERVAL_SEC	1
 #define STATS_INTERVAL_CYCLES	STATS_INTERVAL_SEC * rte_get_timer_hz()
 
 #define NUMBER_OF_SAMPLE ((1<<14) - 1) /* should be 2^n-1 for speed */ 

@@ -715,6 +715,7 @@ run_dpdk(struct pipeline *pl)
 
 	main_lcore = rte_lcore_id() == rte_get_main_lcore();
 
+	printf("main lcore: %d\n", main_lcore);
 
 	/* Get ports */
 	pkt_stats = &rm_stats->pkt_stats;
