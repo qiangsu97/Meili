@@ -73,12 +73,12 @@ int ddos_check(struct pipeline_stage *self, meili_pkt *pkt) {
     
     return flag;
 }
-void url_check(struct pipeline_stage *self, meili_pkt *pkt){
+int url_check(struct pipeline_stage *self, meili_pkt *pkt){
     //match_num = Meili.regex(RULES, pkt.payload);
-    return;
+    return 0;
 }
 
-void ipsec(struct pipeline_stage *self, meili_pkt *pkt){
+int ipsec(struct pipeline_stage *self, meili_pkt *pkt){
 
     char hash_out[SHA_HASH_SIZE+2];
     const unsigned char *pkt_buf;
@@ -88,5 +88,5 @@ void ipsec(struct pipeline_stage *self, meili_pkt *pkt){
     length = meili_pkt_payload_len(pkt);
     SHA1(hash_out, pkt_buf, length);
     
-    return;
+    return 0;
 }
