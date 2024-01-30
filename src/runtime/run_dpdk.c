@@ -533,7 +533,7 @@ run_dpdk(struct pipeline *pl)
 					#endif
 
 					if( likely(nb_deq_reorder > 0) ) {
-						printf("nb_deq_reorder=%d\n",nb_deq_reorder);
+						// printf("nb_deq_reorder=%d\n",nb_deq_reorder);
 						rm_stats->tx_batch_cnt ++;
 					}
 					for (int i = 0; i < nb_deq_reorder; i++) {
@@ -605,7 +605,9 @@ run_dpdk(struct pipeline *pl)
 				batch_cnt_wait_on_enq -= batch_cnt_enq; 
 				/* # of pkts already enqueued in total(this round) */
 				batch_cnt_tot_enq += batch_cnt_enq; 
-				
+
+			// test
+			printf("end of inner loop\n");	
 			}/* End of inner loop. Proceed to process next pipeline batch. */
 
 			/* Print pipeline stats every 1s */
