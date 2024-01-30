@@ -29,15 +29,15 @@
 
 /* Meili APIs */
 typedef struct _meili_apis{
-    void (*pkt_trans)();
+    void (*pkt_trans)(struct pipeline_stage *self, int (*trans)(struct pipeline_stage *self, meili_pkt *pkt), meili_pkt *pkt);
     void (*pkt_flt)(struct pipeline_stage *self, int (*check)(struct pipeline_stage *self, meili_pkt *pkt), meili_pkt *pkt);
     void (*flow_ext)();
     void (*flow_trans)(); 
     void (*reg_sock)();
     void (*epoll)();
     void (*regex)();
-    void (*AES)();
     void (*compression)();
+    void (*AES)();
 }meili_apis;
 
 volatile struct _meili_apis Meili;

@@ -1,6 +1,6 @@
 #include <math.h>
-#include "./lib/meili.h"
-#include "./runtime/meili_runtime.h"
+#include "../lib/meili.h"
+#include "../runtime/meili_runtime.h"
 #include "example.h"
 
 // User-customized dataplane functions
@@ -72,12 +72,20 @@ int ddos_check(struct pipeline_stage *self, meili_pkt *pkt) {
     
     return flag;
 }
-// void url_check(Meili_packet pkt){
-//     match_num = Meili.regex(RULES, pkt.payload);
-//     return;
-// }
-// ipsec(pkt){
-//     encap(pkt);
-//     sha(pkt,BLK_SIZE);
-//     return;
-// }
+void url_check(struct pipeline_stage *self, meili_pkt *pkt){
+    //match_num = Meili.regex(RULES, pkt.payload);
+    return;
+}
+
+void ipsec(struct pipeline_stage *self, meili_pkt *pkt){
+
+    char hash_out[SHA_HASH_SIZE+2];
+    const unsigned char *pkt_buf;
+    int length = 0;
+
+    pkt_buf = meili_pkt_payload(pkt);
+    length = meili_pkt_payload_len(pkt);
+    SHA1(hash_out, pkt_buf, length);
+    
+    return;
+}

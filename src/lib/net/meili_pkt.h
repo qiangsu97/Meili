@@ -6,7 +6,7 @@
 
 #ifdef DPDK_BACKEND
 typedef struct rte_mbuf meili_pkt; 
-#define meili_pkt_payload(x) rte_pktmbuf_mtod(x, char *)
+#define meili_pkt_payload(x) rte_pktmbuf_mtod(x, const unsigned char *)
 #define meili_pkt_payload_len(x)    x->data_len
 
 #else      
