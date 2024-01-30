@@ -607,7 +607,7 @@ run_dpdk(struct pipeline *pl)
 				batch_cnt_tot_enq += batch_cnt_enq; 
 
 			// test
-			printf("end of inner loop\n");	
+			// printf("end of inner loop\n");	
 			}/* End of inner loop. Proceed to process next pipeline batch. */
 
 			/* Print pipeline stats every 1s */
