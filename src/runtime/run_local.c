@@ -274,7 +274,7 @@
 // static int
 // run_local(struct pipeline *pl)
 // {
-// 	struct pipeline_conf *run_conf = &pl->pl_conf;
+// 	pl_conf *run_conf = &pl->conf;
 // 	/* always run on main core */
 // 	int qid=0;
 // 	const uint32_t max_duration = run_conf->input_duration;

@@ -72,7 +72,7 @@ static exp_matches_t *input_exp_matches;
 
 static bool lat_mode;
 
-static void regex_dev_dpdk_bf_clean(rb_conf *run_conf);
+static void regex_dev_dpdk_bf_clean(pl_conf *run_conf);
 
 static void
 extbuf_free_cb(void *addr __rte_unused, void *fcb_opaque __rte_unused)
@@ -80,7 +80,7 @@ extbuf_free_cb(void *addr __rte_unused, void *fcb_opaque __rte_unused)
 }
 
 static int
-regex_dev_dpdk_bf_config(rb_conf *run_conf, uint8_t dev_id, struct rte_regexdev_config *dev_cfg, const char *rules_file,
+regex_dev_dpdk_bf_config(pl_conf *run_conf, uint8_t dev_id, struct rte_regexdev_config *dev_cfg, const char *rules_file,
 			 int num_queues)
 {
 	struct rte_regexdev_info dev_info = {};
@@ -233,7 +233,7 @@ err_out:
 }
 
 static int
-regex_dev_dpdk_bf_init(rb_conf *run_conf)
+regex_dev_dpdk_bf_init(pl_conf *run_conf)
 {
 	const int num_queues = run_conf->cores;
 	struct rte_regexdev_config dev_cfg;
@@ -588,7 +588,7 @@ regex_dev_dpdk_bf_send_ops_dummy(int qid, regex_stats_t *stats, int *nb_dequeued
 
 		num_enqueued += ret;
 		
-		regex_dev_dpdk_bf_dequeue_dummy(qid, stats, live, num_enqueued, nb_dequeued_op, out_bufs);
+		regex_dev_dpdk_bf_dequeue_dummy(qid, stats, num_enqueued, nb_dequeued_op, out_bufs);
 
 	}
 
@@ -768,7 +768,7 @@ regex_dev_dpdk_bf_post_search(int qid, regex_stats_t *stats)
 }
 
 static void
-regex_dev_dpdk_bf_clean(rb_conf *run_conf)
+regex_dev_dpdk_bf_clean(pl_conf *run_conf)
 {
 	uint32_t batches = run_conf->input_batches;
 	uint32_t queues = run_conf->cores;
@@ -808,14 +808,14 @@ regex_dev_dpdk_bf_clean(rb_conf *run_conf)
 }
 
 static int
-regex_dev_dpdk_bf_compile(rb_conf *run_conf)
+regex_dev_dpdk_bf_compile(pl_conf *run_conf)
 {
 	// return rules_file_compile_for_rxp(run_conf);
 	return 0;
 }
 
 int
-regex_dev_dpdk_bf_reg(regex_func_t *funcs, rb_conf *run_conf)
+regex_dev_dpdk_bf_reg(regex_func_t *funcs, pl_conf *run_conf)
 {
 	funcs->init_regex_dev = regex_dev_dpdk_bf_init;
 	funcs->search_regex_live = regex_dev_dpdk_bf_search_live;

@@ -32,7 +32,7 @@
 volatile bool force_quit;
 
 // struct lcore_worker_args {
-// 	rb_conf *run_conf;
+// 	pl_conf *run_conf;
 // 	uint32_t qid;
 // };
 
@@ -52,7 +52,7 @@ main(int argc, char **argv)
 {
 	uint64_t start_cycles, end_cycles;
 	char err[ERR_STR_SIZE] = {0};
-	struct pipeline_conf *run_conf;
+	pl_conf *run_conf;
 
 
 	unsigned int lcore_id;
@@ -65,8 +65,8 @@ main(int argc, char **argv)
 	struct pipeline pl;
 
 	
-	run_conf = &(pl.pl_conf);
-	memset(run_conf, 0, sizeof(struct pipeline_conf)); 
+	run_conf = &(pl.conf);
+	memset(run_conf, 0, sizeof(pl_conf)); 
 
 	
 	force_quit = false;

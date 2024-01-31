@@ -71,19 +71,18 @@ void regex(struct pipeline_stage *self, meili_pkt *pkt){
 	to_send = 0;
 
     /* Prepare ops in regex_dev_search_live */
-    ret = regex_dev_search_live(run_conf, qid, bufs[i], pay_off, rx_port_id, tx_port_id, dpdk_tx,
-                    regex_stats);
-    if (ret)
-        return ret;
+    to_send = regex_dev_search_live(run_conf, qid, pkt, regex_stats_t *stats);
+    // if (ret)
+    //     return ret;
 
 
     if (to_send) {
         /* Push batch if contains some valid packets. */
-        regex_dev_force_batch_push(run_conf, rx_port_id, qid, dpdk_tx, regex_stats, nb_dequeued_op, out_bufs);
+        regex_dev_force_batch_push(run_conf, qid, regex_stats, nb_dequeued_op, out_bufs);
     }	
 	else{
 		/* If batch is not full, pull finished ops */
-		regex_dev_force_batch_pull(run_conf, qid, dpdk_tx, regex_stats, nb_dequeued_op, out_bufs);	
+		regex_dev_force_batch_pull(run_conf, qid, regex_stats, nb_dequeued_op, out_bufs);	
 	}
 	return;        
 };

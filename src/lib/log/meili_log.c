@@ -26,7 +26,7 @@ pthread_mutex_t log_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /* Store any warnings for inclusion in end of run output. */
 static void
-meili_log_record(rb_conf *run_conf, const char *warning)
+meili_log_record(pl_conf *run_conf, const char *warning)
 {
 	uint32_t conf_pos = run_conf->no_conf_warnings;
 
@@ -47,7 +47,7 @@ meili_log_record(rb_conf *run_conf, const char *warning)
 }
 
 static void
-__meili_log(rb_conf *run_conf, enum meili_log_level level, const char *format, va_list params)
+__meili_log(pl_conf *run_conf, enum meili_log_level level, const char *format, va_list params)
 {
 	FILE *output;
 
@@ -97,7 +97,7 @@ __meili_log(rb_conf *run_conf, enum meili_log_level level, const char *format, v
 }
 
 void
-meili_log(rb_conf *run_conf, enum meili_log_level level, const char *message, ...)
+meili_log(pl_conf *run_conf, enum meili_log_level level, const char *message, ...)
 {
 	va_list params;
 

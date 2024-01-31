@@ -56,17 +56,17 @@ static enum regex_dev_verbose regex_dev_verbose;
 
 /* Function pointers each regex dev should implement. */
 typedef struct regex_func {
-	int (*compile_regex_rules)(rb_conf *run_conf);
-	int (*init_regex_dev)(rb_conf *run_conf);
+	int (*compile_regex_rules)(pl_conf *run_conf);
+	int (*init_regex_dev)(pl_conf *run_conf);
 	int (*search_regex)(int qid, char *buf, int buf_len, bool push_batch, regex_stats_t *stats);
 	int (*search_regex_live)(int qid, struct rte_mbuf *mbuf, regex_stats_t *stats);
 	void (*force_batch_push)(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs);
 	void (*force_batch_pull)(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs);
 	void (*post_search_regex)(int qid, regex_stats_t *stats);
-	void (*clean_regex_dev)(rb_conf *run_conf);
+	void (*clean_regex_dev)(pl_conf *run_conf);
 } regex_func_t;
 
-int regex_dev_dpdk_bf_reg(regex_func_t *funcs, rb_conf *run_conf);
+int regex_dev_dpdk_bf_reg(regex_func_t *funcs, pl_conf *run_conf);
 
 //int regex_dev_hyperscan_reg(regex_func_t *funcs);
 
@@ -74,7 +74,7 @@ int regex_dev_dpdk_bf_reg(regex_func_t *funcs, rb_conf *run_conf);
 
 /* Register selected devices function pointers. */
 static inline int
-regex_dev_register(rb_conf *run_conf)
+regex_dev_register(pl_conf *run_conf)
 {
 	regex_func_t *funcs;
 	int ret;
@@ -121,7 +121,7 @@ regex_dev_register(rb_conf *run_conf)
  */
 
 static inline int
-regex_dev_compile_rules(rb_conf *run_conf)
+regex_dev_compile_rules(pl_conf *run_conf)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
@@ -135,7 +135,7 @@ regex_dev_compile_rules(rb_conf *run_conf)
 }
 
 static inline int
-regex_dev_init(rb_conf *run_conf)
+regex_dev_init(pl_conf *run_conf)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
@@ -146,7 +146,7 @@ regex_dev_init(rb_conf *run_conf)
 }
 
 static inline int
-regex_dev_search(rb_conf *run_conf, int qid, char *buf, int buf_len, bool push_batch, regex_stats_t *stats)
+regex_dev_search(pl_conf *run_conf, int qid, char *buf, int buf_len, bool push_batch, regex_stats_t *stats)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
@@ -157,7 +157,7 @@ regex_dev_search(rb_conf *run_conf, int qid, char *buf, int buf_len, bool push_b
 }
 
 static inline int
-regex_dev_search_live(rb_conf *run_conf, int qid, struct rte_mbuf *mbuf, int pay_off, uint16_t rx_port,
+regex_dev_search_live(pl_conf *run_conf, int qid, struct rte_mbuf *mbuf, int pay_off, uint16_t rx_port,
 		      uint16_t tx_port, dpdk_egress_t *dpdk_tx, regex_stats_t *stats)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
@@ -169,7 +169,7 @@ regex_dev_search_live(rb_conf *run_conf, int qid, struct rte_mbuf *mbuf, int pay
 }
 
 static inline void
-regex_dev_post_search(rb_conf *run_conf, int qid, regex_stats_t *stats)
+regex_dev_post_search(pl_conf *run_conf, int qid, regex_stats_t *stats)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
@@ -178,7 +178,7 @@ regex_dev_post_search(rb_conf *run_conf, int qid, regex_stats_t *stats)
 }
 
 static inline void
-regex_dev_force_batch_push(rb_conf *run_conf, uint16_t rx_port, int qid, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_force_batch_push(pl_conf *run_conf, uint16_t rx_port, int qid, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
@@ -187,7 +187,7 @@ regex_dev_force_batch_push(rb_conf *run_conf, uint16_t rx_port, int qid, dpdk_eg
 }
 
 static inline void
-regex_dev_force_batch_pull(rb_conf *run_conf, int qid, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_force_batch_pull(pl_conf *run_conf, int qid, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
@@ -196,7 +196,7 @@ regex_dev_force_batch_pull(rb_conf *run_conf, int qid, dpdk_egress_t *dpdk_tx, r
 }
 
 static inline void
-regex_dev_clean_regex(rb_conf *run_conf)
+regex_dev_clean_regex(pl_conf *run_conf)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
@@ -211,7 +211,7 @@ regex_dev_clean_regex(rb_conf *run_conf)
  */
 
 static inline int
-regex_dev_open_match_file(rb_conf *run_conf)
+regex_dev_open_match_file(pl_conf *run_conf)
 {
 	unsigned int lcore_id;
 	char file_name[64];
@@ -278,7 +278,7 @@ regex_dev_write_to_match_file(int qid, uint64_t user_id, uint32_t rule_id, uint1
 }
 
 static inline void
-regex_dev_close_match_file(rb_conf *run_conf)
+regex_dev_close_match_file(pl_conf *run_conf)
 {
 	uint32_t num_cores = run_conf->cores;
 	uint32_t i;

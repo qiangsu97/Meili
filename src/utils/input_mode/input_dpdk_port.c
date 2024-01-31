@@ -35,7 +35,7 @@ struct rx_buf_cb_helper {
 };
 
 static void
-input_dpdk_port_clean(rb_conf *run_conf);
+input_dpdk_port_clean(pl_conf *run_conf);
 
 static const struct
 rte_eth_conf port_conf_default = {
@@ -178,7 +178,7 @@ input_dpdk_port_init(uint16_t port_id, uint32_t num_queues, int port_idx)
 }
 
 static int
-input_dpdk_port_init_ports(rb_conf *run_conf)
+input_dpdk_port_init_ports(pl_conf *run_conf)
 {
 	// /* Each port has 1 queue for each core. */
 	// const uint32_t num_queues = run_conf->cores;
@@ -243,7 +243,7 @@ input_dpdk_port_init_ports(rb_conf *run_conf)
 }
 
 static void
-input_dpdk_port_clean(rb_conf *run_conf)
+input_dpdk_port_clean(pl_conf *run_conf)
 {
 	const uint32_t num_queues = run_conf->cores;
 	uint16_t num_ports = 1;

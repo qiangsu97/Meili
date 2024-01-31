@@ -41,7 +41,7 @@ typedef int (*pl_register_functions)(struct pipeline_stage *);
 // };
 
 static int
-init_dpdk(struct pipeline_conf *run_conf)
+init_dpdk(pl_conf *run_conf)
 {
 	int ret;
 
@@ -57,7 +57,7 @@ init_dpdk(struct pipeline_conf *run_conf)
 }
 
 /* Init neccessary dpdk environments and construct pipeline */
-int pipeline_runtime_init(struct pipeline *pl, struct pipeline_conf *run_conf, char *err){
+int pipeline_runtime_init(struct pipeline *pl, pl_conf *run_conf, char *err){
     int ret = 0;
 
     /* initalize dpdk related environment */
@@ -165,10 +165,10 @@ int pipeline_stage_run_safe(struct pipeline_stage *self){
     int out_num = 0;
 
     struct pipeline *pl = (struct pipeline *)self->pl;
-    struct pipeline_conf *pl_conf = &(pl->pl_conf);
+    pl_conf *conf = &(pl->conf);
 
     int qid = self->worker_qid;
-    rb_stats_t *stats = pl_conf->stats;
+    rb_stats_t *stats = conf->stats;
 	run_mode_stats_t *rm_stats = &stats->rm_stats[qid];
 
     if(!nb_ring_in || !nb_ring_out){
@@ -193,7 +193,7 @@ int pipeline_stage_run_safe(struct pipeline_stage *self){
     }
 
     // main loop of pipeline stage
-    while(!force_quit && pl_conf->running == true){
+    while(!force_quit && conf->running == true){
         /* read packets from ring_in in a round-robin manner */
         ring_in = ring_in_array[ring_in_index];
         nb_deq = rte_ring_dequeue_burst(ring_in, (void *)mbufs_in, burst_size, NULL);
@@ -246,7 +246,7 @@ int pipeline_init_safe(struct pipeline *pl){
 
     char ring_name[64];
 
-    struct pipeline_conf *run_conf = &(pl->pl_conf);
+    pl_conf *run_conf = &(pl->conf);
 
     /* assign initial value for each stage to NULL */
     pl->nb_pl_stages = 0;
@@ -686,7 +686,7 @@ int pipeline_post_search(struct pipeline *pl){
 	struct rte_mbuf *mbuf[MAX_PKTS_BURST];
 	struct rte_mbuf *mbuf_out[MAX_PKTS_BURST];
 
-    int batch_size = pl->pl_conf.input_batches;
+    int batch_size = pl->conf.input_batches;
 
     int batch_cnt = -1;
 	int nb_deq;
@@ -728,10 +728,10 @@ int pipeline_run(struct pipeline *pl){
     /* main core takes 0 */
 	uint32_t worker_qid = 0;
 
-    struct pipeline_conf *pl_conf = &(pl->pl_conf);
-    rb_stats_t *stats = pl->pl_conf.stats;
+    pl_conf *conf = &(pl->conf);
+    rb_stats_t *stats = pl->conf.stats;
 
-    struct pipeline_conf *run_conf = &(pl->pl_conf);
+    pl_conf *run_conf = &(pl->conf);
     
 
     int nb_pl_stages = pl->nb_pl_stages;
@@ -746,9 +746,9 @@ int pipeline_run(struct pipeline *pl){
 
     
     // launch workers and main core
-    MEILI_LOG_INFO("Total cores: %d", pl_conf->cores);
+    MEILI_LOG_INFO("Total cores: %d", conf->cores);
     MEILI_LOG_INFO("Total stage instances: %d", pl->nb_pl_stage_inst);
-    if (pl->nb_pl_stage_inst >= pl_conf->cores){
+    if (pl->nb_pl_stage_inst >= conf->cores){
         MEILI_LOG_ERR("Not enough cores for workers");
         return -EINVAL; 
     }

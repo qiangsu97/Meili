@@ -26,7 +26,7 @@
 // TODO: update pcap read function
 
 // static inline void
-// input_pcap_print_snap_len_warning(rb_conf *run_conf)
+// input_pcap_print_snap_len_warning(pl_conf *run_conf)
 // {
 // 	static bool warning = false;
 
@@ -36,7 +36,7 @@
 // }
 
 // static int
-// input_pcap_file_read(rb_conf *run_conf)
+// input_pcap_file_read(pl_conf *run_conf)
 // {
 // 	const uint32_t len_thres = run_conf->input_len_threshold;
 // 	const bool per_pkt_len = run_conf->input_app_mode;
@@ -198,17 +198,17 @@
 // }
 
 // static void
-// input_pcap_file_clean(rb_conf *run_conf)
+// input_pcap_file_clean(pl_conf *run_conf)
 // {
 // 	rte_free(run_conf->input_data);
 // 	rte_free(run_conf->input_lens);
 // }
 
 static int
-input_pcap_file_read(rb_conf *run_conf){return 0;}
+input_pcap_file_read(pl_conf *run_conf){return 0;}
 
 static void
-input_pcap_file_clean(rb_conf *run_conf)
+input_pcap_file_clean(pl_conf *run_conf)
 {
 	;
 }
