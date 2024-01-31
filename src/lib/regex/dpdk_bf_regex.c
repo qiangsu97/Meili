@@ -1,14 +1,5 @@
 /*
- * Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES, ALL RIGHTS RESERVED.
- *
- * This software product is a proprietary product of NVIDIA CORPORATION &
- * AFFILIATES (the "Company") and all right, title, and interest in and to the
- * software product, including all associated intellectual property rights, are
- * and shall remain exclusively with the Company.
- *
- * This software product is governed by the End User License Agreement
- * provided with the software product.
- *
+	DPDK-based implementation of regex
  */
 
 #include <stdio.h>
@@ -24,6 +15,7 @@
 
 #include "./dpdk_bf_regex.h"
 #include "../log/meili_log.h"
+#include "../net/meili_pkt.h"
 // #include <click/dpdkbfregex_dpdk_live_shared.h>
 // #include <click/dpdkbfregex_rules_file_utils.h>
 // #include <click/dpdkbfregex_rxpb_log.h>
@@ -509,7 +501,7 @@ regex_dev_dpdk_bf_dequeue_dummy(int qid, regex_stats_t *stats, bool live, uint16
 }
 
 static void
-regex_dev_dpdk_bf_dequeue_pipeline(int qid, regex_stats_t *stats, bool live, uint16_t wait_on_dequeue, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_dequeue_pipeline(int qid, regex_stats_t *stats, uint16_t wait_on_dequeue, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
 	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
 	int q_offset = qid * max_batch_size;
@@ -557,110 +549,6 @@ regex_dev_dpdk_bf_dequeue_pipeline(int qid, regex_stats_t *stats, bool live, uin
 	//printf("total dequeued:%d\n",*nb_dequeued_op);
 }
 
-static void
-regex_dev_dpdk_bf_dequeue_rtc(int qid, regex_stats_t *stats, bool live, uint16_t wait_on_dequeue, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
-{
-	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
-	int q_offset = qid * max_batch_size;
-	struct rte_regex_ops **ops;
-	uint16_t tot_dequeued = 0;
-	int port1_cnt, port2_cnt;
-	struct rte_mbuf *mbuf;
-	uint16_t num_dequeued;
-	int egress_idx;
-	uint64_t time;
-	int i;
-
-	int retries=0;
-
-	/* Determine rx ops for this queue/lcore. */
-	ops = &ops_arr_rx[q_offset];
-	// printf("wait on dequeue=%d\n",wait_on_dequeue);
-	// printf("total dequeued:%d\n",*nb_dequeued_op);
-	//while(tot_dequeued < wait_on_dequeue && retries < MAX_RETRIES){
-	while(tot_dequeued < wait_on_dequeue){
-		num_dequeued = rte_regexdev_dequeue_burst(0, qid, ops, max_batch_size);
-	
-		time = rte_get_timer_cycles();
-
-		for (i = 0; i < num_dequeued; i++) {
-			mbuf = ops[i]->user_ptr;
-			//regex_dev_dpdk_bf_process_resp(qid, ops[i], stats);
-			//regex_dev_dpdk_bf_release_mbuf(mbuf, stats, time);
-			out_bufs[i+*nb_dequeued_op] = mbuf;
-		}
-
-		core_vars[qid].total_dequeued += num_dequeued;
-		tot_dequeued += num_dequeued;
-		*nb_dequeued_op += num_dequeued;
-		// printf("total dequeued:%d\n",*nb_dequeued_op);
-		retries++;
-	}
-	
-}
-
-
-regex_dev_dpdk_bf_send_ops_rtc(int qid, regex_stats_t *stats, bool live, dpdk_egress_t *dpdk_tx, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
-{
-	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
-	uint16_t to_enqueue = core_vars[qid].op_offset;
-	int q_offset = qid * max_batch_size;
-	struct rte_regex_ops **ops;
-	uint16_t num_enqueued = 0;
-	uint64_t tx_busy_time = 0;
-	bool tx_full = false;
-	uint32_t *m_time;
-	uint16_t num_ops;
-	uint64_t time;
-	uint16_t ret;
-	int i;
-
-	// printf("sending ops in rtc...\n");
-	*nb_dequeued_op = 0;
-	/* Loop until all ops are enqueued. */
-	while (num_enqueued < to_enqueue) {
-		ops = &ops_arr_tx[num_enqueued + q_offset];
-		num_ops = to_enqueue - num_enqueued;
-		if(num_ops != 0){
-			ret = rte_regexdev_enqueue_burst(0, qid, ops, num_ops);
-			if (ret) {
-				time = rte_get_timer_cycles();
-
-				/* Queue is now free so note any tx busy time. */
-				if (tx_full) {
-					rxp_stats->tx_busy += rte_get_timer_cycles() - tx_busy_time;
-					tx_full = false;
-				}
-			} else if (!tx_full) {
-				/* Record time when the queue cannot be written to. */
-				tx_full = true;
-				tx_busy_time = rte_get_timer_cycles();
-			}
-
-			num_enqueued += ret;
-			// printf("enqueue burst ret=%d\n",ret);
-			// printf("num_enqueued=%d\n",num_enqueued);
-			// printf("to_enqueue=%d\n",to_enqueue);
-		}	
-		/* Dequeue once after each enqueue */
-		regex_dev_dpdk_bf_dequeue_pipeline(qid, stats, live, 0, nb_dequeued_op, out_bufs);
-	}
-
-	/* Wait for all packets to dequeue but setting wait_on_dequeue to to_enqueue-*nb_dequeued_op */
-	regex_dev_dpdk_bf_dequeue_rtc(qid, stats, live, to_enqueue-*nb_dequeued_op, nb_dequeued_op, out_bufs);
-	if(to_enqueue != *nb_dequeued_op){
-		/* a check if all packets have been examined */
-		printf("to_enqueue=%d\n",to_enqueue);
-		printf("total dequeue=%d",*nb_dequeued_op);
-	}
-	
-
-	core_vars[qid].total_enqueued += num_enqueued;
-	/* Reset the offset for next batch. */
-	core_vars[qid].op_offset = 0;
-
-	return 0;
-}
 
 static inline int
 regex_dev_dpdk_bf_send_ops_dummy(int qid, regex_stats_t *stats, bool live, dpdk_egress_t *dpdk_tx, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
@@ -758,7 +646,7 @@ regex_dev_dpdk_bf_send_ops_pipeline(int qid, regex_stats_t *stats, bool live, dp
 		// printf("num_enqueued=%d\n",num_enqueued);
 		// printf("to_enqueue=%d\n",to_enqueue);
 
-		regex_dev_dpdk_bf_dequeue_pipeline(qid, stats, live, 0, nb_dequeued_op, out_bufs);
+		regex_dev_dpdk_bf_dequeue_pipeline(qid, stats, 0, nb_dequeued_op, out_bufs);
 
 	}
 
@@ -796,8 +684,7 @@ regex_dev_dpdk_bf_prep_op(int qid, struct rte_regex_ops *op)
 
 
 static int
-regex_dev_dpdk_bf_search_live(int qid, struct rte_mbuf *mbuf, int pay_off, uint16_t rx_port __rte_unused,
-			      uint16_t tx_port __rte_unused, dpdk_egress_t *dpdk_tx __rte_unused, regex_stats_t *stats __rte_unused)
+regex_dev_dpdk_bf_search_live(int qid, meili_pkt *mbuf)
 {
 	uint16_t per_q_offset = core_vars[qid].op_offset;
 	int q_offset = qid * max_batch_size;
@@ -816,12 +703,12 @@ regex_dev_dpdk_bf_search_live(int qid, struct rte_mbuf *mbuf, int pay_off, uint1
 	//rte_mbuf_refcnt_update(mbuf, 1);
 
 	/* Adjust and store the data position to the start of the payload. */
-	if (pay_off) {
-		mbuf->dynfield1[DF_PAY_OFF] = pay_off;
-		rte_pktmbuf_adj(mbuf, pay_off);
-	} else {
-		mbuf->dynfield1[DF_PAY_OFF] = 0;
-	}
+	// if (pay_off) {
+	// 	mbuf->dynfield1[DF_PAY_OFF] = pay_off;
+	// 	rte_pktmbuf_adj(mbuf, pay_off);
+	// } else {
+	// 	mbuf->dynfield1[DF_PAY_OFF] = 0;
+	// }
 
 	// mbuf->dynfield1[DF_EGRESS_PORT] = tx_port;
 	regex_dev_dpdk_bf_prep_op(qid, op);
@@ -831,34 +718,34 @@ regex_dev_dpdk_bf_search_live(int qid, struct rte_mbuf *mbuf, int pay_off, uint1
 	//printf("regex_dev_dpdk_bf_search_live() finished\n");
 	/* Enqueue should be called by the force batch function. */
 
+	if(core_vars[qid].op_offset == max_batch_size){
+		/* notify to enqueue */
+		return 1;
+	}
+
 	return 0;
 }
 
 static void
-regex_dev_dpdk_bf_force_batch_push_dummy(int qid, uint16_t rx_port __rte_unused, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_force_batch_push_dummy(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
 	regex_dev_dpdk_bf_send_ops_dummy(qid, stats, true, dpdk_tx, nb_dequeued_op, out_bufs);
 }
 
 static void
-regex_dev_dpdk_bf_force_batch_push_pipeline(int qid, uint16_t rx_port __rte_unused, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_force_batch_push(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
-	regex_dev_dpdk_bf_send_ops_pipeline(qid, stats, true, dpdk_tx, nb_dequeued_op, out_bufs);
+	regex_dev_dpdk_bf_send_ops_pipeline(qid, stats, true, nb_dequeued_op, out_bufs);
 }
 
-static void
-regex_dev_dpdk_bf_force_batch_push_rtc(int qid, uint16_t rx_port __rte_unused, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
-{
-	regex_dev_dpdk_bf_send_ops_rtc(qid, stats, true, dpdk_tx, nb_dequeued_op, out_bufs);
-}
 
 static void
-regex_dev_dpdk_bf_force_batch_pull(int qid, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_force_batch_pull(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
 	/* Async dequeue is only needed if not in latency mode so set 'wait on' value to 0. */
 	//regex_dev_dpdk_bf_dequeue(qid, stats, true, dpdk_tx, 0);
 	/* pull once */
-	regex_dev_dpdk_bf_dequeue_pipeline(qid, stats, true, 0, nb_dequeued_op, out_bufs);
+	regex_dev_dpdk_bf_dequeue_pipeline(qid, stats, 0, nb_dequeued_op, out_bufs);
 }
 
 /* Ensure all ops in flight are received before exiting. */
@@ -932,19 +819,8 @@ regex_dev_dpdk_bf_reg(regex_func_t *funcs, rb_conf *run_conf)
 {
 	funcs->init_regex_dev = regex_dev_dpdk_bf_init;
 	funcs->search_regex_live = regex_dev_dpdk_bf_search_live;
-	/* different running modes */
-	if(run_conf->latency_mode == 1){
-		printf("running in rtc mode...\n");
-		funcs->force_batch_push = regex_dev_dpdk_bf_force_batch_push_rtc;
-	}
-	else if (run_conf->latency_mode == 0){
-		printf("running in pipeline mode...\n");
-		funcs->force_batch_push = regex_dev_dpdk_bf_force_batch_push_pipeline;
-	}
-	else{
-		printf("running in dummy mode...\n");
-		funcs->force_batch_push = regex_dev_dpdk_bf_force_batch_push_dummy;
-	}
+	funcs->force_batch_push = regex_dev_dpdk_bf_force_batch_push;
+	// funcs->force_batch_push = regex_dev_dpdk_bf_force_batch_push_dummy;
 	funcs->force_batch_pull = regex_dev_dpdk_bf_force_batch_pull;
 	funcs->post_search_regex = regex_dev_dpdk_bf_post_search;
 	funcs->clean_regex_dev = regex_dev_dpdk_bf_clean;
