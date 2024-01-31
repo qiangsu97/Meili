@@ -59,10 +59,9 @@ typedef struct regex_func {
 	int (*compile_regex_rules)(rb_conf *run_conf);
 	int (*init_regex_dev)(rb_conf *run_conf);
 	int (*search_regex)(int qid, char *buf, int buf_len, bool push_batch, regex_stats_t *stats);
-	int (*search_regex_live)(int qid, struct rte_mbuf *mbuf, int pay_off, uint16_t rx_port, uint16_t tx_port,
-				 dpdk_egress_t *dpdk_tx, regex_stats_t *stats);
-	void (*force_batch_push)(int qid, uint16_t rx_port, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs);
-	void (*force_batch_pull)(int qid, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs);
+	int (*search_regex_live)(int qid, struct rte_mbuf *mbuf, regex_stats_t *stats);
+	void (*force_batch_push)(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs);
+	void (*force_batch_pull)(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs);
 	void (*post_search_regex)(int qid, regex_stats_t *stats);
 	void (*clean_regex_dev)(rb_conf *run_conf);
 } regex_func_t;

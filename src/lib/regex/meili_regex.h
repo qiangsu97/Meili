@@ -10,6 +10,7 @@
 
 
 #include "../net/meili_pkt.h"
+#include "../log/meili_log.h"
 // #include <click/dpdkbfregex_conf.h>
 // #include <click/dpdkbfregex_dpdk_live_shared.h>
 // #include <click/dpdkbfregex_rxpb_log.h>
@@ -77,7 +78,7 @@ regex_dev_register(rb_conf *run_conf)
 
 	funcs = (regex_func_t *)rte_zmalloc(NULL, sizeof(regex_func_t), 0);
 	if (!funcs) {
-		RXPB_LOG_ERR("Memory failure in dev register.");
+		MEILI_LOG_ERR("Memory failure in dev register.");
 		return -ENOMEM;
 	}
 
@@ -174,16 +175,16 @@ regex_dev_post_search(rb_conf *run_conf, int qid, regex_stats_t *stats)
 }
 
 static inline void
-regex_dev_force_batch_push(rb_conf *run_conf, uint16_t rx_port, int qid, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_force_batch_push(rb_conf *run_conf, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
 	if (funcs->force_batch_push)
-		funcs->force_batch_push(qid, rx_port, dpdk_tx, stats, nb_dequeued_op, out_bufs);
+		funcs->force_batch_push(qid, stats, nb_dequeued_op, out_bufs);
 }
 
 static inline void
-regex_dev_force_batch_pull(rb_conf *run_conf, int qid, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_force_batch_pull(rb_conf *run_conf, int qid, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
@@ -283,115 +284,115 @@ regex_dev_close_match_file(rb_conf *run_conf)
 		fclose(regex_matches[i]);
 }
 
-static inline void
-regex_dev_verify_exp_matches(exp_matches_t *exp_matches, exp_matches_t *act_matches, rxp_exp_match_stats_t *stats)
-{
-	const uint32_t exp_match_cnt = exp_matches->num_matches;
-	const uint32_t act_match_cnt = act_matches->num_matches;
-	uint8_t exp_scratch[exp_match_cnt];
-	uint8_t act_scratch[act_match_cnt];
-	bool another_pass, exp_done;
-	exp_match_t *exp_match;
-	uint32_t i, j;
+// static inline void
+// regex_dev_verify_exp_matches(exp_matches_t *exp_matches, exp_matches_t *act_matches, rxp_exp_match_stats_t *stats)
+// {
+// 	const uint32_t exp_match_cnt = exp_matches->num_matches;
+// 	const uint32_t act_match_cnt = act_matches->num_matches;
+// 	uint8_t exp_scratch[exp_match_cnt];
+// 	uint8_t act_scratch[act_match_cnt];
+// 	bool another_pass, exp_done;
+// 	exp_match_t *exp_match;
+// 	uint32_t i, j;
 
-	memset(exp_scratch, 0, exp_match_cnt);
-	memset(act_scratch, 0, act_match_cnt);
+// 	memset(exp_scratch, 0, exp_match_cnt);
+// 	memset(act_scratch, 0, act_match_cnt);
 
-	/*
-	 * Score 7:	Actual match exists with same rule_id, start_ptr, and length as expected matched
-	 * Score 6:	Actual match exists with same rule_id and start_ptr as expected match
-	 * Score 4:	Actual match exists with same rule_id as expected match
-	 * Score 0:	No actual matches exists for an expected match
-	 * False Pos:	Actual match exist that is not reported in expected matches
-	 *
-	 * To calculate the above we sway towards accuracy as opposed to performance.
-	 * Hence, 3 passes of the exp_matches are carried out to first filter score 7, then score 6, then 4 and 0.
-	 * Attempting to do this in 1 pass can lead to mismatches.
-	 * (e.g. a detected score 4 or 6 may actually be a score 6 or 7 for a different match)
-	 */
-	another_pass = false;
-	for (i = 0; i < exp_match_cnt; i++) {
-		exp_done = false;
-		exp_match = &exp_matches->matches[i];
-		for (j = 0; j < act_match_cnt; j++) {
-			if (act_scratch[j])
-				continue;
+// 	/*
+// 	 * Score 7:	Actual match exists with same rule_id, start_ptr, and length as expected matched
+// 	 * Score 6:	Actual match exists with same rule_id and start_ptr as expected match
+// 	 * Score 4:	Actual match exists with same rule_id as expected match
+// 	 * Score 0:	No actual matches exists for an expected match
+// 	 * False Pos:	Actual match exist that is not reported in expected matches
+// 	 *
+// 	 * To calculate the above we sway towards accuracy as opposed to performance.
+// 	 * Hence, 3 passes of the exp_matches are carried out to first filter score 7, then score 6, then 4 and 0.
+// 	 * Attempting to do this in 1 pass can lead to mismatches.
+// 	 * (e.g. a detected score 4 or 6 may actually be a score 6 or 7 for a different match)
+// 	 */
+// 	another_pass = false;
+// 	for (i = 0; i < exp_match_cnt; i++) {
+// 		exp_done = false;
+// 		exp_match = &exp_matches->matches[i];
+// 		for (j = 0; j < act_match_cnt; j++) {
+// 			if (act_scratch[j])
+// 				continue;
 
-			if (exp_match->rule_id == act_matches->matches[j].rule_id &&
-			    exp_match->start_ptr == act_matches->matches[j].start_ptr &&
-			    exp_match->length == act_matches->matches[j].length) {
-				exp_scratch[i] = 7;
-				act_scratch[j] = 7;
-				stats->score7++;
-				exp_done = true;
-				break;
-			}
-		}
-		/* If exp match is not verified we need another pass. */
-		if (!exp_done)
-			another_pass = true;
-	}
+// 			if (exp_match->rule_id == act_matches->matches[j].rule_id &&
+// 			    exp_match->start_ptr == act_matches->matches[j].start_ptr &&
+// 			    exp_match->length == act_matches->matches[j].length) {
+// 				exp_scratch[i] = 7;
+// 				act_scratch[j] = 7;
+// 				stats->score7++;
+// 				exp_done = true;
+// 				break;
+// 			}
+// 		}
+// 		/* If exp match is not verified we need another pass. */
+// 		if (!exp_done)
+// 			another_pass = true;
+// 	}
 
-	if (!another_pass)
-		goto get_false_pos;
+// 	if (!another_pass)
+// 		goto get_false_pos;
 
-	another_pass = false;
-	for (i = 0; i < exp_match_cnt; i++) {
-		if (exp_scratch[i])
-			continue;
+// 	another_pass = false;
+// 	for (i = 0; i < exp_match_cnt; i++) {
+// 		if (exp_scratch[i])
+// 			continue;
 
-		exp_done = false;
-		exp_match = &exp_matches->matches[i];
-		for (j = 0; j < act_match_cnt; j++) {
-			if (act_scratch[j])
-				continue;
+// 		exp_done = false;
+// 		exp_match = &exp_matches->matches[i];
+// 		for (j = 0; j < act_match_cnt; j++) {
+// 			if (act_scratch[j])
+// 				continue;
 
-			if (exp_match->rule_id == act_matches->matches[j].rule_id &&
-			    exp_match->start_ptr == act_matches->matches[j].start_ptr) {
-				exp_scratch[i] = 6;
-				act_scratch[j] = 6;
-				stats->score6++;
-				exp_done = true;
-				break;
-			}
-		}
-		/* If exp match is not verified we need another pass. */
-		if (!exp_done)
-			another_pass = true;
-	}
+// 			if (exp_match->rule_id == act_matches->matches[j].rule_id &&
+// 			    exp_match->start_ptr == act_matches->matches[j].start_ptr) {
+// 				exp_scratch[i] = 6;
+// 				act_scratch[j] = 6;
+// 				stats->score6++;
+// 				exp_done = true;
+// 				break;
+// 			}
+// 		}
+// 		/* If exp match is not verified we need another pass. */
+// 		if (!exp_done)
+// 			another_pass = true;
+// 	}
 
-	if (!another_pass)
-		goto get_false_pos;
+// 	if (!another_pass)
+// 		goto get_false_pos;
 
-	for (i = 0; i < exp_match_cnt; i++) {
-		if (exp_scratch[i])
-			continue;
+// 	for (i = 0; i < exp_match_cnt; i++) {
+// 		if (exp_scratch[i])
+// 			continue;
 
-		exp_done = false;
-		exp_match = &exp_matches->matches[i];
-		for (j = 0; j < act_match_cnt; j++) {
-			if (act_scratch[j])
-				continue;
+// 		exp_done = false;
+// 		exp_match = &exp_matches->matches[i];
+// 		for (j = 0; j < act_match_cnt; j++) {
+// 			if (act_scratch[j])
+// 				continue;
 
-			if (exp_match->rule_id == act_matches->matches[j].rule_id) {
-				exp_scratch[i] = 4;
-				act_scratch[j] = 4;
-				stats->score4++;
-				exp_done = true;
-				break;
-			}
-		}
-		/* No actual match exists for expected match so mark is score 0. */
-		if (!exp_done)
-			stats->score0++;
-	}
+// 			if (exp_match->rule_id == act_matches->matches[j].rule_id) {
+// 				exp_scratch[i] = 4;
+// 				act_scratch[j] = 4;
+// 				stats->score4++;
+// 				exp_done = true;
+// 				break;
+// 			}
+// 		}
+// 		/* No actual match exists for expected match so mark is score 0. */
+// 		if (!exp_done)
+// 			stats->score0++;
+// 	}
 
-get_false_pos:
-	/* Any actual matches not yet associated with an exp match are false positives. */
-	for (i = 0; i < act_match_cnt; i++)
-		if (!act_scratch[i])
-			stats->false_positives++;
-}
+// get_false_pos:
+// 	/* Any actual matches not yet associated with an exp match are false positives. */
+// 	for (i = 0; i < act_match_cnt; i++)
+// 		if (!act_scratch[i])
+// 			stats->false_positives++;
+// }
 
 #ifdef __cplusplus
 }

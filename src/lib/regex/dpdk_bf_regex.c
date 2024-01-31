@@ -551,7 +551,7 @@ regex_dev_dpdk_bf_dequeue_pipeline(int qid, regex_stats_t *stats, uint16_t wait_
 
 
 static inline int
-regex_dev_dpdk_bf_send_ops_dummy(int qid, regex_stats_t *stats, bool live, dpdk_egress_t *dpdk_tx, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_send_ops_dummy(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
 	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
 	uint16_t to_enqueue = core_vars[qid].op_offset;
@@ -600,7 +600,7 @@ regex_dev_dpdk_bf_send_ops_dummy(int qid, regex_stats_t *stats, bool live, dpdk_
 }
 
 static inline int
-regex_dev_dpdk_bf_send_ops_pipeline(int qid, regex_stats_t *stats, bool live, dpdk_egress_t *dpdk_tx, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_send_ops_pipeline(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
 	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
 	uint16_t to_enqueue = core_vars[qid].op_offset;
@@ -729,13 +729,13 @@ regex_dev_dpdk_bf_search_live(int qid, meili_pkt *mbuf)
 static void
 regex_dev_dpdk_bf_force_batch_push_dummy(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
-	regex_dev_dpdk_bf_send_ops_dummy(qid, stats, true, dpdk_tx, nb_dequeued_op, out_bufs);
+	regex_dev_dpdk_bf_send_ops_dummy(qid, stats, nb_dequeued_op, out_bufs);
 }
 
 static void
 regex_dev_dpdk_bf_force_batch_push(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
-	regex_dev_dpdk_bf_send_ops_pipeline(qid, stats, true, nb_dequeued_op, out_bufs);
+	regex_dev_dpdk_bf_send_ops_pipeline(qid, stats, nb_dequeued_op, out_bufs);
 }
 
 
