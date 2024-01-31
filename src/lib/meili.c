@@ -64,7 +64,7 @@ void regex(struct pipeline_stage *self, meili_pkt *pkt){
 	int i;
 
     regex_stats_t *regex_stats;
-    pl_conf *run_conf = &(self->conf);
+    pl_conf *run_conf;
 
     int nb_dequeued_op;
     meili_pkt *out_bufs[64];

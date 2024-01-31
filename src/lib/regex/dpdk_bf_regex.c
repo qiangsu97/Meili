@@ -685,7 +685,7 @@ regex_dev_dpdk_bf_prep_op(int qid, struct rte_regex_ops *op)
 
 
 static int
-regex_dev_dpdk_bf_search_live(int qid, meili_pkt *mbuf)
+regex_dev_dpdk_bf_search_live(int qid, meili_pkt *mbuf, regex_stats_t *stats)
 {
 	uint16_t per_q_offset = core_vars[qid].op_offset;
 	int q_offset = qid * max_batch_size;

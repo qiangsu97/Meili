@@ -165,7 +165,7 @@ regex_dev_search_live(pl_conf *run_conf, int qid, struct rte_mbuf *mbuf, regex_s
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
 	if (funcs->search_regex_live)
-		return funcs->search_regex_live(qid, mbuf, pay_off, rx_port, tx_port, dpdk_tx, stats);
+		return funcs->search_regex_live(qid, mbuf, stats);
 
 	return -EINVAL;
 }
