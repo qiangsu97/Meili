@@ -63,15 +63,15 @@ void regex(struct pipeline_stage *self, meili_pkt *pkt){
 	int ret;
 	int i;
 
-	/* Keep coverity check happy by initialising. */
-	//memset(&bufs[0], '\0', sizeof(struct rte_mbuf *) * batch_size);
+    regex_stats_t *regex_stats;
+    pl_conf *run_conf = &(self->pl_conf);
 
 
 	/* If push_batch signal is set, push the batch( and pull at the same time to avoid full queue) */
 	to_send = 0;
 
     /* Prepare ops in regex_dev_search_live */
-    to_send = regex_dev_search_live(run_conf, qid, pkt, regex_stats_t *stats);
+    to_send = regex_dev_search_live(run_conf, qid, pkt, regex_stats);
     // if (ret)
     //     return ret;
 

@@ -467,7 +467,7 @@ regex_dev_dpdk_bf_dequeue(int qid, regex_stats_t *stats, bool live, dpdk_egress_
 
 
 static void
-regex_dev_dpdk_bf_dequeue_dummy(int qid, regex_stats_t *stats, bool live, uint16_t wait_on_dequeue, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_dequeue_dummy(int qid, regex_stats_t *stats, uint16_t wait_on_dequeue, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
 	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
 	int q_offset = qid * max_batch_size;

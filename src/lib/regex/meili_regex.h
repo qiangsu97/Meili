@@ -144,23 +144,12 @@ regex_dev_init(pl_conf *run_conf)
 }
 
 static inline int
-regex_dev_search(pl_conf *run_conf, int qid, char *buf, int buf_len, bool push_batch, regex_stats_t *stats)
-{
-	regex_func_t *funcs = run_conf->regex_dev_funcs;
-
-	if (funcs->search_regex)
-		return funcs->search_regex(qid, buf, buf_len, push_batch, stats);
-
-	return -EINVAL;
-}
-
-static inline int
 regex_dev_search_live(pl_conf *run_conf, int qid, struct rte_mbuf *mbuf, regex_stats_t *stats)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
 	if (funcs->search_regex_live)
-		return funcs->search_regex_live(qid, mbuf, stats);
+		return funcs->search_regex_live(qid, mbuf);
 
 	return -EINVAL;
 }

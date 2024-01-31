@@ -181,21 +181,21 @@ regex_dev_post_search(pl_conf *run_conf, int qid, regex_stats_t *stats)
 }
 
 static inline void
-regex_dev_force_batch_push(pl_conf *run_conf, uint16_t rx_port, int qid, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_force_batch_push(pl_conf *run_conf, int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
 	if (funcs->force_batch_push)
-		funcs->force_batch_push(qid, rx_port, dpdk_tx, stats, nb_dequeued_op, out_bufs);
+		funcs->force_batch_push(qid, stats, nb_dequeued_op, out_bufs);
 }
 
 static inline void
-regex_dev_force_batch_pull(pl_conf *run_conf, int qid, dpdk_egress_t *dpdk_tx, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_force_batch_pull(pl_conf *run_conf, int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
 	if (funcs->force_batch_pull)
-		funcs->force_batch_pull(qid, dpdk_tx, stats, nb_dequeued_op, out_bufs);
+		funcs->force_batch_pull(qid, stats, nb_dequeued_op, out_bufs);
 }
 
 static inline void
