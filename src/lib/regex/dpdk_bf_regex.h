@@ -20,10 +20,11 @@
 #include <rte_malloc.h>
 #include <rte_mbuf_core.h>
 
-#include <click/dpdkbfregex_conf.h>
-#include <click/dpdkbfregex_dpdk_live_shared.h>
-#include <click/dpdkbfregex_rxpb_log.h>
-#include <click/dpdkbfregex_stats.h>
+// #include <click/dpdkbfregex_conf.h>
+// #include <click/dpdkbfregex_dpdk_live_shared.h>
+// #include <click/dpdkbfregex_rxpb_log.h>
+// #include <click/dpdkbfregex_stats.h>
+#include "../conf/meili_conf.h"
 
 #ifdef __cplusplus
 extern "C" {
