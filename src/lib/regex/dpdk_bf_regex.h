@@ -25,6 +25,8 @@
 // #include <click/dpdkbfregex_rxpb_log.h>
 // #include <click/dpdkbfregex_stats.h>
 #include "../conf/meili_conf.h"
+#include "../log/meili_log.h"
+#include "../meili_regex_stats.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -82,7 +84,7 @@ regex_dev_register(pl_conf *run_conf)
 
 	funcs = (regex_func_t *)rte_zmalloc(NULL, sizeof(regex_func_t), 0);
 	if (!funcs) {
-		RXPB_LOG_ERR("Memory failure in dev register.");
+		MEILI_LOG_ERR("Memory failure in dev register.");
 		return -ENOMEM;
 	}
 

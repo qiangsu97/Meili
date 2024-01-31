@@ -16,6 +16,7 @@
 #include "./dpdk_bf_regex.h"
 #include "../log/meili_log.h"
 #include "../net/meili_pkt.h"
+#include "./meili_regex_stats.h"
 // #include <click/dpdkbfregex_dpdk_live_shared.h>
 // #include <click/dpdkbfregex_rules_file_utils.h>
 // #include <click/dpdkbfregex_rxpb_log.h>
