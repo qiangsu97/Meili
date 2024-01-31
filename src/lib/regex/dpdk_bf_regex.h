@@ -26,7 +26,7 @@
 // #include <click/dpdkbfregex_stats.h>
 #include "../conf/meili_conf.h"
 #include "../log/meili_log.h"
-#include "../meili_regex_stats.h"
+#include "./meili_regex_stats.h"
 
 #ifdef __cplusplus
 extern "C" {
