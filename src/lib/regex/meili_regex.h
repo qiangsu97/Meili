@@ -173,7 +173,7 @@ regex_dev_force_batch_push(pl_conf *run_conf, int qid, regex_stats_t *stats, int
 }
 
 static inline void
-regex_dev_force_batch_pull(pl_conf *run_conf, int qid, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_force_batch_pull(pl_conf *run_conf, int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 

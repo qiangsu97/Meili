@@ -160,8 +160,7 @@ regex_dev_search(pl_conf *run_conf, int qid, char *buf, int buf_len, bool push_b
 }
 
 static inline int
-regex_dev_search_live(pl_conf *run_conf, int qid, struct rte_mbuf *mbuf, int pay_off, uint16_t rx_port,
-		      uint16_t tx_port, dpdk_egress_t *dpdk_tx, regex_stats_t *stats)
+regex_dev_search_live(pl_conf *run_conf, int qid, struct rte_mbuf *mbuf, regex_stats_t *stats)
 {
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 

@@ -416,7 +416,7 @@ regex_dev_dpdk_bf_get_array_offset(uint64_t job_id)
 // }
 
 static void
-regex_dev_dpdk_bf_dequeue(int qid, regex_stats_t *stats, bool live, dpdk_egress_t *dpdk_tx, uint16_t wait_on_dequeue)
+regex_dev_dpdk_bf_dequeue(int qid, regex_stats_t *stats, uint16_t wait_on_dequeue)
 {
 	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
 	int q_offset = qid * max_batch_size;
@@ -467,7 +467,7 @@ regex_dev_dpdk_bf_dequeue(int qid, regex_stats_t *stats, bool live, dpdk_egress_
 
 
 static void
-regex_dev_dpdk_bf_dequeue_dummy(int qid, regex_stats_t *stats, uint16_t wait_on_dequeue, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_dequeue_dummy(int qid, regex_stats_t *stats, uint16_t wait_on_dequeue, int *nb_dequeued_op, meili_pkt **out_bufs)
 {
 	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
 	int q_offset = qid * max_batch_size;
@@ -502,7 +502,7 @@ regex_dev_dpdk_bf_dequeue_dummy(int qid, regex_stats_t *stats, uint16_t wait_on_
 }
 
 static void
-regex_dev_dpdk_bf_dequeue_pipeline(int qid, regex_stats_t *stats, uint16_t wait_on_dequeue, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_dequeue_pipeline(int qid, regex_stats_t *stats, uint16_t wait_on_dequeue, int *nb_dequeued_op, meili_pkt **out_bufs)
 {
 	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
 	int q_offset = qid * max_batch_size;
@@ -552,7 +552,7 @@ regex_dev_dpdk_bf_dequeue_pipeline(int qid, regex_stats_t *stats, uint16_t wait_
 
 
 static inline int
-regex_dev_dpdk_bf_send_ops_dummy(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_send_ops_dummy(int qid, regex_stats_t *stats, int *nb_dequeued_op, meili_pkt **out_bufs)
 {
 	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
 	uint16_t to_enqueue = core_vars[qid].op_offset;
@@ -601,7 +601,7 @@ regex_dev_dpdk_bf_send_ops_dummy(int qid, regex_stats_t *stats, int *nb_dequeued
 }
 
 static inline int
-regex_dev_dpdk_bf_send_ops_pipeline(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_send_ops_pipeline(int qid, regex_stats_t *stats, int *nb_dequeued_op, meili_pkt **out_bufs)
 {
 	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
 	uint16_t to_enqueue = core_vars[qid].op_offset;
@@ -728,20 +728,20 @@ regex_dev_dpdk_bf_search_live(int qid, meili_pkt *mbuf)
 }
 
 static void
-regex_dev_dpdk_bf_force_batch_push_dummy(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_force_batch_push_dummy(int qid, regex_stats_t *stats, int *nb_dequeued_op, meili_pkt **out_bufs)
 {
 	regex_dev_dpdk_bf_send_ops_dummy(qid, stats, nb_dequeued_op, out_bufs);
 }
 
 static void
-regex_dev_dpdk_bf_force_batch_push(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_force_batch_push(int qid, regex_stats_t *stats, int *nb_dequeued_op, meili_pkt **out_bufs)
 {
 	regex_dev_dpdk_bf_send_ops_pipeline(qid, stats, nb_dequeued_op, out_bufs);
 }
 
 
 static void
-regex_dev_dpdk_bf_force_batch_pull(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs)
+regex_dev_dpdk_bf_force_batch_pull(int qid, regex_stats_t *stats, int *nb_dequeued_op, meili_pkt **out_bufs)
 {
 	/* Async dequeue is only needed if not in latency mode so set 'wait on' value to 0. */
 	//regex_dev_dpdk_bf_dequeue(qid, stats, true, dpdk_tx, 0);
@@ -757,7 +757,7 @@ regex_dev_dpdk_bf_post_search(int qid, regex_stats_t *stats)
 
 	start = rte_rdtsc();
 	while (core_vars[qid].total_enqueued > core_vars[qid].total_dequeued) {
-		regex_dev_dpdk_bf_dequeue(qid, stats, false, NULL, 0);
+		regex_dev_dpdk_bf_dequeue(qid, stats, 0);
 
 		/* Prevent infinite loops. */
 		diff = rte_rdtsc() - start;

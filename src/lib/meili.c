@@ -64,7 +64,10 @@ void regex(struct pipeline_stage *self, meili_pkt *pkt){
 	int i;
 
     regex_stats_t *regex_stats;
-    pl_conf *run_conf = &(self->pl_conf);
+    pl_conf *run_conf = &(self->conf);
+
+    int nb_dequeued_op;
+    meili_pkt *out_bufs[64];
 
 
 	/* If push_batch signal is set, push the batch( and pull at the same time to avoid full queue) */
@@ -78,11 +81,11 @@ void regex(struct pipeline_stage *self, meili_pkt *pkt){
 
     if (to_send) {
         /* Push batch if contains some valid packets. */
-        regex_dev_force_batch_push(run_conf, qid, regex_stats, nb_dequeued_op, out_bufs);
+        regex_dev_force_batch_push(run_conf, qid, regex_stats, &nb_dequeued_op, out_bufs);
     }	
 	else{
 		/* If batch is not full, pull finished ops */
-		regex_dev_force_batch_pull(run_conf, qid, regex_stats, nb_dequeued_op, out_bufs);	
+		regex_dev_force_batch_pull(run_conf, qid, regex_stats, &nb_dequeued_op, out_bufs);	
 	}
 	return;        
 };
