@@ -1,3 +1,15 @@
+/*
+ * Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES, ALL RIGHTS RESERVED.
+ *
+ * This software product is a proprietary product of NVIDIA CORPORATION &
+ * AFFILIATES (the "Company") and all right, title, and interest in and to the
+ * software product, including all associated intellectual property rights, are
+ * and shall remain exclusively with the Company.
+ *
+ * This software product is governed by the End User License Agreement
+ * provided with the software product.
+ *
+ */
 
 #ifndef _INCLUDE_STATS_H_
 #define _INCLUDE_STATS_H_
@@ -10,15 +22,14 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 
-#include "../../lib/conf/meili_conf.h"
-#include "../../runtime/meili_runtime.h"
+#include <click/dpdkbfregex_conf.h>
 
-// #define ONLY_SPLIT_THROUGHPUT
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define STATS_INTERVAL_SEC	1
 #define STATS_INTERVAL_CYCLES	STATS_INTERVAL_SEC * rte_get_timer_hz()
-
-#define NUMBER_OF_SAMPLE ((1<<14) - 1) /* should be 2^n-1 for speed */ 
 
 typedef struct pkt_stats {
 	uint64_t valid_pkts;	   /* Successfully parsed. */
@@ -36,7 +47,36 @@ typedef struct pkt_stats {
 	uint64_t udp;
 } pkt_stats_t;
 
+typedef struct regex_custom_rxp_exp_matches {
+	uint64_t score7;
+	uint64_t score6;
+	uint64_t score4;
+	uint64_t score0;
+	uint64_t false_positives;
+} rxp_exp_match_stats_t;
 
+typedef struct regex_custom_rxp {
+	uint64_t rx_invalid;
+	uint64_t rx_timeout;
+	uint64_t rx_max_match;
+	uint64_t rx_max_prefix;
+	uint64_t rx_resource_limit;
+	uint64_t rx_idle;
+	uint64_t tx_busy;
+	uint64_t tot_lat;
+	uint64_t max_lat;
+	uint64_t min_lat;
+
+	/* Expected match results. */
+	rxp_exp_match_stats_t exp;
+	rxp_exp_match_stats_t max_exp;
+} rxp_stats_t;
+
+typedef struct regex_custom_hs {
+	uint64_t tot_lat;
+	uint64_t max_lat;
+	uint64_t min_lat;
+} hs_stats_t;
 
 /* Stats per core are stored as an array. */
 typedef struct run_mode_stats {
@@ -45,38 +85,33 @@ typedef struct run_mode_stats {
 			int lcore_id;
 			uint64_t rx_buf_cnt;   /* Data received. */
 			uint64_t rx_buf_bytes; /* Bytes received. */
-			uint64_t rx_batch_cnt; /* Batches sent. */
-			uint64_t tx_buf_cnt;   /* Data sent. */
-			uint64_t tx_buf_bytes; /* Bytes sent. */
-			uint64_t tx_batch_cnt; /* Batches sent. */
-			uint64_t split_tx_buf_bytes;  /* Bytes last recorded. */
-			uint64_t split_tx_buf_cnt;  /* Buf last recorded. */
-			double split_duration;  /* per core duration recording. */
+			uint64_t tx_buf_cnt;   /* Data sent to regex. */
+			uint64_t tx_buf_bytes; /* Bytes sent to regex. */
+			uint64_t tx_batch_cnt; /* Batches sent to regex. */
 
 			pkt_stats_t pkt_stats; /* Packet stats. */
-
-			struct pipeline_stage *self;/* corresponding pipeline stage */
 		};
 		/* Ensure multiple cores don't access the same cache line. */
 		unsigned char cache_align[CACHE_LINE_SIZE * 2];
 	};
 } run_mode_stats_t;
 
-
-typedef struct lat_stats {
-	uint64_t tot_lat;
-	uint64_t max_lat;
-	uint64_t min_lat;
-	/* queuing time before get processed by this stage */
-	uint64_t tot_in_lat;
-	// sample 
-	uint64_t time_diff_sample[NUMBER_OF_SAMPLE];
-	int nb_sampled;
-} lat_stats_t;
+typedef struct regex_dev_stats {
+	union {
+		struct {
+			uint64_t rx_valid;
+			uint64_t rx_buf_match_cnt;
+			uint64_t rx_total_match;
+			void *custom; /* Stats defined by dev in use. */
+		};
+		/* Ensure multiple cores don't access the same cache line. */
+		unsigned char cache_align[CACHE_LINE_SIZE];
+	};
+} regex_stats_t;
 
 typedef struct rxpbench_stats {
 	run_mode_stats_t *rm_stats;
-	lat_stats_t *lat_stats;
+	regex_stats_t *regex_stats;
 } rb_stats_t;
 
 /* Modify packet stats (common to live and pcap modes). */
@@ -100,11 +135,16 @@ stats_update_pkt_stats(pkt_stats_t *pkt_stats, int rte_ptype)
 		pkt_stats->udp++;
 }
 
-int stats_init(rb_conf *run_conf);
-void stats_clean(rb_conf *run_conf);
 void stats_print_update(rb_stats_t *stats, int num_queues, double time, bool end);
-void stats_print_end_of_run(rb_conf *run_conf, double run_time);
-void stats_update_time_main(struct rte_mbuf **mbuf, int nb_mbuf, struct pipeline *pl);
 
+int stats_init(rb_conf *run_conf);
+
+void stats_print_end_of_run(rb_conf *run_conf, double run_time);
+
+void stats_clean(rb_conf *run_conf);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _INCLUDE_STATS_H_ */

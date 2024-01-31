@@ -1,8 +1,8 @@
 #ifndef _INCLUDE_UTILS_H_
 #define _INCLUDE_UTILS_H_
 
-#include "./log/log.h"
+#include "../lib/log/meili_log.h"
 #include "./stats/stats.h"
-#include "./conf/conf.h"
+#include "../lib/conf/meili_conf.h"
 
 #endif /* _INCLUDE_UTILS_H_ */

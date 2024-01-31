@@ -21,7 +21,7 @@
 #include <rte_mbuf.h>
 #include <rte_mbuf_dyn.h>
 
-#include "../log/log.h"
+#include "../log/meili_log.h"
 #include "stats.h"
 
 #include "../timestamp/timestamp.h"

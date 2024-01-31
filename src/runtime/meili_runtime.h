@@ -6,4 +6,8 @@
 
 int register_meili_apis();
 
+int meili_regex_init();
+
+int meili_compression_init();
+
 #endif /* _INCLUDE_PIPELINE_RUNTIME_H */

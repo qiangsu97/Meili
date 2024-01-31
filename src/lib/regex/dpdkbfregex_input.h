@@ -18,8 +18,12 @@
 
 #include <rte_malloc.h>
 
-#include "../../lib/conf/meili_conf.h"
-#include "../../lib/log/meili_log.h"
+#include <click/dpdkbfregex_conf.h>
+#include <click/dpdkbfregex_rxpb_log.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * Input types should implement their own init and clean functions.
@@ -31,13 +35,13 @@ typedef struct input_func {
 	void (*clean)(rb_conf *run_conf);
 } input_func_t;
 
-void input_txt_file_reg(input_func_t *funcs);
+// void input_txt_file_reg(input_func_t *funcs);
 
 void input_dpdk_port_reg(input_func_t *funcs);
 
-void input_pcap_file_reg(input_func_t *funcs);
+// void input_pcap_file_reg(input_func_t *funcs);
 
-void input_job_format_reg(input_func_t *funcs);
+// void input_job_format_reg(input_func_t *funcs);
 
 void input_remote_mmap_reg(input_func_t *funcs);
 
@@ -46,23 +50,31 @@ input_register(rb_conf *run_conf)
 {
 	input_func_t *funcs;
 
-	funcs = rte_zmalloc(NULL, sizeof(input_func_t), 0);
+	funcs = (input_func_t *)rte_zmalloc(NULL, sizeof(input_func_t), 0);
 	if (!funcs) {
-		MEILI_LOG_ERR("Memory failure in input register.");
+		RXPB_LOG_ERR("Memory failure in input register.");
 		return -ENOMEM;
 	}
 
 	switch (run_conf->input_mode) {
-	case INPUT_TEXT_FILE:
-		input_txt_file_reg(funcs);
-		break;
+	// case INPUT_TEXT_FILE:
+	// 	input_txt_file_reg(funcs);
+	// 	break;
 
-	case INPUT_PCAP_FILE:
-		input_pcap_file_reg(funcs);
-		break;
+	// case INPUT_PCAP_FILE:
+	// 	input_pcap_file_reg(funcs);
+	// 	break;
 
 	case INPUT_LIVE:
 		input_dpdk_port_reg(funcs);
+		break;
+
+	// case INPUT_JOB_FORMAT:
+	// 	input_job_format_reg(funcs);
+	// 	break;
+
+	case INPUT_REMOTE_MMAP:
+		input_remote_mmap_reg(funcs);
 		break;
 
 	default:
@@ -107,5 +119,9 @@ input_clean(rb_conf *run_conf)
 
 	rte_free(run_conf->input_funcs);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _INCLUDE_INPUT_H_ */

@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "log.h"
+#include "meili_log.h"
 
 #define ALERT_MARKER	"\n******************************************************************\n"
 

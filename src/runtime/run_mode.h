@@ -23,7 +23,7 @@
 #include "../utils/utils.h"
 
 // #include "../utils/conf/conf.h"
-// #include "../utils/log/log.h"
+// #include "../lib/log/meili_log.h"
 
 #define DEFAULT_ETH_BATCH_SIZE 64
 

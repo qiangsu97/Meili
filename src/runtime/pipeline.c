@@ -577,7 +577,6 @@ int pipeline_stage_init_safe(struct pipeline_stage *self, enum pipeline_type pp_
     /* general fields a pipeline stage must have */
     self->type = pp_type;
     self->batch_size = DEFAULT_BATCH_SIZE;
-    self->has_substage = false;
     #ifdef SHARED_BUFFER
     self->ring_in = NULL;
     self->ring_out = NULL;
@@ -776,14 +775,6 @@ int pipeline_run(struct pipeline *pl){
 		self->core_id = lcore_id;
         self->worker_qid = worker_qid;
 
-        /* if the stage has substage, assign core id and worker qid as well */
-        // if(self->has_substage){
-        //     struct app_state *mystate = (struct app_state *)self->state;
-        //     for(int sub_index=0; sub_index<mystate->nb_stage; sub_index++){
-        //         mystate->stages[sub_index]->core_id = lcore_id;
-        //         mystate->stages[sub_index]->worker_qid = worker_qid;    
-        //     }
-        // }
 
         worker_qid++;
         #ifndef BASELINE_MODE

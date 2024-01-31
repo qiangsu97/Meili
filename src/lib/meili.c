@@ -4,6 +4,8 @@
 #include "meili.h"
 #include "../runtime/pipeline.h"
 
+#include "./net/meili_pkt.h"
+#include "./regex/meili_regex.h"
 
 /* pkt_trans
 *   - Run a packet transformation operation specified by UCO.  
@@ -54,7 +56,37 @@ void epoll(){};
 /* regex
 *   - The built-in Regular Expression API.   
 */
-void regex(){};
+void regex(struct pipeline_stage *self, meili_pkt *pkt){
+    
+    int qid;
+	int to_send;
+	int ret;
+	int i;
+
+	/* Keep coverity check happy by initialising. */
+	//memset(&bufs[0], '\0', sizeof(struct rte_mbuf *) * batch_size);
+
+
+	/* If push_batch signal is set, push the batch( and pull at the same time to avoid full queue) */
+	to_send = 0;
+
+    /* Prepare ops in regex_dev_search_live */
+    ret = regex_dev_search_live(run_conf, qid, bufs[i], pay_off, rx_port_id, tx_port_id, dpdk_tx,
+                    regex_stats);
+    if (ret)
+        return ret;
+
+
+    if (to_send) {
+        /* Push batch if contains some valid packets. */
+        regex_dev_force_batch_push(run_conf, rx_port_id, qid, dpdk_tx, regex_stats, nb_dequeued_op, out_bufs);
+    }	
+	else{
+		/* If batch is not full, pull finished ops */
+		regex_dev_force_batch_pull(run_conf, qid, dpdk_tx, regex_stats, nb_dequeued_op, out_bufs);	
+	}
+	return;        
+};
 
 /* AES
 *   - The built-in AES Encryption API.

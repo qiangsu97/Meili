@@ -8,7 +8,7 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 
-#include "log/log.h"
+#include "../lib/log/meili_log.h"
 #include "utils_temp.h"
 #include "./cJSON/cJSON.h"
 
