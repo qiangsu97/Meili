@@ -19,16 +19,15 @@
 #include <rte_lcore.h>
 
 #include <unistd.h>
+#include "run_mode.h"
+#include "pipeline.h"
 
 #include "../utils/input_mode/dpdk_live_shared.h"
 #include "../utils/utils.h"
-#include "../utils/utils_temp.h"
 #include "../utils/net/port_utils.h"
-#include "run_mode.h"
-#include "pipeline.h"
+
 #include "../packet_ordering/packet_ordering.h"
 #include "../packet_timestamping/packet_timestamping.h"
-
 #include "../utils/rte_reorder/rte_reorder.h"
 
 static uint16_t primary_port_id;

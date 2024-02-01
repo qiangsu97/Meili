@@ -20,7 +20,6 @@
 
 #include "input.h"
 #include "../utils.h"
-#include "../utils_temp.h"
 
 
 // TODO: update pcap read function

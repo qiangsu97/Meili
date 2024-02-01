@@ -26,7 +26,6 @@
 #include "../../utils/input_mode/dpdk_live_shared.h"
 #include "../log/meili_log.h"
 #include "../../runtime/meili_runtime.h"
-#include "../../utils/utils_temp.h"
 #include "../../utils/str/str_helpers.h"
 
 #define MEILI_VERSION        "1.0"

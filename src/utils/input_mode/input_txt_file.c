@@ -18,7 +18,6 @@
 #include <rte_malloc.h>
 
 #include "input.h"
-#include "../utils_temp.h"
 #include "../str/str_helpers.h"
 
 static int
