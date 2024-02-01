@@ -58,7 +58,7 @@ static enum regex_dev_verbose regex_dev_verbose;
 typedef struct regex_func {
 	int (*compile_regex_rules)(pl_conf *run_conf);
 	int (*init_regex_dev)(pl_conf *run_conf);
-	int (*search_regex_live)(int qid, meili_pkt *mbuf);
+	int (*search_regex_live)(int qid, meili_pkt *mbuf, regex_stats_t *stats);
 	void (*force_batch_push)(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs);
 	void (*force_batch_pull)(int qid, regex_stats_t *stats, int *nb_dequeued_op, struct rte_mbuf **out_bufs);
 	void (*post_search_regex)(int qid, regex_stats_t *stats);
@@ -148,7 +148,7 @@ regex_dev_search_live(pl_conf *run_conf, int qid, struct rte_mbuf *mbuf, regex_s
 	regex_func_t *funcs = run_conf->regex_dev_funcs;
 
 	if (funcs->search_regex_live)
-		return funcs->search_regex_live(qid, mbuf);
+		return funcs->search_regex_live(qid, mbuf, stats);
 	else
 		printf("No search regex live function\n");
 	return -EINVAL;
