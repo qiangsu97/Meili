@@ -1,7 +1,7 @@
 #ifndef _STR_HELPERS_H
 #define _STR_HELPERS_H
 
-#include "../../thridparty/cJSON/cJSON.h"
+#include "../../thirdparty/cJSON/cJSON.h"
 
 #define MASK_UPPER_32  0xFFFFFFFF00000000LL
 #define MASK_LOWER_32  0xFFFFFFFFLL

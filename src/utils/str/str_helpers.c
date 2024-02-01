@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "../../lib/log/meili_log.h"
-#include "../../thridparty/cJSON/cJSON.h"
+#include "../../thirdparty/cJSON/cJSON.h"
 
 #include "str_helpers.h"
 
