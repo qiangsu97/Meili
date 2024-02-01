@@ -74,7 +74,7 @@ int ddos_check(struct pipeline_stage *self, meili_pkt *pkt) {
     return flag;
 }
 int url_check(struct pipeline_stage *self, meili_pkt *pkt){
-    //match_num = Meili.regex(RULES, pkt.payload);
+    Meili.regex(self, pkt);
     return 0;
 }
 

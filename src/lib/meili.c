@@ -58,27 +58,27 @@ void epoll(){};
 */
 void regex(struct pipeline_stage *self, meili_pkt *pkt){
     
-    int qid;
+    int qid = self->worker_qid;
+    struct pipeline *pl = (struct pipeline *)(self->pl);
+    regex_stats_t temp_stats;
+    pl_conf *run_conf = &(pl->conf);
+
 	int to_send = 0;
 	int ret;
-
-    regex_stats_t *regex_stats;
-    pl_conf *run_conf;
-
     int nb_dequeued_op;
 
     /* Prepare ops in regex_dev_search_live */
-    to_send = regex_dev_search_live(run_conf, qid, pkt, regex_stats);
+    to_send = regex_dev_search_live(run_conf, qid, pkt, &temp_stats);
     // if (ret)
     //     return ret;
 
     /* If to_send signal is set, push the batch( and pull at the same time to avoid full queue) */
     if (to_send) {
-        regex_dev_force_batch_push(run_conf, qid, regex_stats, &nb_dequeued_op, NULL);
+        regex_dev_force_batch_push(run_conf, qid, &temp_stats, &nb_dequeued_op, NULL);
     }	
 	else{
 		/* If batch is not full, pull finished ops */
-		regex_dev_force_batch_pull(run_conf, qid, regex_stats, &nb_dequeued_op, NULL);	
+		regex_dev_force_batch_pull(run_conf, qid, &temp_stats, &nb_dequeued_op, NULL);	
 	}
 	return;        
 };
