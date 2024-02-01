@@ -164,7 +164,8 @@ regex_dev_search_live(pl_conf *run_conf, int qid, struct rte_mbuf *mbuf, regex_s
 
 	if (funcs->search_regex_live)
 		return funcs->search_regex_live(qid, mbuf, stats);
-
+	else
+		printf("No search regex live function\n");
 	return -EINVAL;
 }
 

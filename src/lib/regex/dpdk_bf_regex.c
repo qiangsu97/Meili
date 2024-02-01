@@ -836,6 +836,7 @@ regex_dev_dpdk_bf_compile(pl_conf *run_conf)
 int
 regex_dev_dpdk_bf_reg(regex_func_t *funcs, pl_conf *run_conf)
 {
+	printf("registering dpdk bf regex device functions\n");
 	funcs->init_regex_dev = regex_dev_dpdk_bf_init;
 	funcs->search_regex_live = regex_dev_dpdk_bf_search_live;
 	funcs->force_batch_push = regex_dev_dpdk_bf_force_batch_push;
