@@ -67,10 +67,9 @@ void regex(struct pipeline_stage *self, meili_pkt *pkt){
 	int ret;
     int nb_dequeued_op;
 
-    printf("Meili.regex called\n");
+
     /* Prepare ops in regex_dev_search_live */
     to_send = regex_dev_search_live(run_conf, qid, pkt, &temp_stats);
-    printf("to_send=%d\n",to_send);
     // if (ret)
     //     return ret;
 
