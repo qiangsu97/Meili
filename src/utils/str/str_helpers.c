@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <rte_malloc.h>
 
 #include "../../lib/log/meili_log.h"
 #include "../../thirdparty/cJSON/cJSON.h"
