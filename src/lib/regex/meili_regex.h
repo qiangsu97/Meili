@@ -114,10 +114,8 @@ regex_dev_register(pl_conf *run_conf)
 	return 0;
 }
 
-/*
- * Wrapper functions for each devices function pointers.
- * Called in 'main' for setup or in run modes for data path actions.
- */
+/* Compile rules if necessary or directly use compiled rules to program regex device */
+
 
 static inline int
 regex_dev_compile_rules(pl_conf *run_conf)
@@ -151,7 +149,8 @@ regex_dev_search_live(pl_conf *run_conf, int qid, struct rte_mbuf *mbuf, regex_s
 
 	if (funcs->search_regex_live)
 		return funcs->search_regex_live(qid, mbuf);
-
+	else
+		printf("No search regex live function\n");
 	return -EINVAL;
 }
 

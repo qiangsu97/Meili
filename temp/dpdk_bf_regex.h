@@ -1,16 +1,3 @@
-/*
- * Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES, ALL RIGHTS RESERVED.
- *
- * This software product is a proprietary product of NVIDIA CORPORATION &
- * AFFILIATES (the "Company") and all right, title, and interest in and to the
- * software product, including all associated intellectual property rights, are
- * and shall remain exclusively with the Company.
- *
- * This software product is governed by the End User License Agreement
- * provided with the software product.
- *
- */
-
 #ifndef _INCLUDE_REGEX_DEV_H_
 #define _INCLUDE_REGEX_DEV_H_
 
@@ -118,7 +105,6 @@ regex_dev_register(pl_conf *run_conf)
 	return 0;
 }
 
-/* Compile rules if necessary or directly use compiled rules to program regex device */
 
 static inline int
 regex_dev_compile_rules(pl_conf *run_conf)
