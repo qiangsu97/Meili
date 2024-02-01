@@ -622,8 +622,9 @@ run_dpdk(struct pipeline *pl)
 				prev_cycles = cycles;
 				stats_print_update(stats, run_conf->cores, run_time, false);
 			}
+			printf("end of outer loop\n");	
 		}/* End of outer loop. Proceed to receive and process next eth batch. */
-	printf("exiting on main core\n");	
+	printf("Exiting on main core\n");	
 	return 0;
 }
 #endif
