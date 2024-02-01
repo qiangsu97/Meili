@@ -15,6 +15,7 @@
 
 #include "../log/meili_log.h"
 #include "../net/meili_pkt.h"
+#include "meili_regex.h"
 #include "meili_regex_stats.h"
 #include "../../utils/str/str_helpers.h"
 
