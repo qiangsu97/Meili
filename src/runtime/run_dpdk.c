@@ -606,8 +606,6 @@ run_dpdk(struct pipeline *pl)
 				/* # of pkts already enqueued in total(this round) */
 				batch_cnt_tot_enq += batch_cnt_enq; 
 
-			// test
-			printf("end of inner loop\n");	
 			}/* End of inner loop. Proceed to process next pipeline batch. */
 
 			/* Print pipeline stats every 1s */
@@ -622,7 +620,6 @@ run_dpdk(struct pipeline *pl)
 				prev_cycles = cycles;
 				stats_print_update(stats, run_conf->cores, run_time, false);
 			}
-			printf("end of outer loop\n");	
 		}/* End of outer loop. Proceed to receive and process next eth batch. */
 	printf("Exiting on main core\n");	
 	return 0;
