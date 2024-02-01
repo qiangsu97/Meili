@@ -25,11 +25,11 @@
 #include "meili_conf.h"
 #include "../../utils/input_mode/dpdk_live_shared.h"
 #include "../log/meili_log.h"
-#include "../../utils/utils_temp.h"
-
 #include "../../runtime/meili_runtime.h"
+#include "../../utils/utils_temp.h"
+#include "../../utils/str/str_helpers.h"
 
-#define PIPELINE_VERSION        "1.0"
+#define MEILI_VERSION        "1.0"
 
 /* Default selections if user does not input values. */
 #define DEFAULT_BUF_LEN	       1024
@@ -254,7 +254,7 @@ pipeline_usage(const char *prgname)
 static void
 rxpbench_version(void)
 {
-	MEILI_LOG_INFO("Meili VERSION %s  (%s)", PIPELINE_VERSION , GIT_SHA);
+	MEILI_LOG_INFO("Meili VERSION %s  (%s)", MEILI_VERSION , GIT_SHA);
 	MEILI_LOG_INFO("Build time - %s, %s", __DATE__, __TIME__);
 	// MEILI_LOG_INFO("DOCA VERSION %s", DOCA_VER_STRING);
 }

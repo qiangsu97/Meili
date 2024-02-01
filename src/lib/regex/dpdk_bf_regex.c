@@ -17,10 +17,7 @@
 #include "../log/meili_log.h"
 #include "../net/meili_pkt.h"
 #include "./meili_regex_stats.h"
-// #include <click/dpdkbfregex_dpdk_live_shared.h>
-// #include <click/dpdkbfregex_rules_file_utils.h>
-// #include <click/dpdkbfregex_rxpb_log.h>
-// #include <click/dpdkbfregex_utils.h>
+#include "../../utils/str/str_helpers.h"
 
 /* Number of dpdk queue descriptors is 1024 so need more mbuf pool entries. */
 #define MBUF_POOL_SIZE		     2047 /* Should be n = (2^q - 1)*/
@@ -78,6 +75,21 @@ static void regex_dev_dpdk_bf_clean(pl_conf *run_conf);
 static void
 extbuf_free_cb(void *addr __rte_unused, void *fcb_opaque __rte_unused)
 {
+}
+
+/* helpers */
+static inline void
+util_store_64_bit_as_2_32(uint32_t *dst, uint64_t val)
+{
+	dst[0] = (uint32_t)((val & MASK_UPPER_32) >> 32);
+	dst[1] = (uint32_t)(val & MASK_LOWER_32);
+}
+
+static inline uint64_t
+util_get_64_bit_from_2_32(uint32_t *src)
+{
+
+	return ((uint64_t)src[0]) << 32 | src[1];
 }
 
 static int
@@ -269,10 +281,10 @@ regex_dev_dpdk_bf_init(pl_conf *run_conf)
 	}
 
 	/* Init min latency stats to large value. */
-	for (i = 0; i < num_queues; i++) {
-		stats = (rxp_stats_t *)(run_conf->stats->regex_stats[i].custom);
-		stats->min_lat = UINT64_MAX;
-	}
+	// for (i = 0; i < num_queues; i++) {
+	// 	stats = (rxp_stats_t *)(run_conf->stats->regex_stats[i].custom);
+	// 	stats->min_lat = UINT64_MAX;
+	// }
 
 	/* Grab a copy of job format specific arrays. */
 	input_subset_ids = run_conf->input_subset_ids;

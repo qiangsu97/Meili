@@ -19,6 +19,7 @@
 
 #include "input.h"
 #include "../utils_temp.h"
+#include "../str/str_helpers.h"
 
 static int
 input_txt_file_read(pl_conf *run_conf)
