@@ -18,10 +18,10 @@
 #include <rte_malloc.h>
 
 #include "input.h"
-#include "../utils_temp.h"
+#include "../str/str_helpers.h"
 
 static int
-input_txt_file_read(rb_conf *run_conf)
+input_txt_file_read(pl_conf *run_conf)
 {
 	const char *file = run_conf->input_file;
 	uint64_t data_length;
@@ -39,7 +39,7 @@ input_txt_file_read(rb_conf *run_conf)
 }
 
 static void
-input_txt_file_clean(rb_conf *run_conf)
+input_txt_file_clean(pl_conf *run_conf)
 {
 	rte_free(run_conf->input_data);
 }

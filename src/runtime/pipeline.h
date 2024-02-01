@@ -3,7 +3,7 @@
 
 #include <rte_mbuf.h>
 
-#include "../utils/conf/conf.h"
+#include "../lib/conf/meili_conf.h"
 
 #include "../lib/net/meili_pkt.h"
 
@@ -166,11 +166,12 @@ struct pipeline_stage{
     /* functions for this pipeline stage */
     struct pipeline_func *funcs;/* stage operator functions */
 
+    /* regex related confs */
+    void *regex_conf;
+
     /* parent */
     void *pl;                   /* parent pipeline structure */
 
-    /* if this stage is a composed app(CPU stage packed on one core) */
-    bool has_substage;
 };
 
 
@@ -197,7 +198,7 @@ struct pipeline{
     #endif
 
     /* run config read from command line options */
-    struct pipeline_conf pl_conf;
+    pl_conf conf;
 
     /* timestamping for this stage */
     int ts_start_offset;
@@ -268,7 +269,6 @@ int pipeline_stage_free_safe(struct pipeline_stage *self);
 int pipeline_stage_run_safe(struct pipeline_stage *self);
 
 /* functions for pipelines */
-int pipeline_runtime_init(struct pipeline *pl, struct pipeline_conf *run_conf, char *err);
 int pipeline_init_safe(struct pipeline *pl);
 // int pipeline_init_safe(struct pipeline *pl, char *config_path);
 int pipeline_free(struct pipeline *pl);

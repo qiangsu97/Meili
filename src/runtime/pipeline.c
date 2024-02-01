@@ -8,7 +8,6 @@
 #include "pipeline.h"
 #include "run_mode.h"
 #include "../utils/utils.h"
-// #include "../apps/app_shared.h"
 
 #include "../packet_ordering/packet_ordering.h"
 #include "../packet_timestamping/packet_timestamping.h"
@@ -40,104 +39,9 @@ typedef int (*pl_register_functions)(struct pipeline_stage *);
 //     NULL
 // };
 
-static int
-init_dpdk(struct pipeline_conf *run_conf)
-{
-	int ret;
 
-	if (run_conf->dpdk_argc <= 1) {
-		MEILI_LOG_ERR("Too few DPDK parameters.");
-		return -EINVAL;
-	}
 
-	ret = rte_eal_init(run_conf->dpdk_argc, run_conf->dpdk_argv);
 
-	/* Return num of params on success. */
-	return ret < 0 ? -rte_errno : 0;
-}
-
-/* Init neccessary dpdk environments and construct pipeline */
-int pipeline_runtime_init(struct pipeline *pl, struct pipeline_conf *run_conf, char *err){
-    int ret = 0;
-
-    /* initalize dpdk related environment */
-    ret = init_dpdk(run_conf);
-	if (ret) {
-		snprintf(err, ERR_STR_SIZE, "Failed to init DPDK");
-		goto clean_conf;
-	}
-
-	/* Confirm there are enough DPDK lcores for user core request. */
-	if (run_conf->cores > rte_lcore_count()) {
-		MEILI_LOG_WARN_REC(run_conf, "requested cores (%d) > dpdk lcores (%d) - using %d.", run_conf->cores,
-				  rte_lcore_count(), rte_lcore_count());
-		run_conf->cores = rte_lcore_count();
-	}
-
-    /* init global stats recording structures */
-	ret = stats_init(run_conf);
-	if (ret) {
-		snprintf(err, ERR_STR_SIZE, "Failed initialising stats");
-		goto clean_conf;
-	}
-
-    /* Register input init function according to command line arguments. Input methods can be 
-     * 1) INPUT_TEXT_FILE       Load txt file into memory. Note that for txt files, it may take up large space.
-     * 2) INPUT_PCAP_FILE       Load pcap file into memory. Note that for pcap files, it may take up large space.
-     * 3) INPUT_LIVE            Use dpdk port to receive pkts. 
-     * 4) INPUT_JOB_FORMAT      N/A
-     * 5) INPUT_REMOTE_MMAP     N/A
-    */
-	ret = input_register(run_conf);
-	if (ret) {
-		snprintf(err, ERR_STR_SIZE, "Input registration error");
-		goto clean_stats;
-	}
-    /* set up input configurations */
-	ret = input_init(run_conf);
-	if (ret) {
-		snprintf(err, ERR_STR_SIZE, "Input method initialization failed");
-		goto clean_stats;
-	}
-
-    /* construct pipeline topo */
-	/* populate pipeline fields first */
-	// pl.nb_pl_stages = 2;
-	// pl.stage_types[0] = PL_REGEX_BF;
-	// pl.stage_types[1] = PL_DDOS;
-    // pl.nb_inst_per_pl_stage[0] = 1;
-	// pl.nb_inst_per_pl_stage[1] = 4;
-
-    /* construct pipeline topo based on pl.conf file */
-	// ret = pipeline_init_safe(pl, PL_CONFIG_PATH);
-    ret = pipeline_init_safe(pl);
-	if (ret) {
-		snprintf(err, ERR_STR_SIZE, "Pipeline initialising failed");
-		
-		goto clean_pipeline;
-	}
-
-    /* register main thread run function based on input mode (local txt/pcap, dpdk port, ...) */
-    ret = run_mode_register(pl);
-	if (ret) {
-		snprintf(err, ERR_STR_SIZE, "Run mode registration error");
-		goto clean_pipeline;
-	}
-
-    MEILI_LOG_INFO("Pipeline runtime initalization finished");
-    goto end;
-
-clean_pipeline:
-	pipeline_free(pl);
-clean_input:
-	input_clean(run_conf);
-clean_stats:
-	stats_clean(run_conf);
-clean_conf:
-	conf_clean(run_conf);
-end:
-    return ret;
-}
 
 
 
@@ -164,10 +68,10 @@ int pipeline_stage_run_safe(struct pipeline_stage *self){
     int out_num = 0;
 
     struct pipeline *pl = (struct pipeline *)self->pl;
-    struct pipeline_conf *pl_conf = &(pl->pl_conf);
+    pl_conf *conf = &(pl->conf);
 
     int qid = self->worker_qid;
-    rb_stats_t *stats = pl_conf->stats;
+    rb_stats_t *stats = conf->stats;
 	run_mode_stats_t *rm_stats = &stats->rm_stats[qid];
 
     if(!nb_ring_in || !nb_ring_out){
@@ -192,7 +96,7 @@ int pipeline_stage_run_safe(struct pipeline_stage *self){
     }
 
     // main loop of pipeline stage
-    while(!force_quit && pl_conf->running == true){
+    while(!force_quit && conf->running == true){
         /* read packets from ring_in in a round-robin manner */
         ring_in = ring_in_array[ring_in_index];
         nb_deq = rte_ring_dequeue_burst(ring_in, (void *)mbufs_in, burst_size, NULL);
@@ -227,9 +131,9 @@ int pipeline_stage_run_safe(struct pipeline_stage *self){
             rm_stats->tx_buf_bytes += mbufs_out[k]->data_len;
         }
         rm_stats->tx_buf_cnt += tot_enq;
-        
     }
 
+    printf("Worker %d exiting\n",self->worker_qid);
     return 0;
 }
 
@@ -246,7 +150,7 @@ int pipeline_init_safe(struct pipeline *pl){
 
     char ring_name[64];
 
-    struct pipeline_conf *run_conf = &(pl->pl_conf);
+    pl_conf *run_conf = &(pl->conf);
 
     /* assign initial value for each stage to NULL */
     pl->nb_pl_stages = 0;
@@ -265,17 +169,17 @@ int pipeline_init_safe(struct pipeline *pl){
     char stage_type_name[32];
 
     int ret = 0;
-
-
+    MEILI_LOG_INFO("Starting pipeline initialization...");
     /* ---------------control plane specified values------------------ */
     pl->nb_pl_stages = 1;
-    nb_inst_per_pl_stage[0] = PL_MAIN;
-    pl->nb_inst_per_pl_stage[0] = 1;
+    pl->stage_types[0] = PL_MAIN;
+    pl->nb_inst_per_pl_stage[0] = run_conf->cores-1;
 
     nb_pl_stages = pl->nb_pl_stages;
     stage_types = pl->stage_types;
     nb_inst_per_pl_stage = pl->nb_inst_per_pl_stage;
-
+    
+    
     /* Allocate space for mempool if using local run mode */
     if(run_conf->input_mode != INPUT_TEXT_FILE && run_conf->input_mode != INPUT_PCAP_FILE){
         pl->mbuf_pool = NULL;
@@ -327,6 +231,7 @@ int pipeline_init_safe(struct pipeline *pl){
             pl->stages[i][j] = self;
             
         }
+        pl->nb_pl_stage_inst += nb_inst_per_pl_stage[i];
     }
 
     /* Init special stages: timestamping start/end, sequencing and reordering */
@@ -576,7 +481,6 @@ int pipeline_stage_init_safe(struct pipeline_stage *self, enum pipeline_type pp_
     /* general fields a pipeline stage must have */
     self->type = pp_type;
     self->batch_size = DEFAULT_BATCH_SIZE;
-    self->has_substage = false;
     #ifdef SHARED_BUFFER
     self->ring_in = NULL;
     self->ring_out = NULL;
@@ -686,7 +590,7 @@ int pipeline_post_search(struct pipeline *pl){
 	struct rte_mbuf *mbuf[MAX_PKTS_BURST];
 	struct rte_mbuf *mbuf_out[MAX_PKTS_BURST];
 
-    int batch_size = pl->pl_conf.input_batches;
+    int batch_size = pl->conf.input_batches;
 
     int batch_cnt = -1;
 	int nb_deq;
@@ -728,10 +632,10 @@ int pipeline_run(struct pipeline *pl){
     /* main core takes 0 */
 	uint32_t worker_qid = 0;
 
-    struct pipeline_conf *pl_conf = &(pl->pl_conf);
-    rb_stats_t *stats = pl->pl_conf.stats;
+    pl_conf *conf = &(pl->conf);
+    rb_stats_t *stats = pl->conf.stats;
 
-    struct pipeline_conf *run_conf = &(pl->pl_conf);
+    pl_conf *run_conf = &(pl->conf);
     
 
     int nb_pl_stages = pl->nb_pl_stages;
@@ -746,9 +650,9 @@ int pipeline_run(struct pipeline *pl){
 
     
     // launch workers and main core
-    MEILI_LOG_INFO("Total cores: %d", pl_conf->cores);
+    MEILI_LOG_INFO("Total cores: %d", conf->cores);
     MEILI_LOG_INFO("Total stage instances: %d", pl->nb_pl_stage_inst);
-    if (pl->nb_pl_stage_inst >= pl_conf->cores){
+    if (pl->nb_pl_stage_inst >= conf->cores){
         MEILI_LOG_ERR("Not enough cores for workers");
         return -EINVAL; 
     }
@@ -775,14 +679,6 @@ int pipeline_run(struct pipeline *pl){
 		self->core_id = lcore_id;
         self->worker_qid = worker_qid;
 
-        /* if the stage has substage, assign core id and worker qid as well */
-        // if(self->has_substage){
-        //     struct app_state *mystate = (struct app_state *)self->state;
-        //     for(int sub_index=0; sub_index<mystate->nb_stage; sub_index++){
-        //         mystate->stages[sub_index]->core_id = lcore_id;
-        //         mystate->stages[sub_index]->worker_qid = worker_qid;    
-        //     }
-        // }
 
         worker_qid++;
         #ifndef BASELINE_MODE
@@ -808,7 +704,7 @@ int pipeline_run(struct pipeline *pl){
 
     stats->rm_stats[0].self = &pl->seq_stage;
 
-    MEILI_LOG_INFO("starting on main core...");
+    MEILI_LOG_INFO("Starting on main core...");
     ret = run_mode_launch(pl);
 	
 

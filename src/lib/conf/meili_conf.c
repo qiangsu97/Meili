@@ -22,14 +22,13 @@
 #include <rte_malloc.h>
 #include <rte_string_fns.h>
 
-#include "conf.h"
-#include "../input_mode/dpdk_live_shared.h"
-#include "../log/log.h"
-#include "../utils_temp.h"
-
+#include "meili_conf.h"
+#include "../../utils/input_mode/dpdk_live_shared.h"
+#include "../log/meili_log.h"
 #include "../../runtime/meili_runtime.h"
+#include "../../utils/str/str_helpers.h"
 
-#define PIPELINE_VERSION        "1.0"
+#define MEILI_VERSION        "1.0"
 
 /* Default selections if user does not input values. */
 #define DEFAULT_BUF_LEN	       1024
@@ -46,7 +45,7 @@ static char *conf_file;
 static bool raw_rule_cmd_line;
 
 static void
-conf_init(rb_conf *conf)
+conf_init(pl_conf *conf)
 {
 	/* User is required to specify device and input mode. */
 	conf->regex_dev_type = REGEX_DEV_UNKNOWN;
@@ -56,7 +55,7 @@ conf_init(rb_conf *conf)
 }
 
 static int
-conf_extract_regex_pcie_addr(rb_conf *run_conf, char *dpdk_pcie)
+conf_extract_regex_pcie_addr(pl_conf *run_conf, char *dpdk_pcie)
 {
 	char *pcie = NULL;
 	char *comma_ptr;
@@ -100,7 +99,7 @@ conf_extract_regex_pcie_addr(rb_conf *run_conf, char *dpdk_pcie)
 }
 
 static int
-conf_parse_dpdk_params(rb_conf *run_conf, char *prgname, char *params)
+conf_parse_dpdk_params(pl_conf *run_conf, char *prgname, char *params)
 {
 	bool check_for_regex_dev = false;
 	char *dpdk_arg;
@@ -254,7 +253,7 @@ pipeline_usage(const char *prgname)
 static void
 rxpbench_version(void)
 {
-	MEILI_LOG_INFO("Meili VERSION %s  (%s)", PIPELINE_VERSION , GIT_SHA);
+	MEILI_LOG_INFO("Meili VERSION %s  (%s)", MEILI_VERSION , GIT_SHA);
 	MEILI_LOG_INFO("Build time - %s, %s", __DATE__, __TIME__);
 	// MEILI_LOG_INFO("DOCA VERSION %s", DOCA_VER_STRING);
 }
@@ -316,7 +315,7 @@ static const char *conf_opts_short = "C:D:FV:c:d:m:f:r:R:s:n:p:b:Al:t:o:g:w:8HLS
 
 /* Parse given args into the run_conf. */
 static int
-conf_parse_args(rb_conf *run_conf, int argc, char **argv)
+conf_parse_args(pl_conf *run_conf, int argc, char **argv)
 {
 	char *prgname = argv[0];
 	static int idx;
@@ -537,7 +536,7 @@ conf_parse_args(rb_conf *run_conf, int argc, char **argv)
 }
 
 static int
-conf_parse_file(rb_conf *run_conf, char *prgname)
+conf_parse_file(pl_conf *run_conf, char *prgname)
 {
 	char *conf_argv[CONFIG_FILE_MAX_ARGS];
 	char conf[CONFIG_FILE_LINE_LEN];
@@ -631,21 +630,21 @@ out:
 
 /* Trigger warning that param is not applicable to a given regex device. */
 static void
-conf_validation_dev_warning(rb_conf *run_conf, const char *dev, const char *param)
+conf_validation_dev_warning(pl_conf *run_conf, const char *dev, const char *param)
 {
 	MEILI_LOG_WARN_REC(run_conf, "%s not applicable to %s regex device.", param, dev);
 }
 
 /* Trigger warning that param is not applicable in given mode. */
 static void
-conf_validation_mode_warning(rb_conf *run_conf, const char *mode, const char *param)
+conf_validation_mode_warning(pl_conf *run_conf, const char *mode, const char *param)
 {
 	MEILI_LOG_WARN_REC(run_conf, "%s not applicable to %s mode.", param, mode);
 }
 
 /* Check user inputs for invalid or conflicting settings. */
 static int
-conf_validate(rb_conf *run_conf)
+conf_validate(pl_conf *run_conf)
 {
 	if (run_conf->cores >= RTE_MAX_LCORE) {
 		MEILI_LOG_ERR("Input cores out of range.");
@@ -770,7 +769,7 @@ conf_validate(rb_conf *run_conf)
 
 /* Set defaults in required config entries where user has not supplied input. */
 static void
-conf_set_defaults(rb_conf *run_conf)
+conf_set_defaults(pl_conf *run_conf)
 {
 	if (!run_conf->input_iterations) {
 		/* If a time is set, give it priority by maxing iterations. */
@@ -797,7 +796,7 @@ conf_set_defaults(rb_conf *run_conf)
 }
 
 int
-conf_setup(rb_conf *run_conf, int argc, char **argv)
+conf_setup(pl_conf *run_conf, int argc, char **argv)
 {
 	char *default_conf;
 	int ret = 0;
@@ -842,7 +841,7 @@ conf_setup(rb_conf *run_conf, int argc, char **argv)
 }
 
 void
-conf_clean(rb_conf *run_conf)
+conf_clean(pl_conf *run_conf)
 {
 	uint32_t i;
 

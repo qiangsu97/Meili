@@ -18,17 +18,17 @@
 
 #include <rte_malloc.h>
 
-#include "../conf/conf.h"
-#include "../log/log.h"
+#include "../../lib/conf/meili_conf.h"
+#include "../../lib/log/meili_log.h"
 
 /*
  * Input types should implement their own init and clean functions.
  * Type function pointers are registered based on the user input.
  */
 typedef struct input_func {
-	int (*init)(rb_conf *run_conf);
+	int (*init)(pl_conf *run_conf);
 	int (*get_rx_buffer)(uint16_t q_id, int port_idx, void **start_addr, uint32_t *size);
-	void (*clean)(rb_conf *run_conf);
+	void (*clean)(pl_conf *run_conf);
 } input_func_t;
 
 void input_txt_file_reg(input_func_t *funcs);
@@ -42,7 +42,7 @@ void input_job_format_reg(input_func_t *funcs);
 void input_remote_mmap_reg(input_func_t *funcs);
 
 static inline int
-input_register(rb_conf *run_conf)
+input_register(pl_conf *run_conf)
 {
 	input_func_t *funcs;
 
@@ -76,7 +76,7 @@ input_register(rb_conf *run_conf)
 }
 
 static inline int
-input_init(rb_conf *run_conf)
+input_init(pl_conf *run_conf)
 {
 	input_func_t *funcs = run_conf->input_funcs;
 
@@ -87,7 +87,7 @@ input_init(rb_conf *run_conf)
 }
 
 static inline int
-input_get_rx_buffer(rb_conf *run_conf, uint16_t q_id, int port_idx, void **start_addr, uint32_t *size)
+input_get_rx_buffer(pl_conf *run_conf, uint16_t q_id, int port_idx, void **start_addr, uint32_t *size)
 {
 	input_func_t *funcs = run_conf->input_funcs;
 
@@ -98,7 +98,7 @@ input_get_rx_buffer(rb_conf *run_conf, uint16_t q_id, int port_idx, void **start
 }
 
 static inline void
-input_clean(rb_conf *run_conf)
+input_clean(pl_conf *run_conf)
 {
 	input_func_t *funcs = run_conf->input_funcs;
 

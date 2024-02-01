@@ -11,11 +11,14 @@
 
 #define MEILI_FREE(x) int x##_stage_free(struct pipeline_stage *self){
 
+// #define MEILI_EXEC(x)  int x##_stage_exec(struct pipeline_stage *self, \
+//                             meili_pkt *pkt){meili_apis Meili = *((meili_apis *)self->apis);
 #define MEILI_EXEC(x)  int x##_stage_exec(struct pipeline_stage *self, \
-                            meili_pkt *pkt){meili_apis Meili = *((meili_apis *)self->apis);
+                            meili_pkt *pkt){
 
 #define MEILI_END_DECLS  return 0;}
 
+//test
 #define MEILI_REGISTER(x) int meili_pipeline_stage_func_reg(struct pipeline_stage *stage){ \
                                 stage->funcs->pipeline_stage_init = x##_stage_init;\
 	                            stage->funcs->pipeline_stage_free = x##_stage_free;\
@@ -23,18 +26,21 @@
  
 
 
+
 /* Meili APIs */
 typedef struct _meili_apis{
-    void (*pkt_trans)();
+    void (*pkt_trans)(struct pipeline_stage *self, int (*trans)(struct pipeline_stage *self, meili_pkt *pkt), meili_pkt *pkt);
     void (*pkt_flt)(struct pipeline_stage *self, int (*check)(struct pipeline_stage *self, meili_pkt *pkt), meili_pkt *pkt);
     void (*flow_ext)();
     void (*flow_trans)(); 
     void (*reg_sock)();
     void (*epoll)();
     void (*regex)();
-    void (*AES)();
     void (*compression)();
+    void (*AES)();
 }meili_apis;
+
+volatile struct _meili_apis Meili;
 
 
 

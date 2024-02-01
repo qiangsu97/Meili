@@ -25,7 +25,7 @@
 #include <rte_ring.h>
 #include "../utils/rte_reorder/rte_reorder.h"
 
-#include "../utils/log/log.h"
+#include "../lib/log/meili_log.h"
 
 
 int

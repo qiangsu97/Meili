@@ -27,12 +27,11 @@
 
 #include "../utils/utils.h"
 #include "../utils/input_mode/input.h"
-#include "../utils/utils_temp.h"
 
 volatile bool force_quit;
 
 // struct lcore_worker_args {
-// 	rb_conf *run_conf;
+// 	pl_conf *run_conf;
 // 	uint32_t qid;
 // };
 
@@ -52,7 +51,7 @@ main(int argc, char **argv)
 {
 	uint64_t start_cycles, end_cycles;
 	char err[ERR_STR_SIZE] = {0};
-	struct pipeline_conf *run_conf;
+	pl_conf *run_conf;
 
 
 	unsigned int lcore_id;
@@ -65,8 +64,8 @@ main(int argc, char **argv)
 	struct pipeline pl;
 
 	
-	run_conf = &(pl.pl_conf);
-	memset(run_conf, 0, sizeof(struct pipeline_conf)); 
+	run_conf = &(pl.conf);
+	memset(run_conf, 0, sizeof(pl_conf)); 
 
 	
 	force_quit = false;
@@ -82,8 +81,12 @@ main(int argc, char **argv)
 		rte_exit(EXIT_FAILURE, "Configuration error\n");
 	}
 
+	ret = register_meili_apis();
+	if (ret){
+		rte_exit(EXIT_FAILURE, "Meili API registration failed\n");
+	}
 
-	ret = pipeline_runtime_init(&pl, run_conf, err);
+	ret = meili_runtime_init(&pl, run_conf, err);
 	if(ret){
 		goto end;
 	}

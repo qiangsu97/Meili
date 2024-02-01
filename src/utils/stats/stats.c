@@ -21,7 +21,7 @@
 #include <rte_mbuf.h>
 #include <rte_mbuf_dyn.h>
 
-#include "../log/log.h"
+#include "../../lib/log/meili_log.h"
 #include "stats.h"
 
 #include "../timestamp/timestamp.h"
@@ -95,7 +95,7 @@ stats_print_update_banner2(const char *str, const char *str2, int total_length)
 
 /* Store common stats per queue. */
 int
-stats_init(rb_conf *run_conf)
+stats_init(pl_conf *run_conf)
 {
 	const int nq = run_conf->cores;
 	rb_stats_t *stats;
@@ -187,7 +187,7 @@ stats_input_type_to_str(enum rxpbench_input_type input)
 }
 
 static void
-stats_print_config(rb_conf *run_conf)
+stats_print_config(pl_conf *run_conf)
 {
 	const char *dpdk_app_mode;
 	const char *rxp_prefixes;
@@ -658,7 +658,7 @@ stats_print_lat(rb_stats_t *stats, int num_queues, enum meili_regex_dev dev __rt
 
 
 void
-stats_print_end_of_run(rb_conf *run_conf, double run_time)
+stats_print_end_of_run(pl_conf *run_conf, double run_time)
 {
 	rb_stats_t *stats = run_conf->stats;
 
@@ -677,7 +677,7 @@ stats_print_end_of_run(rb_conf *run_conf, double run_time)
 void 
 stats_update_time_main(struct rte_mbuf **mbuf, int nb_mbuf, struct pipeline *pl)
 {
-	struct pipeline_conf *run_conf = &pl->pl_conf;
+	pl_conf *run_conf = &pl->conf;
 	lat_stats_t *lat_stats = run_conf->stats->lat_stats;
 
 	uint64_t time_diff;
@@ -787,7 +787,7 @@ stats_update_time_main(struct rte_mbuf **mbuf, int nb_mbuf, struct pipeline *pl)
 
 
 void
-stats_clean(rb_conf *run_conf)
+stats_clean(pl_conf *run_conf)
 {
 	rb_stats_t *stats = run_conf->stats;
 	rte_free(stats->rm_stats);

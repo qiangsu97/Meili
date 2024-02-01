@@ -19,17 +19,15 @@
 #include <rte_lcore.h>
 
 #include <unistd.h>
+#include "run_mode.h"
+#include "pipeline.h"
 
 #include "../utils/input_mode/dpdk_live_shared.h"
 #include "../utils/utils.h"
-#include "../utils/utils_temp.h"
-#include "../utils/net/pkt_utils.h"
 #include "../utils/net/port_utils.h"
-#include "run_mode.h"
-#include "pipeline.h"
+
 #include "../packet_ordering/packet_ordering.h"
 #include "../packet_timestamping/packet_timestamping.h"
-
 #include "../utils/rte_reorder/rte_reorder.h"
 
 static uint16_t primary_port_id;
@@ -71,13 +69,11 @@ update_addr(struct rte_mbuf *m, unsigned dest_portid)
 
 }
 
-
-/* read data from preloaded file */
 #ifdef MEILI_MODE
 static int
 run_dpdk(struct pipeline *pl)
 {
-	struct pipeline_conf *run_conf = &pl->pl_conf;
+	pl_conf *run_conf = &pl->conf;
 	/* always run on main core */
 	int qid = 0;
 	const uint32_t max_duration = run_conf->input_duration;
@@ -158,6 +154,8 @@ run_dpdk(struct pipeline *pl)
 	cycles = 0;
 
 	main_lcore = rte_lcore_id() == rte_get_main_lcore();
+
+	printf("main lcore: %d\n", main_lcore);
 
 
 	/* Get ports */
@@ -409,13 +407,13 @@ run_dpdk(struct pipeline *pl)
 					//debug
 					//printf("enqueue batch\n");
 					#ifdef SHARED_BUFFER
-					while(tot_enq < batch_cnt_enq){
+					while(tot_enq < batch_cnt_enq && !force_quit){
 						nb_enq = rte_ring_enqueue_burst(pl->ring_in, (void *)(&mbuf_in[batch_cnt_tot_enq+tot_enq]), to_enq, NULL);
 						tot_enq += nb_enq;
 						to_enq -= nb_enq;
 					}
 					#else
-					while(tot_enq < batch_cnt_enq){
+					while(tot_enq < batch_cnt_enq && !force_quit){
 						nb_enq = rte_ring_enqueue_burst(pl->ring_in[ring_in_index], (void *)(&mbuf_in[batch_cnt_tot_enq+tot_enq]), to_enq, NULL);
 						tot_enq += nb_enq;
 						to_enq -= nb_enq;
@@ -535,6 +533,7 @@ run_dpdk(struct pipeline *pl)
 					#endif
 
 					if( likely(nb_deq_reorder > 0) ) {
+						// printf("nb_deq_reorder=%d\n",nb_deq_reorder);
 						rm_stats->tx_batch_cnt ++;
 					}
 					for (int i = 0; i < nb_deq_reorder; i++) {
@@ -606,7 +605,7 @@ run_dpdk(struct pipeline *pl)
 				batch_cnt_wait_on_enq -= batch_cnt_enq; 
 				/* # of pkts already enqueued in total(this round) */
 				batch_cnt_tot_enq += batch_cnt_enq; 
-				
+
 			}/* End of inner loop. Proceed to process next pipeline batch. */
 
 			/* Print pipeline stats every 1s */
@@ -622,7 +621,7 @@ run_dpdk(struct pipeline *pl)
 				stats_print_update(stats, run_conf->cores, run_time, false);
 			}
 		}/* End of outer loop. Proceed to receive and process next eth batch. */
-
+	printf("Exiting on main core\n");	
 	return 0;
 }
 #endif
@@ -632,7 +631,7 @@ run_dpdk(struct pipeline *pl)
 static int
 run_dpdk(struct pipeline *pl)
 {
-	struct pipeline_conf *run_conf = &pl->pl_conf;
+	pl_conf *run_conf = &pl->conf;
 	/* always run on main core */
 	int qid = 0;
 	const uint32_t max_duration = run_conf->input_duration;
@@ -886,7 +885,7 @@ run_dpdk(struct pipeline *pl)
 static int
 run_dpdk(struct pipeline *pl)
 {
-	struct pipeline_conf *run_conf = &pl->pl_conf;
+	pl_conf *run_conf = &pl->conf;
 	/* always run on main core */
 	int qid = 0;
 	const uint32_t max_duration = run_conf->input_duration;

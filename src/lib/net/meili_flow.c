@@ -1,10 +1,13 @@
+
+
+#include "meili_flow.h"
+
+#ifdef MEILI_PKT_DPDK_BACKEND
 #include <rte_cycles.h>
 #include <rte_ether.h>
 #include <rte_hash.h>
 #include <rte_lcore.h>
 #include <rte_malloc.h>
-
-#include "flow_utils.h"
 
 uint8_t rss_symmetric_key[40] = {
     0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a, 0x6d, 0x5a,
@@ -14,11 +17,11 @@ uint8_t rss_symmetric_key[40] = {
 
 /* Create a new flow table made of an rte_hash table and a fixed size
  * data array for storing values. Only supports IPv4 5-tuple lookups. */
-struct flow_table *
+meili_flow_table *
 flow_table_create(int cnt, int entry_size) {
         struct rte_hash *hash;
         struct rte_hash_parameters *ipv4_hash_params;
-        struct flow_table *ft;
+        meili_flow_table *ft;
         int status;
 
         ipv4_hash_params = (struct rte_hash_parameters *) rte_malloc(NULL, sizeof(struct rte_hash_parameters), 0);
@@ -51,7 +54,7 @@ flow_table_create(int cnt, int entry_size) {
         if (!hash) {
                 return NULL;
         }
-        ft = (struct flow_table *) rte_calloc("table", 1, sizeof(struct flow_table), 0);
+        ft = (meili_flow_table *) rte_calloc("table", 1, sizeof(meili_flow_table), 0);
         if (!ft) {
                 rte_hash_free(hash);
                 return NULL;
@@ -77,7 +80,7 @@ Returns:
  -ENOSPC if there is no space in the hash for this key.
 */
 int
-flow_table_add_pkt(struct flow_table *table, struct rte_mbuf *pkt, char **data) {
+flow_table_add_pkt(meili_flow_table *table, struct rte_mbuf *pkt, char **data) {
         int32_t tbl_index;
         struct ipv4_5tuple key;
         int err;
@@ -100,7 +103,7 @@ flow_table_add_pkt(struct flow_table *table, struct rte_mbuf *pkt, char **data) 
     -EINVAL if the parameters are invalid.
 */
 int
-flow_table_lookup_pkt(struct flow_table *table, struct rte_mbuf *pkt, char **data) {
+flow_table_lookup_pkt(meili_flow_table *table, struct rte_mbuf *pkt, char **data) {
         int32_t tbl_index;
         struct ipv4_5tuple key;
         int ret;
@@ -124,7 +127,7 @@ flow_table_lookup_pkt(struct flow_table *table, struct rte_mbuf *pkt, char **dat
     -EINVAL if the parameters are invalid.
 */
 int32_t
-flow_table_remove_pkt(struct flow_table *table, struct rte_mbuf *pkt) {
+flow_table_remove_pkt(meili_flow_table *table, struct rte_mbuf *pkt) {
         struct ipv4_5tuple key;
         int ret;
 
@@ -136,7 +139,7 @@ flow_table_remove_pkt(struct flow_table *table, struct rte_mbuf *pkt) {
 }
 
 int
-flow_table_add_key(struct flow_table *table, struct ipv4_5tuple *key, char **data) {
+flow_table_add_key(meili_flow_table *table, struct ipv4_5tuple *key, char **data) {
         int32_t tbl_index;
         uint32_t softrss;
 
@@ -151,7 +154,7 @@ flow_table_add_key(struct flow_table *table, struct ipv4_5tuple *key, char **dat
 }
 
 int
-flow_table_lookup_key(struct flow_table *table, struct ipv4_5tuple *key, char **data) {
+flow_table_lookup_key(meili_flow_table *table, struct ipv4_5tuple *key, char **data) {
         int32_t tbl_index;
         uint32_t softrss;
 
@@ -166,7 +169,7 @@ flow_table_lookup_key(struct flow_table *table, struct ipv4_5tuple *key, char **
 }
 
 int32_t
-flow_table_remove_key(struct flow_table *table, struct ipv4_5tuple *key) {
+flow_table_remove_key(meili_flow_table *table, struct ipv4_5tuple *key) {
         uint32_t softrss;
 
         softrss = calculate_softrss(key);
@@ -185,7 +188,7 @@ flow_table_remove_key(struct flow_table *table, struct ipv4_5tuple *key) {
     -ENOENT if end of the hash table.
  */
 int32_t
-flow_table_iterate(struct flow_table *table, const void **key, void **data, uint32_t *next) {
+flow_table_iterate(meili_flow_table *table, const void **key, void **data, uint32_t *next) {
         int32_t tbl_index = rte_hash_iterate(table->hash, key, data, next);
         if (tbl_index >= 0) {
                 *data = flow_table_get_data(table, tbl_index);
@@ -196,9 +199,11 @@ flow_table_iterate(struct flow_table *table, const void **key, void **data, uint
 
 /* Clears a flow table and frees associated memory */
 void
-flow_table_free(struct flow_table *table) {
+flow_table_free(meili_flow_table *table) {
         rte_hash_reset(table->hash);
         rte_hash_free(table->hash);
         rte_free(table->data);
         rte_free(table);
 }
+#else
+#endif

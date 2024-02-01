@@ -23,7 +23,7 @@
 #include "../utils/utils.h"
 
 // #include "../utils/conf/conf.h"
-// #include "../utils/log/log.h"
+// #include "../lib/log/meili_log.h"
 
 #define DEFAULT_ETH_BATCH_SIZE 64
 
@@ -89,7 +89,7 @@ static inline int
 run_mode_register(struct pipeline *pl)
 {
 	run_func_t *funcs;
-	struct pipeline_conf *run_conf = &pl->pl_conf;
+	pl_conf *run_conf = &pl->conf;
 
 	funcs = rte_zmalloc(NULL, sizeof(run_func_t), 0);
 	if (!funcs) {
@@ -122,7 +122,7 @@ run_mode_register(struct pipeline *pl)
 static inline int
 run_mode_launch(struct pipeline *pl)
 {
-	run_func_t *funcs = pl->pl_conf.run_funcs;
+	run_func_t *funcs = pl->conf.run_funcs;
 
 	if (funcs->run){
 		return funcs->run(pl);

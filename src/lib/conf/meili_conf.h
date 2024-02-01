@@ -58,7 +58,7 @@ enum rxpbench_input_type
 	INPUT_UNKNOWN
 };
 
-typedef struct pipeline_conf {
+typedef struct _pl_conf {
 	/* Config: general ops. */
 	int dpdk_argc;
 	char *dpdk_argv[MAX_DPDK_ARGS];
@@ -129,6 +129,7 @@ typedef struct pipeline_conf {
 	run_func_t *run_funcs;
 
 	/* Stats per queue/core. */
+	/* Stats of whole pipeline */
 	rb_stats_t *stats;
 
 	/* Validation warnings in completed config. */
@@ -139,10 +140,10 @@ typedef struct pipeline_conf {
 	/* memory pools */
 	struct rte_mempool **mbuf_pool;
 	struct rte_mbuf_ext_shared_info shinfo;
-} rb_conf;
+} pl_conf;
 
-int conf_setup(rb_conf *run_conf, int argc, char **argv);
+int conf_setup(pl_conf *run_conf, int argc, char **argv);
 
-void conf_clean(rb_conf *run_conf);
+void conf_clean(pl_conf *run_conf);
 
 #endif /* _INCLUDE_CONF_H_ */

@@ -1,6 +1,7 @@
 #include <math.h>
-#include "./lib/meili.h"
-#include "./runtime/meili_runtime.h"
+#include "./libs/sha/sha1.h"
+#include "../lib/meili.h"
+#include "../runtime/meili_runtime.h"
 #include "example.h"
 
 // User-customized dataplane functions
@@ -35,7 +36,7 @@ simple_entropy(uint32_t set_bits,
 }
 
 int ddos_check(struct pipeline_stage *self, meili_pkt *pkt) {
-    char *payload = NULL;
+    const unsigned char *payload = NULL;
     uint32_t p_len = 0;
     struct EXAMPLE_state *mystate = (struct EXAMPLE_state *)self->state;
     int flag = 0; // indicate whether there's an attack
@@ -72,12 +73,20 @@ int ddos_check(struct pipeline_stage *self, meili_pkt *pkt) {
     
     return flag;
 }
-// void url_check(Meili_packet pkt){
-//     match_num = Meili.regex(RULES, pkt.payload);
-//     return;
-// }
-// ipsec(pkt){
-//     encap(pkt);
-//     sha(pkt,BLK_SIZE);
-//     return;
-// }
+int url_check(struct pipeline_stage *self, meili_pkt *pkt){
+    Meili.regex(self, pkt);
+    return 0;
+}
+
+int ipsec(struct pipeline_stage *self, meili_pkt *pkt){
+
+    char hash_out[SHA_HASH_SIZE+2];
+    const unsigned char *pkt_buf;
+    int length = 0;
+
+    pkt_buf = meili_pkt_payload(pkt);
+    length = meili_pkt_payload_len(pkt);
+    SHA1(hash_out, pkt_buf, length);
+    
+    return 0;
+}

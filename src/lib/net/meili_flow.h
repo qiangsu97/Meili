@@ -1,5 +1,10 @@
-#ifndef _INCLUDE_FLOW_UTILS_H
-#define _INCLUDE_FLOW_UTILS_H
+#ifndef _INCLUDE_MEILI_FLOW_H
+#define _INCLUDE_MEILI_FLOW_H
+
+#include "./meili_net.h"
+#include "./meili_pkt.h"
+
+#ifdef MEILI_PKT_DPDK_BACKEND
 
 #include <rte_common.h>
 #include <rte_ip.h>
@@ -8,7 +13,6 @@
 #include <rte_thash.h>
 #include <rte_udp.h>
 #include <string.h>
-#include "pkt_utils.h"
 
 extern uint8_t rss_symmetric_key[40];
 
@@ -20,12 +24,12 @@ extern uint8_t rss_symmetric_key[40];
 #define DEFAULT_HASH_FUNC rte_jhash
 #endif
 
-struct flow_table {
+typedef struct _meili_flow_table {
     struct rte_hash *hash;
     char *data;
     int cnt;
     int entry_size;
-};
+}meili_flow_table;
 
 struct ipv4_5tuple {
     uint8_t proto;
@@ -51,32 +55,32 @@ union ipv4_5tuple_host {
         //__m128i xmm;
 };
 
-struct flow_table *
+meili_flow_table *
 flow_table_create(int cnt, int entry_size);
 
 int
-flow_table_add_pkt(struct flow_table *table, struct rte_mbuf *pkt, char **data);
+flow_table_add_pkt(meili_flow_table *table, struct rte_mbuf *pkt, char **data);
 
 int
-flow_table_lookup_pkt(struct flow_table *table, struct rte_mbuf *pkt, char **data);
+flow_table_lookup_pkt(meili_flow_table *table, struct rte_mbuf *pkt, char **data);
 
 int32_t
-flow_table_remove_pkt(struct flow_table *table, struct rte_mbuf *pkt);
+flow_table_remove_pkt(meili_flow_table *table, struct rte_mbuf *pkt);
 
 int
-flow_table_add_key(struct flow_table *table, struct ipv4_5tuple *key, char **data);
+flow_table_add_key(meili_flow_table *table, struct ipv4_5tuple *key, char **data);
 
 int
-flow_table_lookup_key(struct flow_table *table, struct ipv4_5tuple *key, char **data);
+flow_table_lookup_key(meili_flow_table *table, struct ipv4_5tuple *key, char **data);
 
 int32_t
-flow_table_remove_key(struct flow_table *table, struct ipv4_5tuple *key);
+flow_table_remove_key(meili_flow_table *table, struct ipv4_5tuple *key);
 
 int32_t
-flow_table_iterate(struct flow_table *table, const void **key, void **data, uint32_t *next);
+flow_table_iterate(meili_flow_table *table, const void **key, void **data, uint32_t *next);
 
 void
-flow_table_free(struct flow_table *table);
+flow_table_free(meili_flow_table *table);
 
 /* TODO(@sdnfv): Add function to calculate hash and then make lookup/get
  * have versions with precomputed hash values */
@@ -93,7 +97,7 @@ _flow_table_print_key(struct ipv4_5tuple *key) {
 }
 
 static inline char *
-flow_table_get_data(struct flow_table *table, int32_t index) {
+flow_table_get_data(meili_flow_table *table, int32_t index) {
         return &table->data[index * table->entry_size];
 }
 
@@ -103,20 +107,20 @@ flow_table_fill_key(struct ipv4_5tuple *key, struct rte_mbuf *pkt) {
         struct rte_tcp_hdr *tcp_hdr;
         struct rte_udp_hdr *udp_hdr;
 
-        if (unlikely(!pkt_is_ipv4(pkt))) {
+        if (unlikely(!meili_pkt_is_ipv4(pkt))) {
                 return -EPROTONOSUPPORT;
         }
-        ipv4_hdr = MBUF_IPV4_HDR(pkt);
+        ipv4_hdr = meili_ipv4_hdr_safe(pkt);
         memset(key, 0, sizeof(struct ipv4_5tuple));
         key->proto = ipv4_hdr->next_proto_id;
         key->src_addr = ipv4_hdr->src_addr;
         key->dst_addr = ipv4_hdr->dst_addr;
-        if (key->proto == IP_PROTOCOL_TCP) {
-                tcp_hdr = pkt_tcp_hdr(pkt);
+        if (key->proto == IP_PROTO_TCP) {
+                tcp_hdr = meili_tcp_hdr_safe(pkt);
                 key->src_port = tcp_hdr->src_port;
                 key->dst_port = tcp_hdr->dst_port;
-        } else if (key->proto == IP_PROTOCOL_UDP) {
-                udp_hdr = pkt_udp_hdr(pkt);
+        } else if (key->proto == IP_PROTO_UDP) {
+                udp_hdr = meili_udp_hdr_safe(pkt);
                 key->src_port = udp_hdr->src_port;
                 key->dst_port = udp_hdr->dst_port;
         } else {
@@ -192,5 +196,7 @@ calculate_softrss(struct ipv4_5tuple *key) {
 
         return rss_l3l4;
 }
+#else
+#endif /* DPDK backend */
 
-#endif  // _INCLUDE_FLOW_UTILS_H
+#endif  // _INCLUDE_MEILI_FLOW_H

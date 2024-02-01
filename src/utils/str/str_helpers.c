@@ -1,16 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-
-#include <rte_byteorder.h>
-#include <rte_ether.h>
-#include <rte_ip.h>
+#include <stdint.h>
+#include <string.h>
 #include <rte_malloc.h>
-#include <rte_tcp.h>
-#include <rte_udp.h>
 
-#include "log/log.h"
-#include "utils_temp.h"
-#include "./cJSON/cJSON.h"
+#include "../../lib/log/meili_log.h"
+#include "../../thirdparty/cJSON/cJSON.h"
+
+#include "str_helpers.h"
 
 /* Read all or max_len bytes of file into buf, returning length in buf_len. */
 int
@@ -130,6 +127,8 @@ util_str_to_dec(char *str, long *output, int max_bytes)
 	return 0;
 }
 
+
+/* JSON file functions */
 cJSON* until_parse_json_file(const char* filename) {
         if (IS_NULL_OR_EMPTY_STRING(filename)) {
                 return NULL;

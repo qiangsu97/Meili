@@ -10,12 +10,12 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 
-#include "../conf/conf.h"
+#include "../../lib/conf/meili_conf.h"
 #include "../../runtime/meili_runtime.h"
 
-#define ONLY_SPLIT_THROUGHPUT
+// #define ONLY_SPLIT_THROUGHPUT
 
-#define STATS_INTERVAL_SEC	0.01
+#define STATS_INTERVAL_SEC	1
 #define STATS_INTERVAL_CYCLES	STATS_INTERVAL_SEC * rte_get_timer_hz()
 
 #define NUMBER_OF_SAMPLE ((1<<14) - 1) /* should be 2^n-1 for speed */ 
@@ -100,10 +100,10 @@ stats_update_pkt_stats(pkt_stats_t *pkt_stats, int rte_ptype)
 		pkt_stats->udp++;
 }
 
-int stats_init(rb_conf *run_conf);
-void stats_clean(rb_conf *run_conf);
+int stats_init(pl_conf *run_conf);
+void stats_clean(pl_conf *run_conf);
 void stats_print_update(rb_stats_t *stats, int num_queues, double time, bool end);
-void stats_print_end_of_run(rb_conf *run_conf, double run_time);
+void stats_print_end_of_run(pl_conf *run_conf, double run_time);
 void stats_update_time_main(struct rte_mbuf **mbuf, int nb_mbuf, struct pipeline *pl);
 
 

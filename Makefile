@@ -28,7 +28,7 @@ CFLAGS += -I/usr/local/include/hs
 CFLAGS += -I/usr/include/hs
 
 PC_FILE := $(shell $(PKGCONF) --path libdpdk 2>/dev/null)
-CFLAGS += -O3 $(shell $(PKGCONF) --cflags libdpdk)
+CFLAGS += -O3 -g $(shell $(PKGCONF) --cflags libdpdk)
 #CFLAGS += -O3 -g -time -ftime-report $(shell $(PKGCONF) --cflags libdpdk)
 LDFLAGS_SHARED = $(shell $(PKGCONF) --libs libdpdk)
 LDFLAGS_SHARED := $(filter-out -lrte_reorder,$(LDFLAGS_SHARED))
