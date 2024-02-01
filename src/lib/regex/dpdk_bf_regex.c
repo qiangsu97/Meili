@@ -13,10 +13,9 @@
 #include <rte_timer.h>
 
 
-#include "./dpdk_bf_regex.h"
 #include "../log/meili_log.h"
 #include "../net/meili_pkt.h"
-#include "./meili_regex_stats.h"
+#include "meili_regex_stats.h"
 #include "../../utils/str/str_helpers.h"
 
 /* Number of dpdk queue descriptors is 1024 so need more mbuf pool entries. */
