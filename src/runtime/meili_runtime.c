@@ -13,6 +13,22 @@
 #include "../packet_timestamping/packet_timestamping.h"
 #include "../utils/input_mode/input.h"
 
+static int
+init_dpdk(pl_conf *run_conf)
+{
+	int ret;
+
+	if (run_conf->dpdk_argc <= 1) {
+		MEILI_LOG_ERR("Too few DPDK parameters.");
+		return -EINVAL;
+	}
+
+	ret = rte_eal_init(run_conf->dpdk_argc, run_conf->dpdk_argv);
+
+	/* Return num of params on success. */
+	return ret < 0 ? -rte_errno : 0;
+}
+
 /* Initialization function of Meili runtime. Initializations include:
     1. DPDK EAL
     2. Status structure allocation
@@ -101,8 +117,7 @@ int meili_runtime_init(struct pipeline *pl, pl_conf *run_conf, char *err){
 
 clean_pipeline:
 	pipeline_free(pl);
-clean regex:
-
+clean_regex:
 clean_input:
 	input_clean(run_conf);
 clean_stats:

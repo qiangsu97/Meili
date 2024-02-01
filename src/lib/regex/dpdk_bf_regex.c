@@ -414,8 +414,8 @@ regex_dev_dpdk_bf_process_resp(int qid, struct rte_regex_ops *resp, regex_stats_
 		rxp_stats->rx_invalid++;
 
 		/* Still check expected matches if job failed. */
-		if (input_exp_matches)
-			regex_dev_dpdk_bf_exp_matches(resp, rxp_stats, res_flags);
+		// if (input_exp_matches)
+		// 	regex_dev_dpdk_bf_exp_matches(resp, rxp_stats, res_flags);
 
 
 		printf("response flags available\n");		

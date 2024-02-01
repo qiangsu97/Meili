@@ -3,7 +3,8 @@
 
 
 #include <stdio.h>
-
+#include <string.h>
+#include <rte_lcore.h>
 #include <rte_cycles.h>
 #include <rte_malloc.h>
 #include <rte_mbuf_core.h>
@@ -229,7 +230,7 @@ regex_dev_open_match_file(pl_conf *run_conf)
 		if (queue_id >= run_conf->cores)
 			break;
 
-		snprintf(file_name, sizeof(file_name), "rxpbench_matches_core_%u.csv", lcore_id);
+		snprintf(file_name, sizeof(file_name), "meili_matches_core_%u.csv", lcore_id);
 
 		regex_matches[queue_id] = fopen(file_name, "w");
 		if (!regex_matches[queue_id])

@@ -39,21 +39,7 @@ typedef int (*pl_register_functions)(struct pipeline_stage *);
 //     NULL
 // };
 
-static int
-init_dpdk(pl_conf *run_conf)
-{
-	int ret;
 
-	if (run_conf->dpdk_argc <= 1) {
-		MEILI_LOG_ERR("Too few DPDK parameters.");
-		return -EINVAL;
-	}
-
-	ret = rte_eal_init(run_conf->dpdk_argc, run_conf->dpdk_argv);
-
-	/* Return num of params on success. */
-	return ret < 0 ? -rte_errno : 0;
-}
 
 
 
