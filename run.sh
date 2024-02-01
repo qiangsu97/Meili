@@ -6,7 +6,7 @@
 
 BINARY="./build/meili"
 EAL_SUFFIX="-n 1 -a 0000:03:00.0,class=net:regex:compress,rxq_cqe_comp_en=0 -a 0000:03:00.1,class=net --file-prefix dpdk0"
-REGEX_RULE_SET="-r ./rulesets/teakettle_2500/build/teakettle.rof2.binary"
+REGEX_RULE_SET="-r ./rulesets/teakettle.rof2.binary"
 CMD_SUFFIX_LIVE="--input-mode dpdk_port --dpdk-primary-port 0000:03:00.0 --dpdk-second-port 0000:03:00.1 -d rxp"
 
 # Check the argument value and run the corresponding command
