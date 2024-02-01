@@ -1,7 +1,6 @@
 #include "meili_regex.h"
 #include "../log/meili_log.h"
 #include "../../runtime/meili_runtime.h"
-#include "../../pipeline.h"
 
 int meili_regex_init(pl_conf *run_conf){
     
