@@ -16,5 +16,6 @@ MEILI_STATE_DECLS_END
 
 int ddos_check(struct pipeline_stage *self, meili_pkt *pkt);
 int ipsec(struct pipeline_stage *self, meili_pkt *pkt);
+int url_check(struct pipeline_stage *self, meili_pkt *pkt);
 
 #endif
