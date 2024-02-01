@@ -65,7 +65,7 @@ void regex(struct pipeline_stage *self, meili_pkt *pkt){
 
 	int to_send = 0;
 	int ret;
-    int nb_dequeued_op;
+    int nb_dequeued_op = 0;
 
 
     /* Prepare ops in regex_dev_search_live */
