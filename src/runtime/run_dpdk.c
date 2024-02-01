@@ -407,13 +407,13 @@ run_dpdk(struct pipeline *pl)
 					//debug
 					//printf("enqueue batch\n");
 					#ifdef SHARED_BUFFER
-					while(tot_enq < batch_cnt_enq){
+					while(tot_enq < batch_cnt_enq && !force_quit){
 						nb_enq = rte_ring_enqueue_burst(pl->ring_in, (void *)(&mbuf_in[batch_cnt_tot_enq+tot_enq]), to_enq, NULL);
 						tot_enq += nb_enq;
 						to_enq -= nb_enq;
 					}
 					#else
-					while(tot_enq < batch_cnt_enq){
+					while(tot_enq < batch_cnt_enq && !force_quit){
 						nb_enq = rte_ring_enqueue_burst(pl->ring_in[ring_in_index], (void *)(&mbuf_in[batch_cnt_tot_enq+tot_enq]), to_enq, NULL);
 						tot_enq += nb_enq;
 						to_enq -= nb_enq;
