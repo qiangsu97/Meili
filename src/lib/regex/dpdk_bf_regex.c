@@ -570,7 +570,7 @@ regex_dev_dpdk_bf_dequeue_pipeline(int qid, regex_stats_t *stats, uint16_t wait_
 	core_vars[qid].total_dequeued += num_dequeued;
 	tot_dequeued += num_dequeued;
 	*nb_dequeued_op += num_dequeued;
-	//printf("total dequeued:%d\n",*nb_dequeued_op);
+	printf("total dequeued:%d\n",*nb_dequeued_op);
 }
 
 
