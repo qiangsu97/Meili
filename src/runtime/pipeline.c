@@ -133,6 +133,7 @@ int pipeline_stage_run_safe(struct pipeline_stage *self){
         rm_stats->tx_buf_cnt += tot_enq;
     }
 
+    printf("Worker %d exiting\n",self->worker_qid);
     return 0;
 }
 
@@ -703,7 +704,7 @@ int pipeline_run(struct pipeline *pl){
 
     stats->rm_stats[0].self = &pl->seq_stage;
 
-    MEILI_LOG_INFO("starting on main core...");
+    MEILI_LOG_INFO("Starting on main core...");
     ret = run_mode_launch(pl);
 	
 
