@@ -570,7 +570,6 @@ regex_dev_dpdk_bf_dequeue_pipeline(int qid, regex_stats_t *stats, uint16_t wait_
 	core_vars[qid].total_dequeued += num_dequeued;
 	tot_dequeued += num_dequeued;
 	*nb_dequeued_op += num_dequeued;
-	printf("total dequeued:%d\n",*nb_dequeued_op);
 }
 
 
@@ -765,6 +764,10 @@ regex_dev_dpdk_bf_force_batch_pull(int qid, regex_stats_t *stats, int *nb_dequeu
 	//regex_dev_dpdk_bf_dequeue(qid, stats, true, dpdk_tx, 0);
 	/* pull once */
 	regex_dev_dpdk_bf_dequeue_pipeline(qid, stats, 0, nb_dequeued_op, out_bufs);
+	if(*nb_dequeued_op != 0){
+		printf("total dequeued:%d\n",*nb_dequeued_op);
+	}
+	
 }
 
 /* Ensure all ops in flight are received before exiting. */
