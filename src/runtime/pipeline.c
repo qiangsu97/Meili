@@ -173,7 +173,7 @@ int pipeline_init_safe(struct pipeline *pl){
     /* ---------------control plane specified values------------------ */
     pl->nb_pl_stages = 1;
     pl->stage_types[0] = PL_MAIN;
-    pl->nb_inst_per_pl_stage[0] = 1;
+    pl->nb_inst_per_pl_stage[0] = 2;
 
     nb_pl_stages = pl->nb_pl_stages;
     stage_types = pl->stage_types;
