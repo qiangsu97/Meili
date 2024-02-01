@@ -245,6 +245,7 @@ err_out:
 	return -ENOMEM;
 }
 
+/* Initialization function for  */
 static int
 regex_dev_dpdk_bf_init(pl_conf *run_conf)
 {
@@ -261,24 +262,31 @@ regex_dev_dpdk_bf_init(pl_conf *run_conf)
 		return -ENOTSUP;
 	}
 
+	/* 
+		1. Acquire regex device information and check for capability
+		2. Program regex device with rules
+		3. Set up queues. # of queues  = # of cores.
+	 */
 	ret = regex_dev_dpdk_bf_config(run_conf, regex_dev_id, &dev_cfg, run_conf->compiled_rules_file, num_queues);
 	if (ret)
 		return ret;
 
+	/* Allocate space for regex operations */
 	ret = regex_dev_init_ops(run_conf->input_batches, dev_cfg.nb_max_matches, num_queues);
 	if (ret) {
 		regex_dev_dpdk_bf_clean(run_conf);
 		return ret;
 	}
 
-	verbose = run_conf->verbose;
-	if (verbose) {
-		ret = regex_dev_open_match_file(run_conf);
-		if (ret) {
-			regex_dev_dpdk_bf_clean(run_conf);
-			return ret;
-		}
-	}
+	/* Verbose mode */
+	// verbose = run_conf->verbose;
+	// if (verbose) {
+	// 	ret = regex_dev_open_match_file(run_conf);
+	// 	if (ret) {
+	// 		regex_dev_dpdk_bf_clean(run_conf);
+	// 		return ret;
+	// 	}
+	// }
 
 	/* Init min latency stats to large value. */
 	// for (i = 0; i < num_queues; i++) {
@@ -300,19 +308,6 @@ regex_dev_dpdk_bf_init(pl_conf *run_conf)
 static void
 regex_dev_dpdk_bf_release_mbuf(struct rte_mbuf *mbuf, regex_stats_t *stats, uint64_t recv_time)
 {
-	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
-	uint64_t time_mbuf, time_diff;
-
-	/* Calculate and store latency of packet through HW. */
-	// time_mbuf = util_get_64_bit_from_2_32(&mbuf->dynfield1[DF_TIME_HIGH]);
-
-	// time_diff = (recv_time - time_mbuf);
-
-	// rxp_stats->tot_lat += time_diff;
-	// if (time_diff < rxp_stats->min_lat)
-	// 	rxp_stats->min_lat = time_diff;
-	// if (time_diff > rxp_stats->max_lat)
-	// 	rxp_stats->max_lat = time_diff;
 
 	/* Mbuf refcnt will be 1 if created by local mempool. */
 	// if (rte_mbuf_refcnt_read(mbuf) == 1) {
@@ -387,45 +382,60 @@ regex_dev_dpdk_bf_get_array_offset(uint64_t job_id)
 // 	regex_dev_verify_exp_matches(exp_matches, &actual_matches, stats);
 // }
 
-// static void
-// regex_dev_dpdk_bf_process_resp(int qid, struct rte_regex_ops *resp, regex_stats_t *stats)
-// {
-// 	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
-// 	const uint16_t res_flags = resp->rsp_flags;
+static void
+regex_dev_dpdk_bf_process_resp(int qid, struct rte_regex_ops *resp, regex_stats_t *stats)
+{
+	rxp_stats_t *rxp_stats = (rxp_stats_t *)stats->custom;
+	const uint16_t res_flags = resp->rsp_flags;
 
-// 	/* Only DPDK error flags are supported on BF dev. */
-// 	if (res_flags) {
-// 		if (res_flags & RTE_REGEX_OPS_RSP_MAX_SCAN_TIMEOUT_F)
-// 			rxp_stats->rx_timeout++;
-// 		else if (res_flags & RTE_REGEX_OPS_RSP_MAX_MATCH_F)
-// 			rxp_stats->rx_max_match++;
-// 		else if (res_flags & RTE_REGEX_OPS_RSP_MAX_PREFIX_F)
-// 			rxp_stats->rx_max_prefix++;
-// 		else if (res_flags & RTE_REGEX_OPS_RSP_RESOURCE_LIMIT_REACHED_F)
-// 			rxp_stats->rx_resource_limit++;
-// 		rxp_stats->rx_invalid++;
+	uint64_t time_mbuf, time_diff;
 
-// 		/* Still check expected matches if job failed. */
-// 		if (input_exp_matches)
-// 			regex_dev_dpdk_bf_exp_matches(resp, rxp_stats, res_flags);
+	/* Calculate and store latency of packet through HW. */
+	// time_mbuf = util_get_64_bit_from_2_32(&mbuf->dynfield1[DF_TIME_HIGH]);
 
-// 		return;
-// 	}
+	// time_diff = (recv_time - time_mbuf);
 
-// 	stats->rx_valid++;
+	// rxp_stats->tot_lat += time_diff;
+	// if (time_diff < rxp_stats->min_lat)
+	// 	rxp_stats->min_lat = time_diff;
+	// if (time_diff > rxp_stats->max_lat)
+	// 	rxp_stats->max_lat = time_diff;
 
-// 	const uint16_t num_matches = resp->nb_matches;
-// 	if (num_matches) {
-// 		stats->rx_buf_match_cnt++;
-// 		stats->rx_total_match += num_matches;
+	/* Only DPDK error flags are supported on BF dev. */
+	if (res_flags) {
+		if (res_flags & RTE_REGEX_OPS_RSP_MAX_SCAN_TIMEOUT_F)
+			rxp_stats->rx_timeout++;
+		else if (res_flags & RTE_REGEX_OPS_RSP_MAX_MATCH_F)
+			rxp_stats->rx_max_match++;
+		else if (res_flags & RTE_REGEX_OPS_RSP_MAX_PREFIX_F)
+			rxp_stats->rx_max_prefix++;
+		else if (res_flags & RTE_REGEX_OPS_RSP_RESOURCE_LIMIT_REACHED_F)
+			rxp_stats->rx_resource_limit++;
+		rxp_stats->rx_invalid++;
 
-// 		if (verbose)
-// 			regex_dev_dpdk_bf_matches(qid, resp->user_ptr, num_matches, resp->matches);
-// 	}
+		/* Still check expected matches if job failed. */
+		if (input_exp_matches)
+			regex_dev_dpdk_bf_exp_matches(resp, rxp_stats, res_flags);
 
-// 	if (input_exp_matches)
-// 		regex_dev_dpdk_bf_exp_matches(resp, rxp_stats, res_flags);
-// }
+
+		printf("response flags available\n");		
+		return;
+	}
+
+	// stats->rx_valid++;
+
+	// const uint16_t num_matches = resp->nb_matches;
+	// if (num_matches) {
+	// 	stats->rx_buf_match_cnt++;
+	// 	stats->rx_total_match += num_matches;
+
+	// 	if (verbose)
+	// 		regex_dev_dpdk_bf_matches(qid, resp->user_ptr, num_matches, resp->matches);
+	// }
+
+	// if (input_exp_matches)
+	// 	regex_dev_dpdk_bf_exp_matches(resp, rxp_stats, res_flags);
+}
 
 static void
 regex_dev_dpdk_bf_dequeue(int qid, regex_stats_t *stats, uint16_t wait_on_dequeue)
@@ -504,7 +514,7 @@ regex_dev_dpdk_bf_dequeue_dummy(int qid, regex_stats_t *stats, uint16_t wait_on_
 	for (i = 0; i < num_dequeued; i++) {
 		mbuf = ops[i]->user_ptr;
 		//regex_dev_dpdk_bf_process_resp(qid, ops[i], stats);
-		//regex_dev_dpdk_bf_release_mbuf(mbuf, stats, time);
+
 		out_bufs[i+*nb_dequeued_op] = mbuf;
 	}
 
@@ -535,7 +545,7 @@ regex_dev_dpdk_bf_dequeue_pipeline(int qid, regex_stats_t *stats, uint16_t wait_
 
 	num_dequeued = rte_regexdev_dequeue_burst(0, qid, ops, max_batch_size);
 	
-	time = rte_get_timer_cycles();
+	// time = rte_get_timer_cycles();
 
 	/* Handle idle timers (periods with no matches). */
 	// if (num_dequeued == 0) {
@@ -551,9 +561,10 @@ regex_dev_dpdk_bf_dequeue_pipeline(int qid, regex_stats_t *stats, uint16_t wait_
 
 	for (i = 0; i < num_dequeued; i++) {
 		mbuf = ops[i]->user_ptr;
-		//regex_dev_dpdk_bf_process_resp(qid, ops[i], stats);
-		//regex_dev_dpdk_bf_release_mbuf(mbuf, stats, time);
-		out_bufs[i+*nb_dequeued_op] = mbuf;
+		regex_dev_dpdk_bf_process_resp(qid, ops[i], stats);
+		
+		/* store the dequeued pkts in out_bufs */
+		//out_bufs[i+*nb_dequeued_op] = mbuf;
 	}
 
 	core_vars[qid].total_dequeued += num_dequeued;
@@ -636,12 +647,6 @@ regex_dev_dpdk_bf_send_ops_pipeline(int qid, regex_stats_t *stats, int *nb_deque
 		num_ops = to_enqueue - num_enqueued;
 		ret = rte_regexdev_enqueue_burst(0, qid, ops, num_ops);
 		if (ret) {
-			time = rte_get_timer_cycles();
-			/* Put the timestamps in dynfield of mbufs sent. */
-			// for (i = 0; i < ret; i++) {
-			// 	m_time = &ops[i]->mbuf->dynfield1[DF_TIME_HIGH];
-			// 	util_store_64_bit_as_2_32(m_time, time);
-			// }
 
 			/* Queue is now free so note any tx busy time. */
 			if (tx_full) {
@@ -677,7 +682,9 @@ regex_dev_dpdk_bf_prep_op(int qid, struct rte_regex_ops *op)
 	/* Store the buffer id in the mbuf metadata. */
 	util_store_64_bit_as_2_32(&op->mbuf->dynfield1[DF_USER_ID_HIGH], ++(core_vars[qid].buf_id));
 
+	
 	if (input_subset_ids) {
+		printf("input_subset_ids has valid value\n");
 		const int job_offset = regex_dev_dpdk_bf_get_array_offset(core_vars[qid].buf_id);
 
 		op->group_id0 = input_subset_ids[job_offset][0];
@@ -723,7 +730,6 @@ regex_dev_dpdk_bf_search_live(int qid, meili_pkt *mbuf, regex_stats_t *stats)
 	// 	mbuf->dynfield1[DF_PAY_OFF] = 0;
 	// }
 
-	// mbuf->dynfield1[DF_EGRESS_PORT] = tx_port;
 	regex_dev_dpdk_bf_prep_op(qid, op);
 	//printf("ops prepared\n");
 

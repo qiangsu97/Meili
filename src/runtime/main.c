@@ -86,7 +86,7 @@ main(int argc, char **argv)
 		rte_exit(EXIT_FAILURE, "Meili API registration failed\n");
 	}
 
-	ret = pipeline_runtime_init(&pl, run_conf, err);
+	ret = meili_runtime_init(&pl, run_conf, err);
 	if(ret){
 		goto end;
 	}

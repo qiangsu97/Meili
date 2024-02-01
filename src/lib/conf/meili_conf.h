@@ -129,6 +129,7 @@ typedef struct _pl_conf {
 	run_func_t *run_funcs;
 
 	/* Stats per queue/core. */
+	/* Stats of whole pipeline */
 	rb_stats_t *stats;
 
 	/* Validation warnings in completed config. */

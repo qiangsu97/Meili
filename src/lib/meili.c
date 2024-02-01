@@ -59,33 +59,26 @@ void epoll(){};
 void regex(struct pipeline_stage *self, meili_pkt *pkt){
     
     int qid;
-	int to_send;
+	int to_send = 0;
 	int ret;
-	int i;
 
     regex_stats_t *regex_stats;
     pl_conf *run_conf;
 
     int nb_dequeued_op;
-    meili_pkt *out_bufs[64];
-
-
-	/* If push_batch signal is set, push the batch( and pull at the same time to avoid full queue) */
-	to_send = 0;
 
     /* Prepare ops in regex_dev_search_live */
     to_send = regex_dev_search_live(run_conf, qid, pkt, regex_stats);
     // if (ret)
     //     return ret;
 
-
+    /* If to_send signal is set, push the batch( and pull at the same time to avoid full queue) */
     if (to_send) {
-        /* Push batch if contains some valid packets. */
-        regex_dev_force_batch_push(run_conf, qid, regex_stats, &nb_dequeued_op, out_bufs);
+        regex_dev_force_batch_push(run_conf, qid, regex_stats, &nb_dequeued_op, NULL);
     }	
 	else{
 		/* If batch is not full, pull finished ops */
-		regex_dev_force_batch_pull(run_conf, qid, regex_stats, &nb_dequeued_op, out_bufs);	
+		regex_dev_force_batch_pull(run_conf, qid, regex_stats, &nb_dequeued_op, NULL);	
 	}
 	return;        
 };

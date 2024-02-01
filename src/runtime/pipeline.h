@@ -269,7 +269,6 @@ int pipeline_stage_free_safe(struct pipeline_stage *self);
 int pipeline_stage_run_safe(struct pipeline_stage *self);
 
 /* functions for pipelines */
-int pipeline_runtime_init(struct pipeline *pl, pl_conf *run_conf, char *err);
 int pipeline_init_safe(struct pipeline *pl);
 // int pipeline_init_safe(struct pipeline *pl, char *config_path);
 int pipeline_free(struct pipeline *pl);
