@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/socket.h>
 #include <resolv.h>
 #include <sys/epoll.h>
