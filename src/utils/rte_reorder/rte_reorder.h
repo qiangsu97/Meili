@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: BSD-3-Clause
  * Copyright(c) 2010-2014 Intel Corporation
  */
+/* Modified by Meili Authors */ 
+/* Copyright (c) 2024, Meili Authors */
 
 #ifndef _RTE_REORDER_H_
 #define _RTE_REORDER_H_

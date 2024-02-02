@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors */
+
 /*
 	DPDK-based implementation of regex
  */

@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors */
+
 /* timestamp library similar to rte_reorder */
 /* use dyn field of mbuf to store two timestamps(start/end) */
 #include <stdlib.h>

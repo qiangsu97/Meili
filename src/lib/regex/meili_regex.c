@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors */
+
 #include "meili_regex.h"
 #include "../log/meili_log.h"
 #include "../../runtime/meili_runtime.h"

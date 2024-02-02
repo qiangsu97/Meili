@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors */
+
 #include "./meili_pkt.h"
 
 #include <stddef.h>

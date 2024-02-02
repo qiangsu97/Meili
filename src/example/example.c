@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors*/
+
 /* Intrusion Detection Example */
 
 #include "../lib/meili.h"

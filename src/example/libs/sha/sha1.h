@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors*/
+
 #ifndef _INCLUDE_SHA_UTILS_H
 #define _INCLUDE_SHA_UTILS_H
 #include <stdint.h>

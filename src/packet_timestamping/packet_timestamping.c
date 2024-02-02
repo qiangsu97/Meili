@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors */
+
 /*
  * Packet timestamping
  * - Register a timestamping field using mbuf dynfield

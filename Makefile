@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright(c) 2022 NVIDIA Corporation
+# Modified by Meili Authors 
+# Copyright (c) 2024, Meili Authors 
 
 # binary name
 APP = meili

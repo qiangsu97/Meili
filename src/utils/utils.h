@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors */
+
 #ifndef _INCLUDE_UTILS_H_
 #define _INCLUDE_UTILS_H_
 

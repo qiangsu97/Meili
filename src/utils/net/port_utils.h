@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors */
+
 #ifndef _INCLUDE_PORT_UTILS_H
 #define _INCLUDE_PORT_UTILS_H
 

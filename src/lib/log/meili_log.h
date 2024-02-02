@@ -10,6 +10,8 @@
  * provided with the software product.
  *
  */
+/* Modified by Meili Authors */
+/* Copyright (c) 2024, Meili Authors */
 
 #ifndef _INCLUDE_LOG_H_
 #define _INCLUDE_LOG_H_
