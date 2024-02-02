@@ -77,18 +77,19 @@ int reg_sock(struct pipeline_stage *self){
 /* epoll
 *   - Process an event on the socket with the operation specified by UCO.
 */
-void epoll(struct pipeline_stage *self, void (*epoll_process)(char *buffer), int event){
+void epoll(struct pipeline_stage *self, void (*epoll_process)(char *buffer, int buf_len), int event){
     
     int num_events;   
     struct epoll_event events[MEILI_MAX_EPOLL_EVENTS];
     char buffer[MEILI_EPOLL_BUF_SIZE];
+    int buf_len;
      
     num_events = epoll_wait(self->epfd, events, MEILI_MAX_EPOLL_EVENTS, MEILI_EPOLL_TIMEOUT);
 
     for(int i = 0; i < num_events; i++) {
         if(events[i].events & event) {
-            read(self->sockfd, buffer, sizeof(buffer));
-            epoll_process(buffer);
+            buf_len = read(self->sockfd, buffer, sizeof(buffer));
+            epoll_process(buffer, buf_len);
         }
     }
 
