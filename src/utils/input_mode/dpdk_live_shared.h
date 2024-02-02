@@ -10,6 +10,9 @@
  * provided with the software product.
  *
  */
+/* Modified by Meili Authors */ 
+/* Copyright (c) 2024, Meili Authors*/
+
 
 #ifndef _INCLUDE_DPDK_LIVE_SHARED_H_
 #define _INCLUDE_DPDK_LIVE_SHARED_H_

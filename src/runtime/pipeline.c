@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors */
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

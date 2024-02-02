@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors*/
+
 #include <math.h>
 #include "./libs/sha/sha1.h"
 #include "../lib/meili.h"

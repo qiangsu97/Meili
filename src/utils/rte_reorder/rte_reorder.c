@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: BSD-3-Clause
  * Copyright(c) 2010-2014 Intel Corporation
  */
+/* Modified by Meili Authors */ 
+/* Copyright (c) 2024, Meili Authors */
 
 #include <string.h>
 #include <sys/queue.h>

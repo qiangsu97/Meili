@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors */
+
 #ifndef _TIMESTAMP_H_
 #define _TIMESTAMP_H_
 

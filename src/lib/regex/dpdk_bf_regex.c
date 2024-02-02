@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors */
+
 /*
  * Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES, ALL RIGHTS RESERVED.
  *

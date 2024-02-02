@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors */
+
 #ifndef _MEILI_PKT_H
 #define _MEILI_PKT_H
 

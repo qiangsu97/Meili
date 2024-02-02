@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors */
+
 #ifndef _PACKET_ORDERING_H
 #define _PACKET_ORDERING_H
 

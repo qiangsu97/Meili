@@ -1,3 +1,5 @@
+/* Copyright (c) 2024, Meili Authors */
+
 #ifndef _STR_HELPERS_H
 #define _STR_HELPERS_H
 
