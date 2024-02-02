@@ -2,12 +2,18 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <resolv.h>
+#include <sys/epoll.h>
+#include <arpa/inet.h>
 
 #include "meili.h"
 #include "../runtime/pipeline.h"
 
 #include "./net/meili_pkt.h"
 #include "./regex/meili_regex.h"
+#include "./log/meili_log.h"
 
 /* pkt_trans
 *   - Run a packet transformation operation specified by UCO.  
@@ -48,12 +54,46 @@ void flow_trans(){};
 /* reg_sock
 *   - Register an established socket to Meili.
 */
-void reg_sock(){};
+int reg_sock(struct pipeline_stage *self){
+    int sockfd;
+    int epfd;
+    struct epoll_event event;
+
+    if ( (sockfd = socket(AF_INET, SOCK_STREAM|SOCK_NONBLOCK, 0)) < 0 ) {
+        MEILI_LOG_ERR("Socket registration failed");
+        return -EINVAL;
+    }
+
+    self->sockfd = sockfd;
+    epfd = epoll_create(1);
+    event.events = EPOLLIN; 
+    event.data.fd = sockfd;
+
+    epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &event);
+
+    return 0;
+};
 
 /* epoll
 *   - Process an event on the socket with the operation specified by UCO.
 */
-void epoll(){};
+void epoll(struct pipeline_stage *self, void (*epoll_process)(char *buffer, int buf_len), int event){
+    
+    int num_events;   
+    struct epoll_event events[MEILI_MAX_EPOLL_EVENTS];
+    char buffer[MEILI_EPOLL_BUF_SIZE];
+    int buf_len;
+     
+    num_events = epoll_wait(self->epfd, events, MEILI_MAX_EPOLL_EVENTS, MEILI_EPOLL_TIMEOUT);
+
+    for(int i = 0; i < num_events; i++) {
+        if(events[i].events & event) {
+            buf_len = read(self->sockfd, buffer, sizeof(buffer));
+            epoll_process(buffer, buf_len);
+        }
+    }
+
+};
 
 /* regex
 *   - The built-in Regular Expression API.   

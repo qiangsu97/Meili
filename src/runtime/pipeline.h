@@ -4,13 +4,19 @@
 #define _INCLUDE_PIPELINE_H
 
 #include <rte_mbuf.h>
+#include <sys/socket.h>
+#include <resolv.h>
+#include <sys/epoll.h>
+#include <arpa/inet.h>
 
 #include "../lib/conf/meili_conf.h"
 
 #include "../lib/net/meili_pkt.h"
 
 
-
+#define MEILI_MAX_EPOLL_EVENTS 1024
+#define MEILI_EPOLL_TIMEOUT 1024
+#define MEILI_EPOLL_BUF_SIZE 1024
 /* memory pool macros for local mode */
 #define MBUF_POOL_SIZE		     1048576-1 /* Should be n = (2^q - 1)*/
 //#define MBUF_POOL_SIZE		     131072-1 
@@ -160,6 +166,11 @@ struct pipeline_stage{
     int nb_ring_in;
     int nb_ring_out;
     #endif
+
+    /* socket processing */
+    int sockfd;
+    int epfd;
+    struct epoll_event events[MEILI_MAX_EPOLL_EVENTS];
 
     /* timestamping for this stage */
     int ts_start_offset;
