@@ -12,14 +12,17 @@ This allows
 In particular, Meili provides a flexible modular programming model, a scalable data plane, and a unified control plane.
 
 ## Open-sourcing Schedule
-Currently we have released our data-plane prototype of Meili. We have planned to open-source the following contents in stage one:
-- Meili API support
-  - [x] Packet processing
-  - [x] Socket processing 
-  - [x] Accelerator function 
+Currently we have released our key components of Meili, including 
+- Programming model with APIs for
+  - Packet processing
+  - Socket processing 
+  - Accelerator function
+- Scalable data plane pipeline
+- Unified control plane
+  - Application orchestration
   
    
-And more to be released in next stage.
+More to be released in the next stage.
 
 ## Environment
 Our cluster comprises:
