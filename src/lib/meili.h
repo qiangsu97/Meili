@@ -35,9 +35,9 @@ typedef struct _meili_apis{
     void (*pkt_flt)(struct pipeline_stage *self, int (*check)(struct pipeline_stage *self, meili_pkt *pkt), meili_pkt *pkt);
     void (*flow_ext)();
     void (*flow_trans)(); 
-    void (*reg_sock)();
-    void (*epoll)();
-    void (*regex)();
+    void (*reg_sock)(struct pipeline_stage *self);
+    void (*epoll)(struct pipeline_stage *self);
+    void (*regex)(struct pipeline_stage *self, meili_pkt *pkt);
     void (*compression)();
     void (*AES)();
 }meili_apis;
