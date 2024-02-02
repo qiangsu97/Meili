@@ -14,9 +14,10 @@ In particular, Meili provides a flexible modular programming model, a scalable d
 ## Open-sourcing Schedule
 Currently we have released our data-plane prototype of Meili. We have planned to open-source the following contents in stage one:
 - Meili API support
-  - [x] L4 packet processing
-  - [x] Hardware acceleration 
-  - [x] L7 socket programming 
+  - [x] Packet processing
+  - [x] Socket processing 
+  - [x] Accelerator function 
+  
    
 And more to be released in next stage.
 
