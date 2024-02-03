@@ -45,7 +45,7 @@ Software configurations:
 make
 bash ./run.sh -live 2 10
 ```
-The above step will start Meili using 2 cores and run the sample program(the program in paper Listing 1) in src/example/ for 10 seconds.
+The above step will start Meili using 2 cores and run the sample program in src/example/ (the program in paper Listing 1) for 10 seconds.
 
 ## Repo Structure
 * ``rulesets/`` contains rulesets we use for regex accelerator on Bluefield-2 SmartNICs.
